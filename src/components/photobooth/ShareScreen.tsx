@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { sendEmail } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
@@ -63,10 +63,7 @@ export default function ShareScreen() {
             Scannez pour télécharger votre photo
           </p>
 
-          <Button variant="ghost" size="lg" onClick={restart} className="text-muted-foreground mt-6">
-            <RotateCcw size={18} />
-            Recommencer
-          </Button>
+          <AutoRedirectCountdown seconds={15} onComplete={restart} />
         </div>
       </div>
     );
@@ -100,17 +97,7 @@ export default function ShareScreen() {
         </div>
 
         {emailStatus === "sent" ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-float-up">
-            <CheckCircle size={48} className="text-accent-foreground" />
-            <p className="font-display text-xl text-foreground text-center">
-              Votre photo a bien été envoyée
-            </p>
-            <p className="text-sm text-muted-foreground">{email}</p>
-            <Button variant="ghost" size="lg" onClick={restart} className="text-muted-foreground mt-6">
-              <RotateCcw size={18} />
-              Recommencer
-            </Button>
-          </div>
+          <SuccessAutoRedirect restart={restart} message="Votre photo a bien été envoyée" detail={email} />
         ) : (
           <>
             {/* Email display */}
