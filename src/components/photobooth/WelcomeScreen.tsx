@@ -56,7 +56,7 @@ export default function WelcomeScreen() {
           {settings.eventConfig.logoUrl ? (
             <img src={settings.eventConfig.logoUrl} alt="Logo" className="h-16 w-auto object-contain" />
           ) : (
-            <span className="font-display text-4xl text-primary font-semibold tracking-wide">
+            <span className="font-script text-5xl text-primary tracking-wide">
               {settings.eventConfig.monogram}
             </span>
           )}
