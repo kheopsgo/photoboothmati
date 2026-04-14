@@ -1,10 +1,26 @@
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Mail, QrCode, RotateCcw, Printer } from "lucide-react";
 import PhotoFrame from "./PhotoFrame";
 
 export default function ResultScreen() {
   const { mode, photos, finalImage, setScreen, restart } = usePhotobooth();
+  const { settings } = useSettings();
+
+  const photoContent = mode === "four" ? (
+    <div className="grid grid-cols-2 gap-2">
+      {photos.map((photo, i) => (
+        <div key={i} className="aspect-[3/4] rounded-lg overflow-hidden bg-muted">
+          <img src={photo} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted max-w-[300px]">
+      <img src={finalImage || photos[0]} alt="Votre photo" className="w-full h-full object-cover" />
+    </div>
+  );
 
   return (
     <div className="flex flex-col min-h-screen px-6 py-8 animate-float-in">
@@ -14,21 +30,15 @@ export default function ResultScreen() {
       </div>
 
       <div className="flex-1 flex items-center justify-center mb-8">
-        <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
-          {mode === "four" ? (
-            <div className="grid grid-cols-2 gap-2">
-              {photos.map((photo, i) => (
-                <div key={i} className="aspect-[3/4] rounded-lg overflow-hidden bg-muted">
-                  <img src={photo} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted max-w-[300px]">
-              <img src={finalImage || photos[0]} alt="Votre photo" className="w-full h-full object-cover" />
-            </div>
-          )}
-        </PhotoFrame>
+        {settings.frameEnabled ? (
+          <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
+            {photoContent}
+          </PhotoFrame>
+        ) : (
+          <div className="bg-card border-2 border-border rounded-2xl p-3 shadow-xl">
+            {photoContent}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto w-full">
