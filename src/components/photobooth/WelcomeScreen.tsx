@@ -1,6 +1,7 @@
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import eventConfig from "@/config/eventConfig";
 
 const FloatingPetal = ({ delay, left }: { delay: number; left: number }) => (
   <div
@@ -25,11 +26,15 @@ export default function WelcomeScreen() {
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
       <div className="flex flex-col items-center gap-8 animate-float-in z-10">
-        {/* Monogram placeholder */}
+        {/* Monogram */}
         <div className="w-28 h-28 rounded-full border-2 border-primary/30 flex items-center justify-center bg-background/80 backdrop-blur-sm shadow-lg">
-          <span className="font-display text-4xl text-primary font-semibold tracking-wide">
-            A&B
-          </span>
+          {eventConfig.logoUrl ? (
+            <img src={eventConfig.logoUrl} alt="Logo" className="h-16 w-auto object-contain" />
+          ) : (
+            <span className="font-display text-4xl text-primary font-semibold tracking-wide">
+              {eventConfig.monogram}
+            </span>
+          )}
         </div>
 
         {/* Title */}
