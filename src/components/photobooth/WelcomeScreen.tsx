@@ -1,18 +1,75 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
-import { Heart, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SettingsPanel from "./SettingsPanel";
 
-const FloatingPetal = ({ delay, left }: { delay: number; left: number }) => (
-  <div
-    className="absolute bottom-0 text-primary/20 animate-petal pointer-events-none"
-    style={{ left: `${left}%`, animationDelay: `${delay}s`, animationDuration: `${6 + Math.random() * 4}s` }}
-  >
-    <Heart size={12 + Math.random() * 12} />
-  </div>
-);
+interface BubbleProps {
+  size: number;
+  left: number;
+  delay: number;
+  duration: number;
+  wobble: number;
+}
+
+function ChampagneBubble({ size, left, delay, duration, wobble }: BubbleProps) {
+  return (
+    <div
+      className="absolute bottom-0 pointer-events-none"
+      style={{
+        left: `${left}%`,
+        animationDelay: `${delay}s`,
+      }}
+    >
+      <div
+        className="rounded-full bg-primary/[0.12] border border-primary/[0.08]"
+        style={{
+          width: size,
+          height: size,
+          animation: `bubble-rise ${duration}s ease-in infinite ${delay}s, bubble-wobble ${wobble}s ease-in-out infinite ${delay}s`,
+        }}
+      >
+        {/* Inner highlight */}
+        <div
+          className="absolute rounded-full bg-primary/[0.15]"
+          style={{
+            width: size * 0.3,
+            height: size * 0.3,
+            top: size * 0.15,
+            left: size * 0.2,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function BubblesBackground() {
+  const bubbles = useMemo<BubbleProps[]>(() => {
+    const result: BubbleProps[] = [];
+    for (let i = 0; i < 18; i++) {
+      result.push({
+        size: 4 + Math.random() * 10,
+        left: 5 + Math.random() * 90,
+        delay: Math.random() * 8,
+        duration: 5 + Math.random() * 6,
+        wobble: 2 + Math.random() * 3,
+      });
+    }
+    return result;
+  }, []);
+
+  return (
+    <>
+      {bubbles.map((b, i) => (
+        <ChampagneBubble key={i} {...b} />
+      ))}
+      {/* Fade-out gradient at the top */}
+      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-background via-background/80 to-transparent z-[1] pointer-events-none" />
+    </>
+  );
+}
 
 export default function WelcomeScreen() {
   const { setScreen, setMode } = usePhotobooth();
@@ -20,7 +77,6 @@ export default function WelcomeScreen() {
   const [showSettings, setShowSettings] = useState(false);
 
   const handleStart = () => {
-    // If only one mode available, skip mode selection
     if (settings.allowSingle && !settings.allowFour) {
       setMode("single");
       setScreen(settings.filtersEnabled ? "filter" : "countdown");
@@ -34,10 +90,8 @@ export default function WelcomeScreen() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen px-8 overflow-hidden">
-      {/* Floating petals */}
-      {[...Array(6)].map((_, i) => (
-        <FloatingPetal key={i} delay={i * 1.3} left={10 + i * 15} />
-      ))}
+      {/* Champagne bubbles */}
+      <BubblesBackground />
 
       {/* Settings gear */}
       <button
@@ -48,7 +102,7 @@ export default function WelcomeScreen() {
       </button>
 
       {/* Decorative top accent */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent z-[2]" />
 
       <div className="flex flex-col items-center gap-8 animate-float-in z-10">
         {/* Monogram */}
@@ -91,7 +145,6 @@ export default function WelcomeScreen() {
 
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
 
-      {/* Settings panel */}
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
     </div>
   );
