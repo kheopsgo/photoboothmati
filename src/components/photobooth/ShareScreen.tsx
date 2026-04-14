@@ -1,10 +1,49 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { sendEmail } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle, AlertCircle, RotateCcw, QrCode } from "lucide-react";
 import VirtualKeyboard from "./VirtualKeyboard";
+
+function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onComplete: () => void }) {
+  const [remaining, setRemaining] = useState(seconds);
+
+  useEffect(() => {
+    if (remaining <= 0) { onComplete(); return; }
+    const t = setTimeout(() => setRemaining((r) => r - 1), 1000);
+    return () => clearTimeout(t);
+  }, [remaining, onComplete]);
+
+  return (
+    <div className="text-center space-y-3 mt-4">
+      <p className="text-sm text-muted-foreground">
+        Retour à l'accueil dans <span className="font-semibold text-foreground">{remaining}s</span>
+      </p>
+      <div className="w-48 h-1.5 rounded-full bg-border mx-auto overflow-hidden">
+        <div
+          className="h-full bg-primary rounded-full transition-all duration-1000 ease-linear"
+          style={{ width: `${(remaining / seconds) * 100}%` }}
+        />
+      </div>
+      <button onClick={onComplete} className="text-sm text-muted-foreground/60 flex items-center gap-1.5 mx-auto mt-2">
+        <RotateCcw size={14} />
+        Recommencer maintenant
+      </button>
+    </div>
+  );
+}
+
+function SuccessAutoRedirect({ restart, message, detail }: { restart: () => void; message: string; detail?: string }) {
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-float-up">
+      <CheckCircle size={48} className="text-accent-foreground" />
+      <p className="font-display text-xl text-foreground text-center">{message}</p>
+      {detail && <p className="text-sm text-muted-foreground">{detail}</p>}
+      <AutoRedirectCountdown seconds={10} onComplete={restart} />
+    </div>
+  );
+}
 
 export default function ShareScreen() {
   const { sessionId, qrUrl, emailStatus, setEmailStatus, setScreen, restart } = usePhotobooth();
@@ -63,10 +102,7 @@ export default function ShareScreen() {
             Scannez pour télécharger votre photo
           </p>
 
-          <Button variant="ghost" size="lg" onClick={restart} className="text-muted-foreground mt-6">
-            <RotateCcw size={18} />
-            Recommencer
-          </Button>
+          <AutoRedirectCountdown seconds={15} onComplete={restart} />
         </div>
       </div>
     );
@@ -100,17 +136,7 @@ export default function ShareScreen() {
         </div>
 
         {emailStatus === "sent" ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-float-up">
-            <CheckCircle size={48} className="text-accent-foreground" />
-            <p className="font-display text-xl text-foreground text-center">
-              Votre photo a bien été envoyée
-            </p>
-            <p className="text-sm text-muted-foreground">{email}</p>
-            <Button variant="ghost" size="lg" onClick={restart} className="text-muted-foreground mt-6">
-              <RotateCcw size={18} />
-              Recommencer
-            </Button>
-          </div>
+          <SuccessAutoRedirect restart={restart} message="Votre photo a bien été envoyée" detail={email} />
         ) : (
           <>
             {/* Email display */}
