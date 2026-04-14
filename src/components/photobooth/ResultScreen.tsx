@@ -1,6 +1,7 @@
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { Button } from "@/components/ui/button";
 import { Mail, QrCode, RotateCcw, Printer } from "lucide-react";
+import PhotoFrame from "./PhotoFrame";
 
 export default function ResultScreen() {
   const { mode, photos, finalImage, setScreen, restart } = usePhotobooth();
@@ -13,8 +14,8 @@ export default function ResultScreen() {
       </div>
 
       <div className="flex-1 flex items-center justify-center mb-8">
-        {mode === "four" ? (
-          <div className="bg-card border-2 border-border rounded-2xl p-3 shadow-xl">
+        <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
+          {mode === "four" ? (
             <div className="grid grid-cols-2 gap-2">
               {photos.map((photo, i) => (
                 <div key={i} className="aspect-[3/4] rounded-lg overflow-hidden bg-muted">
@@ -22,20 +23,12 @@ export default function ResultScreen() {
                 </div>
               ))}
             </div>
-            <div className="text-center mt-3 pb-1">
-              <p className="font-display text-lg text-primary/60 italic">A & B</p>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-card border-2 border-border rounded-2xl p-3 shadow-xl max-w-[320px] w-full">
-            <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted">
+          ) : (
+            <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted max-w-[300px]">
               <img src={finalImage || photos[0]} alt="Votre photo" className="w-full h-full object-cover" />
             </div>
-            <div className="text-center mt-3 pb-1">
-              <p className="font-display text-lg text-primary/60 italic">A & B</p>
-            </div>
-          </div>
-        )}
+          )}
+        </PhotoFrame>
       </div>
 
       <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto w-full">
