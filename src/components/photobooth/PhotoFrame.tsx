@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import eventConfig from "@/config/eventConfig";
+import { useSettings } from "@/contexts/SettingsContext";
 import { Heart } from "lucide-react";
 
 interface PhotoFrameProps {
@@ -37,10 +37,11 @@ function GeometricBorder() {
 }
 
 export default function PhotoFrame({ children, variant = "single" }: PhotoFrameProps) {
-  const { frameStyle, monogram, title, subtitle, footer, logoUrl } = eventConfig;
+  const { settings } = useSettings();
+  const { frameStyle, monogram, title, subtitle, footer, logoUrl } = settings.eventConfig;
 
-  const accentStyle = eventConfig.accentColor
-    ? { "--frame-accent": eventConfig.accentColor } as React.CSSProperties
+  const accentStyle = settings.eventConfig.accentColor
+    ? { "--frame-accent": settings.eventConfig.accentColor } as React.CSSProperties
     : {};
 
   if (frameStyle === "polaroid") {

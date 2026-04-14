@@ -1,4 +1,5 @@
 import { PhotoboothProvider, usePhotobooth } from "@/contexts/PhotoboothContext";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 import WelcomeScreen from "./WelcomeScreen";
 import ModeSelection from "./ModeSelection";
 import FilterSelection from "./FilterSelection";
@@ -32,10 +33,12 @@ function ScreenRouter() {
 
 export default function PhotoboothApp() {
   return (
-    <PhotoboothProvider>
-      <div className="max-w-lg mx-auto min-h-screen bg-background relative overflow-hidden">
-        <ScreenRouter />
-      </div>
-    </PhotoboothProvider>
+    <SettingsProvider>
+      <PhotoboothProvider>
+        <div className="max-w-lg mx-auto min-h-screen bg-background relative overflow-hidden">
+          <ScreenRouter />
+        </div>
+      </PhotoboothProvider>
+    </SettingsProvider>
   );
 }
