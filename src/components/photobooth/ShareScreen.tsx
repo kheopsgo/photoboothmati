@@ -3,13 +3,15 @@ import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { sendEmail } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Mail, CheckCircle, AlertCircle, RotateCcw } from "lucide-react";
+import { ArrowLeft, CheckCircle, AlertCircle, RotateCcw, QrCode } from "lucide-react";
+import VirtualKeyboard from "./VirtualKeyboard";
 
 export default function ShareScreen() {
   const { sessionId, qrUrl, emailStatus, setEmailStatus, setScreen, restart } = usePhotobooth();
   const { playSuccess } = useSound();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [showQr, setShowQr] = useState(false);
 
   const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
@@ -30,123 +32,134 @@ export default function ShareScreen() {
     }
   };
 
-  return (
-    <div className="flex flex-col min-h-screen px-8 py-10 animate-float-in">
-      <button
-        onClick={() => setScreen("result")}
-        className="self-start flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
-      >
-        <ArrowLeft size={20} />
-        <span className="font-body text-sm">Retour</span>
-      </button>
+  if (showQr) {
+    return (
+      <div className="flex flex-col min-h-screen px-8 py-10 animate-float-in">
+        <button
+          onClick={() => setShowQr(false)}
+          className="self-start flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
+        >
+          <ArrowLeft size={20} />
+          <span className="font-body text-sm">Retour</span>
+        </button>
 
-      <div className="flex-1 flex flex-col items-center gap-10">
-        {/* Email section */}
-        <div className="w-full max-w-sm space-y-5">
-          <div className="text-center space-y-2">
-            <h2 className="font-display text-3xl text-foreground">
-              Recevoir votre photo
-            </h2>
-            <div className="w-10 h-px bg-primary/40 mx-auto" />
-          </div>
+        <div className="flex-1 flex flex-col items-center justify-center gap-6">
+          <h2 className="font-display text-3xl text-foreground">Scanner le QR code</h2>
+          <div className="w-10 h-px bg-primary/40 mx-auto" />
 
-          {emailStatus === "sent" ? (
-            <div className="flex flex-col items-center gap-4 py-8 animate-float-up">
-              <CheckCircle size={48} className="text-accent-foreground" />
-              <p className="font-display text-xl text-foreground text-center">
-                Votre photo a bien été envoyée
-              </p>
-              <p className="text-sm text-muted-foreground">{email}</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <input
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  placeholder="votre@email.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setEmailError("");
-                  }}
-                  className="w-full h-14 rounded-xl border-2 border-border bg-card px-5 text-lg font-body text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none transition-colors"
-                />
-                {emailError && (
-                  <p className="text-destructive text-sm mt-2 flex items-center gap-1">
-                    <AlertCircle size={14} />
-                    {emailError}
-                  </p>
-                )}
-                {emailStatus === "error" && (
-                  <p className="text-destructive text-sm mt-2 flex items-center gap-1">
-                    <AlertCircle size={14} />
-                    Erreur lors de l'envoi. Veuillez réessayer.
-                  </p>
-                )}
-              </div>
-
-              <Button
-                variant="hero"
-                size="touch"
-                onClick={handleSend}
-                disabled={emailStatus === "sending" || !email}
-                className="w-full"
-              >
-                {emailStatus === "sending" ? (
-                  <span className="animate-pulse">Envoi en cours…</span>
-                ) : (
-                  <>
-                    <Mail size={20} />
-                    Recevoir ma photo
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* Divider */}
-        <div className="flex items-center gap-4 w-full max-w-sm">
-          <div className="flex-1 h-px bg-border" />
-          <span className="text-sm text-muted-foreground font-body">ou</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-
-        {/* QR section */}
-        <div className="w-full max-w-sm text-center space-y-4">
-          <h3 className="font-display text-2xl text-foreground">
-            Scanner le QR code
-          </h3>
-
-          <div className="mx-auto w-48 h-48 rounded-2xl border-2 border-border bg-card flex items-center justify-center shadow-md">
+          <div className="w-56 h-56 rounded-2xl border-2 border-border bg-card flex items-center justify-center shadow-md">
             {qrUrl ? (
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrUrl)}`}
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`}
                 alt="QR Code"
-                className="w-40 h-40 rounded-lg"
+                className="w-48 h-48 rounded-lg"
               />
             ) : (
               <div className="text-muted-foreground/40 text-sm">QR code</div>
             )}
           </div>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground text-center">
             Scannez pour télécharger votre photo
           </p>
+
+          <Button variant="ghost" size="lg" onClick={restart} className="text-muted-foreground mt-6">
+            <RotateCcw size={18} />
+            Recommencer
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen px-4 py-6 animate-float-in">
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={() => setScreen("result")}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft size={20} />
+          <span className="font-body text-sm">Retour</span>
+        </button>
+
+        <button
+          onClick={() => setShowQr(true)}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <QrCode size={20} />
+          <span className="font-body text-sm">QR code</span>
+        </button>
+      </div>
+
+      <div className="flex flex-col items-center gap-4 flex-1">
+        {/* Header */}
+        <div className="text-center space-y-1">
+          <h2 className="font-display text-3xl text-foreground">Recevoir votre photo</h2>
+          <div className="w-10 h-px bg-primary/40 mx-auto" />
         </div>
 
-        {/* Restart */}
-        <Button
-          variant="ghost"
-          size="lg"
-          onClick={restart}
-          className="text-muted-foreground mt-4"
-        >
-          <RotateCcw size={18} />
-          Recommencer
-        </Button>
+        {emailStatus === "sent" ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-float-up">
+            <CheckCircle size={48} className="text-accent-foreground" />
+            <p className="font-display text-xl text-foreground text-center">
+              Votre photo a bien été envoyée
+            </p>
+            <p className="text-sm text-muted-foreground">{email}</p>
+            <Button variant="ghost" size="lg" onClick={restart} className="text-muted-foreground mt-6">
+              <RotateCcw size={18} />
+              Recommencer
+            </Button>
+          </div>
+        ) : (
+          <>
+            {/* Email display */}
+            <div className="w-full max-w-md">
+              <div className="w-full h-14 rounded-xl border-2 border-primary/30 bg-card px-5 flex items-center text-lg font-body text-foreground">
+                {email ? (
+                  <span>{email}<span className="animate-pulse text-primary">|</span></span>
+                ) : (
+                  <span className="text-muted-foreground/50">votre@email.com</span>
+                )}
+              </div>
+              {emailError && (
+                <p className="text-destructive text-sm mt-2 flex items-center gap-1">
+                  <AlertCircle size={14} />
+                  {emailError}
+                </p>
+              )}
+              {emailStatus === "error" && (
+                <p className="text-destructive text-sm mt-2 flex items-center gap-1">
+                  <AlertCircle size={14} />
+                  Erreur lors de l'envoi. Veuillez réessayer.
+                </p>
+              )}
+            </div>
+
+            {/* Virtual keyboard */}
+            <div className="w-full max-w-md mt-2">
+              <VirtualKeyboard
+                value={email}
+                onChange={(v) => {
+                  setEmail(v);
+                  setEmailError("");
+                }}
+                onSubmit={handleSend}
+                submitDisabled={emailStatus === "sending" || !email}
+              />
+            </div>
+
+            {emailStatus === "sending" && (
+              <p className="text-muted-foreground font-body animate-pulse mt-2">Envoi en cours…</p>
+            )}
+
+            {/* Restart link */}
+            <button onClick={restart} className="text-sm text-muted-foreground/60 mt-2 flex items-center gap-1.5">
+              <RotateCcw size={14} />
+              Recommencer
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
