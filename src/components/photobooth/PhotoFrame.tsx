@@ -49,7 +49,7 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
       <div className="bg-card rounded-sm shadow-xl p-3 pb-16 relative" style={accentStyle}>
         {children}
         <div className="absolute bottom-3 left-0 right-0 text-center">
-          <p className="font-display text-lg text-foreground/70">{title}</p>
+          <p className="font-script text-2xl text-foreground/70">{title}</p>
           <p className="font-body text-xs text-muted-foreground mt-0.5">{subtitle}</p>
         </div>
       </div>
@@ -61,7 +61,7 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
       <div className="bg-card border border-border rounded-2xl p-4 shadow-lg relative" style={accentStyle}>
         {children}
         <div className="text-center mt-3 space-y-0.5">
-          <p className="font-display text-base text-primary/50">{monogram}</p>
+          <p className="font-script text-xl text-primary/50">{monogram}</p>
           <p className="font-body text-xs text-muted-foreground">{subtitle}</p>
         </div>
       </div>
@@ -75,7 +75,7 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
         <div className="relative z-10">
           {children}
           <div className="text-center mt-4 space-y-1">
-            <p className="font-display text-lg text-foreground tracking-[0.3em] uppercase text-sm">{title}</p>
+            <p className="font-script text-2xl text-foreground">{title}</p>
             <p className="font-body text-xs text-muted-foreground tracking-widest">{subtitle}</p>
           </div>
         </div>
@@ -96,7 +96,7 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
         {/* Bottom botanical + text */}
         <div className="text-center mt-3 space-y-1">
           <BotanicalAccent className="mx-auto rotate-180" />
-          <p className="font-display text-lg text-primary/60 italic">{title}</p>
+          <p className="font-script text-2xl text-primary/60">{title}</p>
           <p className="font-body text-xs text-muted-foreground">{subtitle}</p>
           {footer && <p className="font-body text-[10px] text-muted-foreground/50 mt-2">{footer}</p>}
         </div>
@@ -132,7 +132,7 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
           <div className="h-px flex-1 bg-primary/15" />
         </div>
         <div className="text-center mt-2 space-y-0.5">
-          <p className="font-display text-lg text-primary/60 italic">{title}</p>
+          <p className="font-script text-2xl text-primary/60">{title}</p>
           <p className="font-body text-xs text-muted-foreground">{subtitle}</p>
           {footer && <p className="font-body text-[10px] text-muted-foreground/40 mt-1.5">{footer}</p>}
         </div>
