@@ -28,7 +28,7 @@ export default function CaptureFlow() {
         if (!cancelled) setScreen("result");
       } catch (err) {
         if (!cancelled) {
-          setError("Une erreur est survenue lors de la capture. Veuillez réessayer.");
+          setError("Erreur lors de la prise de photo. Veuillez réessayer.");
         }
       }
     }
