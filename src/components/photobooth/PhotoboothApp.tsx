@@ -6,7 +6,6 @@ import FilterSelection from "./FilterSelection";
 import CountdownScreen from "./CountdownScreen";
 import CaptureFlow from "./CaptureFlow";
 import ResultScreen from "./ResultScreen";
-import ShareScreen from "./ShareScreen";
 
 function ScreenRouter() {
   const { screen } = usePhotobooth();
@@ -23,9 +22,8 @@ function ScreenRouter() {
     case "capturing":
       return <CaptureFlow />;
     case "result":
-      return <ResultScreen />;
     case "share":
-      return <ShareScreen />;
+      return <ResultScreen />;
     default:
       return <WelcomeScreen />;
   }
