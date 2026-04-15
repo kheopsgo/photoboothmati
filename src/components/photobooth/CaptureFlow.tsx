@@ -4,7 +4,7 @@ import { takePhoto } from "@/services/api";
 import { Loader2 } from "lucide-react";
 
 export default function CaptureFlow() {
-  const { mode, filter, setScreen, setCaptureResult, addCapturedPhoto, captureProgress, photos } = usePhotobooth();
+  const { mode, filter, setScreen, setCaptureResult, addCapturedPhoto, setQrUrl, captureProgress, photos } = usePhotobooth();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -16,23 +16,20 @@ export default function CaptureFlow() {
         const result = await takePhoto("single", filter);
         if (cancelled) return;
 
+        if (result.qrUrl) setQrUrl(result.qrUrl);
+
         if (mode === "four") {
-          // Accumulate this photo
           addCapturedPhoto(result.finalImage, result.sessionId);
 
-          const photosAfter = captureProgress + 1; // will be after addCapturedPhoto
+          const photosAfter = captureProgress + 1;
           if (photosAfter < 4) {
-            // Go back to countdown for the next shot
             setScreen("countdown");
           } else {
-            // All 4 done — go to result
-            // We set the full result with all accumulated photos + this one
             const allPhotos = [...photos, result.finalImage];
             setCaptureResult(result.sessionId, allPhotos, result.finalImage);
             setScreen("result");
           }
         } else {
-          // Single mode — same as before
           setCaptureResult(result.sessionId, result.photos, result.finalImage);
           setScreen("result");
         }

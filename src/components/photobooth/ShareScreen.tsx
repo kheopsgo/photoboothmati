@@ -89,12 +89,12 @@ export default function ShareScreen() {
           <div className="w-56 h-56 rounded-2xl border-2 border-border bg-card flex items-center justify-center shadow-md">
             {qrUrl ? (
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrUrl)}`}
+                src={qrUrl}
                 alt="QR Code"
                 className="w-48 h-48 rounded-lg"
               />
             ) : (
-              <div className="text-muted-foreground/40 text-sm">QR code</div>
+              <div className="text-muted-foreground/40 text-sm">QR code indisponible</div>
             )}
           </div>
 
