@@ -109,7 +109,7 @@ export default function ResultScreen() {
             Scannez pour télécharger votre photo
           </p>
 
-          <AutoRedirectCountdown seconds={15} onComplete={handleRestart} />
+          <AutoRedirectCountdown seconds={30} onComplete={() => setPanel("none")} />
         </div>
       </div>
     );
