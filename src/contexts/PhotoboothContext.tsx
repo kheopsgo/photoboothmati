@@ -19,7 +19,7 @@ interface PhotoboothState {
   finalImage: string | null;
   qrUrl: string | null;
   emailStatus: "idle" | "sending" | "sent" | "error";
-  captureProgress: number; // 0-based index during 4-photo mode
+  captureProgress: number; // 0-based: how many photos already captured
 }
 
 interface PhotoboothContextType extends PhotoboothState {
@@ -27,6 +27,7 @@ interface PhotoboothContextType extends PhotoboothState {
   setMode: (m: PhotoMode) => void;
   setFilter: (f: PhotoFilter) => void;
   setCaptureResult: (sessionId: string, photos: string[], finalImage: string) => void;
+  addCapturedPhoto: (photo: string, sessionId: string) => void;
   setQrUrl: (url: string) => void;
   setEmailStatus: (s: PhotoboothState["emailStatus"]) => void;
   setCaptureProgress: (n: number) => void;
@@ -58,6 +59,17 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
       setState((s) => ({ ...s, sessionId, photos, finalImage })),
     []
   );
+  const addCapturedPhoto = useCallback(
+    (photo: string, sessionId: string) =>
+      setState((s) => ({
+        ...s,
+        sessionId,
+        photos: [...s.photos, photo],
+        finalImage: photo, // latest photo
+        captureProgress: s.captureProgress + 1,
+      })),
+    []
+  );
   const setQrUrl = useCallback((qrUrl: string) => setState((s) => ({ ...s, qrUrl })), []);
   const setEmailStatus = useCallback(
     (emailStatus: PhotoboothState["emailStatus"]) =>
@@ -78,6 +90,7 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
         setMode,
         setFilter,
         setCaptureResult,
+        addCapturedPhoto,
         setQrUrl,
         setEmailStatus,
         setCaptureProgress,

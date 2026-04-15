@@ -3,7 +3,7 @@ import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSound } from "@/hooks/useSound";
 
 export default function CountdownScreen() {
-  const { mode, setScreen, setCaptureProgress, captureProgress } = usePhotobooth();
+  const { mode, setScreen, captureProgress } = usePhotobooth();
   const { playTick, playShutter } = useSound();
   const [count, setCount] = useState(5);
   const [showSmile, setShowSmile] = useState(false);
@@ -11,27 +11,18 @@ export default function CountdownScreen() {
   const [exiting, setExiting] = useState(false);
 
   const totalShots = mode === "four" ? 4 : 1;
-  const currentShot = captureProgress + 1;
+  const currentShot = captureProgress + 1; // 1-based display
 
   const triggerCapture = useCallback(() => {
     playShutter();
     setFlash(true);
     setTimeout(() => setFlash(false), 500);
 
-    if (mode === "four" && currentShot < totalShots) {
-      // Next shot
-      setTimeout(() => {
-        setCaptureProgress(captureProgress + 1);
-        setCount(5);
-        setShowSmile(false);
-      }, 1200);
-    } else {
-      // Done — go to capturing
-      setTimeout(() => {
-        setScreen("capturing");
-      }, 1000);
-    }
-  }, [playShutter, mode, currentShot, totalShots, setCaptureProgress, captureProgress, setScreen]);
+    // Always go to capturing after countdown — CaptureFlow handles the logic
+    setTimeout(() => {
+      setScreen("capturing");
+    }, 1000);
+  }, [playShutter, setScreen]);
 
   useEffect(() => {
     if (count <= 0) {

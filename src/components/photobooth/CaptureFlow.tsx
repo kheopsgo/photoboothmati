@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
-import { takePhoto, getLatestPhoto } from "@/services/api";
+import { takePhoto } from "@/services/api";
 import { Loader2 } from "lucide-react";
 
 export default function CaptureFlow() {
-  const { mode, filter, setScreen, setCaptureResult, setQrUrl } = usePhotobooth();
+  const { mode, filter, setScreen, setCaptureResult, addCapturedPhoto, captureProgress, photos } = usePhotobooth();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -12,20 +12,30 @@ export default function CaptureFlow() {
 
     async function capture() {
       try {
-        const result = await takePhoto(mode!, filter);
+        // Always call backend with mode "single" for real capture
+        const result = await takePhoto("single", filter);
         if (cancelled) return;
 
-        setCaptureResult(result.sessionId, result.photos, result.finalImage);
+        if (mode === "four") {
+          // Accumulate this photo
+          addCapturedPhoto(result.finalImage, result.sessionId);
 
-        // Fetch QR
-        try {
-          const latest = await getLatestPhoto(result.sessionId);
-          if (!cancelled) setQrUrl(latest.qrUrl);
-        } catch {
-          // QR not critical
+          const photosAfter = captureProgress + 1; // will be after addCapturedPhoto
+          if (photosAfter < 4) {
+            // Go back to countdown for the next shot
+            setScreen("countdown");
+          } else {
+            // All 4 done — go to result
+            // We set the full result with all accumulated photos + this one
+            const allPhotos = [...photos, result.finalImage];
+            setCaptureResult(result.sessionId, allPhotos, result.finalImage);
+            setScreen("result");
+          }
+        } else {
+          // Single mode — same as before
+          setCaptureResult(result.sessionId, result.photos, result.finalImage);
+          setScreen("result");
         }
-
-        if (!cancelled) setScreen("result");
       } catch (err) {
         if (!cancelled) {
           setError("Erreur lors de la prise de photo. Veuillez réessayer.");
@@ -35,7 +45,8 @@ export default function CaptureFlow() {
 
     capture();
     return () => { cancelled = true; };
-  }, [mode, filter, setCaptureResult, setQrUrl, setScreen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (error) {
     return (
@@ -55,7 +66,9 @@ export default function CaptureFlow() {
     <div className="flex flex-col items-center justify-center min-h-screen gap-6 animate-float-in">
       <Loader2 size={48} className="text-primary animate-spin" />
       <p className="font-display text-2xl text-muted-foreground">
-        Préparation de votre photo…
+        {mode === "four"
+          ? `Capture photo ${captureProgress + 1} sur 4…`
+          : "Préparation de votre photo…"}
       </p>
     </div>
   );
