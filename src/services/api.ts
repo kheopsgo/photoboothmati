@@ -1,4 +1,5 @@
-export const API_BASE = "http://10.10.10.191:5000";
+// Configurable via VITE_API_BASE env var or defaults to same-network Raspberry Pi
+export const API_BASE = import.meta.env.VITE_API_BASE || "http://10.10.10.191:5000";
 
 export type PhotoMode = "single" | "four";
 export type PhotoFilter = "none" | "bw" | "sepia";
