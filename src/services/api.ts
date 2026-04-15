@@ -8,6 +8,7 @@ export interface TakePhotoResponse {
   sessionId: string;
   photos: string[];
   finalImage: string;
+  qrUrl?: string;
 }
 
 export interface LatestPhotoResponse {
@@ -43,6 +44,7 @@ export async function takePhoto(
     sessionId: data.sessionId,
     photos: (data.photos as string[]).map(buildImageUrl),
     finalImage: buildImageUrl(data.finalImage),
+    qrUrl: data.qrUrl ? buildImageUrl(data.qrUrl) : undefined,
   };
 }
 
