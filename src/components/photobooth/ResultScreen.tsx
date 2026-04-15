@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { sendEmail } from "@/services/api";
@@ -11,17 +11,6 @@ import VirtualKeyboard from "./VirtualKeyboard";
 type Panel = "none" | "qr" | "email";
 
 function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onComplete: () => void }) {
-  const [remaining, setRemaining] = useState(seconds);
-
-  useState; // force re-render trick avoided — use useEffect
-  // Actually use useEffect:
-  return <AutoRedirectInner seconds={seconds} onComplete={onComplete} />;
-}
-
-// Proper implementation
-import { useEffect } from "react";
-
-function AutoRedirectInner({ seconds, onComplete }: { seconds: number; onComplete: () => void }) {
   const [remaining, setRemaining] = useState(seconds);
 
   useEffect(() => {
@@ -120,7 +109,7 @@ export default function ResultScreen() {
             Scannez pour télécharger votre photo
           </p>
 
-          <AutoRedirectInner seconds={15} onComplete={handleRestart} />
+          <AutoRedirectCountdown seconds={15} onComplete={handleRestart} />
         </div>
       </div>
     );
@@ -149,7 +138,7 @@ export default function ResultScreen() {
               <CheckCircle size={48} className="text-accent-foreground" />
               <p className="font-display text-xl text-foreground text-center">Votre photo a bien été envoyée</p>
               <p className="text-sm text-muted-foreground">{email}</p>
-              <AutoRedirectInner seconds={10} onComplete={handleRestart} />
+              <AutoRedirectCountdown seconds={10} onComplete={handleRestart} />
             </div>
           ) : (
             <>
