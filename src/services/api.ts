@@ -1,6 +1,4 @@
-// Mock API service — replace with real Raspberry Pi endpoints later
-
-const API_BASE = "";
+export const API_BASE = "http://10.10.10.191:5000";
 
 export type PhotoMode = "single" | "four";
 export type PhotoFilter = "none" | "bw" | "sepia";
@@ -23,42 +21,40 @@ export interface SendEmailResponse {
   message: string;
 }
 
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-// Placeholder image generator
-const placeholderPhoto = (id: string, index: number) =>
-  `https://picsum.photos/seed/${id}_${index}/600/800`;
+/** Build a full image URL from a relative path returned by the backend */
+export function buildImageUrl(path: string): string {
+  if (path.startsWith("http")) return path;
+  return `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
+}
 
 export async function takePhoto(
   mode: PhotoMode,
   filter: PhotoFilter
 ): Promise<TakePhotoResponse> {
-  // Mock implementation
-  await delay(1500);
-
-  const sessionId = Math.random().toString(36).substring(2, 8);
-  const count = mode === "single" ? 1 : 4;
-  const photos = Array.from({ length: count }, (_, i) =>
-    placeholderPhoto(sessionId, i + 1)
-  );
-
+  const res = await fetch(`${API_BASE}/take-photo`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mode, filter }),
+  });
+  if (!res.ok) throw new Error("Erreur lors de la prise de photo");
+  const data = await res.json();
   return {
-    sessionId,
-    photos,
-    finalImage: photos[0],
+    sessionId: data.sessionId,
+    photos: (data.photos as string[]).map(buildImageUrl),
+    finalImage: buildImageUrl(data.finalImage),
   };
 }
 
 export async function getLatestPhoto(
   sessionId: string
 ): Promise<LatestPhotoResponse> {
-  await delay(800);
-
+  const res = await fetch(`${API_BASE}/latest-photo?sessionId=${sessionId}`);
+  if (!res.ok) throw new Error("Erreur lors de la récupération");
+  const data = await res.json();
   return {
-    sessionId,
-    photos: [placeholderPhoto(sessionId, 1)],
-    finalImage: placeholderPhoto(sessionId, 1),
-    qrUrl: `https://example.com/download/${sessionId}`,
+    ...data,
+    photos: (data.photos as string[]).map(buildImageUrl),
+    finalImage: buildImageUrl(data.finalImage),
   };
 }
 
@@ -66,25 +62,11 @@ export async function sendEmail(
   sessionId: string,
   email: string
 ): Promise<SendEmailResponse> {
-  await delay(1200);
-
-  if (!email || !email.includes("@")) {
-    throw new Error("Adresse e-mail invalide");
-  }
-
-  return {
-    success: true,
-    message: "Photo envoyée",
-  };
+  const res = await fetch(`${API_BASE}/send-email`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId, email }),
+  });
+  if (!res.ok) throw new Error("Erreur lors de l'envoi de l'e-mail");
+  return res.json();
 }
-
-// For real backend, replace with:
-// export async function takePhoto(mode, filter) {
-//   const res = await fetch(`${API_BASE}/take-photo`, {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({ mode, filter }),
-//   });
-//   if (!res.ok) throw new Error("Erreur lors de la capture");
-//   return res.json();
-// }
