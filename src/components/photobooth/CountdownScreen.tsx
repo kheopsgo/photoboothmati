@@ -26,12 +26,16 @@ export default function CountdownScreen() {
 
   useEffect(() => {
     if (count <= 0) {
-      triggerCapture();
       return;
     }
 
     if (count === 2) {
       setShowSmile(true);
+    }
+
+    // Déclenche la capture quand il reste 1 seconde pour compenser la latence
+    if (count === 1) {
+      triggerCapture();
     }
 
     const timer = setTimeout(() => {
