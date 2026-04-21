@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { X, Camera, Grid2X2, Frame, Palette, Type } from "lucide-react";
+import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2 } from "lucide-react";
 import type { EventConfig } from "@/config/eventConfig";
+import { configureWifi } from "@/services/api";
 
 const FRAME_STYLES: { id: EventConfig["frameStyle"]; label: string }[] = [
   { id: "elegant", label: "Élégant" },
@@ -102,6 +103,11 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
             )}
+          </Section>
+
+          {/* === WIFI === */}
+          <Section icon={<Wifi size={18} />} title="Wi-Fi">
+            <WifiSettings />
           </Section>
 
           {/* === EVENT CONFIG === */}
@@ -215,6 +221,81 @@ function ToggleRow({
         />
       </div>
     </button>
+  );
+}
+
+function WifiSettings() {
+  const [ssid, setSsid] = useState("");
+  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleConnect = async () => {
+    if (!ssid.trim()) return;
+    setStatus("loading");
+    setErrorMessage("");
+    try {
+      await configureWifi(ssid.trim(), password);
+      setStatus("success");
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Erreur lors de la connexion Wi-Fi");
+      setStatus("error");
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="p-3 rounded-lg bg-muted/50 border border-border">
+        <p className="font-body text-xs text-muted-foreground leading-relaxed">
+          ⚠️ La connexion peut être temporairement interrompue pendant le changement de réseau.
+        </p>
+      </div>
+
+      <InputField
+        label="Nom du Wi-Fi"
+        placeholder="MonReseauWifi"
+        value={ssid}
+        onChange={setSsid}
+      />
+
+      <div className="space-y-1">
+        <label className="font-body text-sm font-medium text-foreground">Mot de passe</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          className="w-full h-12 rounded-lg border border-border bg-background px-3 text-sm font-body text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none transition-colors"
+        />
+      </div>
+
+      <button
+        onClick={handleConnect}
+        disabled={status === "loading" || !ssid.trim()}
+        className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-body text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        {status === "loading" ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Connexion en cours...
+          </>
+        ) : (
+          "Connecter"
+        )}
+      </button>
+
+      {status === "success" && (
+        <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+          <p className="font-body text-sm text-foreground">✓ Connexion Wi-Fi réussie !</p>
+        </div>
+      )}
+
+      {status === "error" && (
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+          <p className="font-body text-sm text-destructive">{errorMessage || "Erreur lors de la connexion Wi-Fi"}</p>
+        </div>
+      )}
+    </div>
   );
 }
 

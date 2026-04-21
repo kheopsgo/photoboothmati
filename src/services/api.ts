@@ -65,6 +65,37 @@ export async function getLatestPhoto(
   };
 }
 
+export interface WifiConfigResponse {
+  success: boolean;
+  message?: string;
+}
+
+export async function configureWifi(
+  ssid: string,
+  password: string
+): Promise<WifiConfigResponse> {
+  const res = await fetch(`${API_BASE}/wifi-config`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ssid, password }),
+  });
+  if (!res.ok) {
+    let backendMessage = "";
+    try {
+      const data = await res.json();
+      backendMessage = data?.message || data?.error || "";
+    } catch {
+      try {
+        backendMessage = await res.text();
+      } catch {
+        // ignore
+      }
+    }
+    throw new Error(backendMessage || "Erreur lors de la connexion Wi-Fi");
+  }
+  return res.json();
+}
+
 export async function sendEmail(
   email: string,
   image: string
