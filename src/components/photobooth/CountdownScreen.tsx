@@ -77,8 +77,8 @@ export default function CountdownScreen() {
 
       {/* Progress for multi-shot */}
       {mode === "four" && (
-        <div className="absolute top-12 left-0 right-0 text-center animate-float-up">
-          <p className="font-display text-2xl text-muted-foreground">
+        <div className="absolute top-12 left-0 right-0 text-center animate-float-up z-10">
+          <p className="font-display text-2xl text-white/90 drop-shadow-lg">
             Photo {currentShot} sur {totalShots}
           </p>
           <div className="flex gap-2 justify-center mt-3">
@@ -86,7 +86,7 @@ export default function CountdownScreen() {
               <div
                 key={i}
                 className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                  i < currentShot ? "bg-primary" : "bg-border"
+                  i < currentShot ? "bg-primary" : "bg-white/40"
                 }`}
               />
             ))}
@@ -98,9 +98,9 @@ export default function CountdownScreen() {
       {count > 0 && (
         <div
           key={`${captureProgress}-${count}`}
-          className={exiting ? "animate-countdown-exit" : "animate-countdown-pop"}
+          className={`relative z-10 ${exiting ? "animate-countdown-exit" : "animate-countdown-pop"}`}
         >
-          <span className="font-display text-[12rem] font-light text-primary leading-none select-none">
+          <span className="font-display text-[12rem] font-light text-white leading-none select-none drop-shadow-2xl">
             {count}
           </span>
         </div>
@@ -108,7 +108,7 @@ export default function CountdownScreen() {
 
       {/* Smile prompt */}
       {showSmile && count > 0 && (
-        <p className="font-display text-3xl text-muted-foreground italic animate-float-up mt-4">
+        <p className="font-display text-3xl text-white/90 italic animate-float-up mt-4 z-10 drop-shadow-lg">
           Souriez
         </p>
       )}
