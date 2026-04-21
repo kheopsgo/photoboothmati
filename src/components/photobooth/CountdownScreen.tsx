@@ -5,15 +5,16 @@ import { useSound } from "@/hooks/useSound";
 import { API_BASE } from "@/services/api";
 import { startEarlyCapture, clearPendingCapture } from "@/services/captureQueue";
 
-// Visual countdown total: 3s (3 → 2 → 1 → 0, ticking once per second).
-const COUNTDOWN_TOTAL_MS = 3000;
+// Visual countdown total: 5s (5 → 4 → 3 → 2 → 1 → 0, ticking once per second).
+const COUNTDOWN_START = 5;
+const COUNTDOWN_TOTAL_MS = COUNTDOWN_START * 1000;
 const TICK_MS = 1000;
 
 export default function CountdownScreen() {
   const { mode, filter, setScreen, captureProgress } = usePhotobooth();
   const { settings } = useSettings();
   const { playTick, playShutter } = useSound();
-  const [count, setCount] = useState(3);
+  const [count, setCount] = useState(COUNTDOWN_START);
   const [showSmile, setShowSmile] = useState(false);
   const [flash, setFlash] = useState(false);
   const hasTriggeredCapture = useRef(false);
@@ -50,7 +51,7 @@ export default function CountdownScreen() {
   useEffect(() => {
     hasTriggeredCapture.current = false;
     clearPendingCapture();
-    setCount(3);
+    setCount(COUNTDOWN_START);
     setShowSmile(false);
     setFlash(false);
   }, [captureProgress]);
