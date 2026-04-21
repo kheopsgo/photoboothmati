@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSound } from "@/hooks/useSound";
 
@@ -9,19 +9,23 @@ export default function CountdownScreen() {
   const [showSmile, setShowSmile] = useState(false);
   const [flash, setFlash] = useState(false);
   const [exiting, setExiting] = useState(false);
+  const hasTriggeredCapture = useRef(false);
 
   const totalShots = mode === "four" ? 4 : 1;
   const currentShot = captureProgress + 1; // 1-based display
 
   const triggerCapture = useCallback(() => {
+    if (hasTriggeredCapture.current) return;
+    hasTriggeredCapture.current = true;
+
     playShutter();
     setFlash(true);
     setTimeout(() => setFlash(false), 500);
 
-    // Always go to capturing after countdown — CaptureFlow handles the logic
+    // Lance l'écran de capture presque immédiatement pour réellement réduire la latence
     setTimeout(() => {
       setScreen("capturing");
-    }, 1000);
+    }, 120);
   }, [playShutter, setScreen]);
 
   useEffect(() => {
@@ -31,11 +35,8 @@ export default function CountdownScreen() {
 
     if (count === 2) {
       setShowSmile(true);
-    }
-
-    // Déclenche la capture quand il reste 2 secondes pour compenser la latence
-    if (count === 2) {
       triggerCapture();
+      return;
     }
 
     const timer = setTimeout(() => {
