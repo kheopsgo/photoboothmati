@@ -6,7 +6,7 @@ import { API_BASE } from "@/services/api";
 export default function CountdownScreen() {
   const { mode, setScreen, captureProgress } = usePhotobooth();
   const { playTick, playShutter } = useSound();
-  const [count, setCount] = useState(5);
+  const [count, setCount] = useState(3);
   const [showSmile, setShowSmile] = useState(false);
   const [flash, setFlash] = useState(false);
   const [exiting, setExiting] = useState(false);
@@ -22,28 +22,41 @@ export default function CountdownScreen() {
     if (hasTriggeredCapture.current) return;
     hasTriggeredCapture.current = true;
 
+    // Flash + shutter sound fire at the exact moment the capture API is called
     playShutter();
     setFlash(true);
-    setTimeout(() => setFlash(false), 500);
+    setTimeout(() => setFlash(false), 180);
 
-    setTimeout(() => {
-      setScreen("capturing");
-    }, 120);
+    // Navigate to capturing screen which performs the /take-photo request
+    setScreen("capturing");
   }, [playShutter, setScreen]);
 
   useEffect(() => {
     setIsStreamMounted(Boolean(streamImgRef.current));
   }, []);
 
+  // Reset capture trigger + countdown between shots (4-photo mode)
+  useEffect(() => {
+    hasTriggeredCapture.current = false;
+    setCount(3);
+    setShowSmile(false);
+    setFlash(false);
+  }, [captureProgress]);
+
   useEffect(() => {
     if (count <= 0) {
       return;
     }
 
-    if (count === 2) {
+    if (count <= 2) {
       setShowSmile(true);
+    }
+
+    // When "1" is displayed, trigger the actual capture (API + flash + shutter)
+    // immediately to compensate for camera latency. Visually the countdown still
+    // ticks to 0 so the user perceives the photo being taken at "0".
+    if (count === 1 && !hasTriggeredCapture.current) {
       triggerCapture();
-      return;
     }
 
     const timer = setTimeout(() => {
