@@ -23,7 +23,7 @@ function ChampagneBubble({ size, left, delay, duration, wobble }: BubbleProps) {
       }}
     >
       <div
-        className="rounded-full bg-primary/[0.12] border border-primary/[0.08]"
+        className="rounded-full bg-primary/30 border border-primary/40 shadow-md shadow-primary/20"
         style={{
           width: size,
           height: size,
@@ -32,10 +32,10 @@ function ChampagneBubble({ size, left, delay, duration, wobble }: BubbleProps) {
       >
         {/* Inner highlight */}
         <div
-          className="absolute rounded-full bg-primary/[0.15]"
+          className="absolute rounded-full bg-primary-foreground/60"
           style={{
-            width: size * 0.3,
-            height: size * 0.3,
+            width: size * 0.35,
+            height: size * 0.35,
             top: size * 0.15,
             left: size * 0.2,
           }}
@@ -48,9 +48,9 @@ function ChampagneBubble({ size, left, delay, duration, wobble }: BubbleProps) {
 function BubblesBackground() {
   const bubbles = useMemo<BubbleProps[]>(() => {
     const result: BubbleProps[] = [];
-    for (let i = 0; i < 18; i++) {
+    for (let i = 0; i < 30; i++) {
       result.push({
-        size: 4 + Math.random() * 10,
+        size: 8 + Math.random() * 16,
         left: 5 + Math.random() * 90,
         delay: Math.random() * 8,
         duration: 5 + Math.random() * 6,
