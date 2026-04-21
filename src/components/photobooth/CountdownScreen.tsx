@@ -52,10 +52,10 @@ export default function CountdownScreen() {
       setShowSmile(true);
     }
 
-    // When "1" is displayed, trigger the actual capture (API + flash + shutter)
+    // When "2" is displayed, trigger the actual capture (API + flash + shutter)
     // immediately to compensate for camera latency. Visually the countdown still
     // ticks to 0 so the user perceives the photo being taken at "0".
-    if (count === 1 && !hasTriggeredCapture.current) {
+    if (count === 2 && !hasTriggeredCapture.current) {
       triggerCapture();
     }
 
