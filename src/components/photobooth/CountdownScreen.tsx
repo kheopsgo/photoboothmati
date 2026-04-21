@@ -36,7 +36,6 @@ export default function CountdownScreen() {
     if (hasTriggeredCapture.current) return;
     hasTriggeredCapture.current = true;
 
-    playShutter();
     setFlash(true);
     setTimeout(() => setFlash(false), 180);
 
@@ -45,7 +44,7 @@ export default function CountdownScreen() {
     startEarlyCapture(filter).catch(() => {
       // Errors are surfaced/handled by CaptureFlow when it awaits the promise.
     });
-  }, [playShutter, filter]);
+  }, [filter]);
 
   // Reset state between shots (4-photo mode) when captureProgress changes.
   useEffect(() => {
