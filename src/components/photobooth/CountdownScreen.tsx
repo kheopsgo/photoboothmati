@@ -1,16 +1,21 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { useSound } from "@/hooks/useSound";
 import { API_BASE } from "@/services/api";
+import { startEarlyCapture, clearPendingCapture } from "@/services/captureQueue";
+
+// Visual countdown total: 3s (3 → 2 → 1 → 0, ticking once per second).
+const COUNTDOWN_TOTAL_MS = 3000;
+const TICK_MS = 1000;
 
 export default function CountdownScreen() {
-  const { mode, setScreen, captureProgress } = usePhotobooth();
+  const { mode, filter, setScreen, captureProgress } = usePhotobooth();
+  const { settings } = useSettings();
   const { playTick, playShutter } = useSound();
   const [count, setCount] = useState(3);
   const [showSmile, setShowSmile] = useState(false);
   const [flash, setFlash] = useState(false);
-  const [exiting, setExiting] = useState(false);
-  const [isStreamMounted, setIsStreamMounted] = useState(false);
   const hasTriggeredCapture = useRef(false);
   const streamImgRef = useRef<HTMLImageElement | null>(null);
 
@@ -18,52 +23,59 @@ export default function CountdownScreen() {
   const currentShot = captureProgress + 1;
   const streamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
 
-  // Offset (ms) before the visual end of the countdown at which the real
-  // capture is triggered, to compensate for camera latency. The visible
-  // countdown (3 → 2 → 1 → 0) is NOT affected by this value.
-  const CAPTURE_OFFSET_MS = 1500;
-  const COUNTDOWN_TOTAL_MS = 3000; // 3 seconds: 3 → 2 → 1 → 0
+  // Configurable latency offset (ms). Real /take-photo fires this many ms
+  // before the end of the visible countdown. Visible countdown is unaffected.
+  const captureOffsetMs = Math.max(
+    0,
+    Math.min(COUNTDOWN_TOTAL_MS, settings.captureOffsetMs ?? 1500)
+  );
 
+  // Fires the real capture (API call + flash + sound). Independent from the
+  // visible countdown number — driven by a separate setTimeout.
   const triggerCapture = useCallback(() => {
     if (hasTriggeredCapture.current) return;
     hasTriggeredCapture.current = true;
 
-    // Flash + shutter sound fire at the exact moment the capture API is called
     playShutter();
     setFlash(true);
     setTimeout(() => setFlash(false), 180);
 
-    // Navigate to capturing screen which performs the /take-photo request
-    setScreen("capturing");
-  }, [playShutter, setScreen]);
+    // Start the /take-photo request in the background. CaptureFlow will await
+    // this same promise instead of issuing a new request.
+    startEarlyCapture(filter).catch(() => {
+      // Errors are surfaced/handled by CaptureFlow when it awaits the promise.
+    });
+  }, [playShutter, filter]);
 
-  useEffect(() => {
-    setIsStreamMounted(Boolean(streamImgRef.current));
-  }, []);
-
-  // Reset capture trigger + countdown between shots (4-photo mode)
+  // Reset state between shots (4-photo mode) when captureProgress changes.
   useEffect(() => {
     hasTriggeredCapture.current = false;
+    clearPendingCapture();
     setCount(3);
     setShowSmile(false);
     setFlash(false);
   }, [captureProgress]);
 
   // Schedule the real capture independently from the visual countdown.
-  // This way the user always sees 3 → 2 → 1 → 0, while the API call fires
-  // earlier (COUNTDOWN_TOTAL_MS - CAPTURE_OFFSET_MS) to compensate for latency.
+  // The visible countdown is NEVER tied to this timer — it always runs the
+  // full 3 → 2 → 1 → 0 sequence regardless of when capture is triggered.
   useEffect(() => {
-    const captureDelay = Math.max(0, COUNTDOWN_TOTAL_MS - CAPTURE_OFFSET_MS);
+    const captureDelay = Math.max(0, COUNTDOWN_TOTAL_MS - captureOffsetMs);
     const captureTimer = setTimeout(() => {
       triggerCapture();
     }, captureDelay);
     return () => clearTimeout(captureTimer);
-  }, [captureProgress, triggerCapture]);
+  }, [captureProgress, triggerCapture, captureOffsetMs]);
 
   // Pure visual countdown — drives only what's displayed on screen.
+  // After reaching 0, navigate to capturing screen which will await the
+  // already-in-flight (or fresh) /take-photo promise.
   useEffect(() => {
     if (count <= 0) {
-      return;
+      const navTimer = setTimeout(() => {
+        setScreen("capturing");
+      }, 250);
+      return () => clearTimeout(navTimer);
     }
 
     if (count <= 2) {
@@ -71,16 +83,12 @@ export default function CountdownScreen() {
     }
 
     const timer = setTimeout(() => {
-      setExiting(true);
-      setTimeout(() => {
-        setExiting(false);
-        playTick();
-        setCount((c) => c - 1);
-      }, 250);
-    }, 1000);
+      playTick();
+      setCount((c) => c - 1);
+    }, TICK_MS);
 
     return () => clearTimeout(timer);
-  }, [count, playTick]);
+  }, [count, playTick, setScreen]);
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-background">
@@ -136,7 +144,7 @@ export default function CountdownScreen() {
       {count > 0 && (
         <div
           key={`${captureProgress}-${count}`}
-          className={`relative z-30 ${exiting ? "animate-countdown-exit" : "animate-countdown-pop"}`}
+          className="relative z-30 animate-countdown-pop"
         >
           <span className="select-none font-display text-[12rem] font-light leading-none text-primary drop-shadow-lg">
             {count}

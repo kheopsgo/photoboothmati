@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { takePhoto } from "@/services/api";
+import { consumePendingCapture } from "@/services/captureQueue";
 import { Loader2 } from "lucide-react";
 
 export default function CaptureFlow() {
@@ -12,8 +13,10 @@ export default function CaptureFlow() {
 
     async function capture() {
       try {
-        // Always call backend with mode "single" for real capture
-        const result = await takePhoto("single", filter);
+        // Reuse the early-fired capture promise if available (countdown
+        // started it before reaching 0 to compensate for camera latency).
+        const pending = consumePendingCapture();
+        const result = await (pending ?? takePhoto("single", filter));
         if (cancelled) return;
 
         if (result.qrUrl) setQrUrl(result.qrUrl);
