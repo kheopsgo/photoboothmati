@@ -105,6 +105,7 @@ export default function CountdownScreen() {
           alt=""
           aria-hidden="true"
           className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl brightness-75"
+          style={{ transform: "scaleX(-1) scale(1.1)" }}
           loading="eager"
         />
         <div className="absolute inset-0 bg-background/30" />
@@ -116,7 +117,7 @@ export default function CountdownScreen() {
             src={streamUrl}
             alt="Aperçu caméra en direct"
             className="max-h-full max-w-full h-auto w-auto object-contain drop-shadow-2xl"
-            style={{ transform: "none" }}
+            style={{ transform: "scaleX(-1)" }}
             loading="eager"
           />
         </div>
