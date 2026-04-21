@@ -35,6 +35,14 @@ export default function CountdownScreen() {
     setIsStreamMounted(Boolean(streamImgRef.current));
   }, []);
 
+  // Reset capture trigger + countdown between shots (4-photo mode)
+  useEffect(() => {
+    hasTriggeredCapture.current = false;
+    setCount(3);
+    setShowSmile(false);
+    setFlash(false);
+  }, [captureProgress]);
+
   useEffect(() => {
     if (count <= 0) {
       return;
