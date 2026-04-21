@@ -1,6 +1,10 @@
 // Configurable via VITE_API_BASE env var or defaults to same-network Raspberry Pi
 export const API_BASE = import.meta.env.VITE_API_BASE || "http://10.10.10.191:5000";
 
+// URL du flux MJPEG live de la caméra (Raspberry Pi). Configurable via VITE_STREAM_URL.
+export const STREAM_URL =
+  import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
+
 export type PhotoMode = "single" | "four";
 export type PhotoFilter = "none" | "bw" | "sepia";
 
