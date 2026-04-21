@@ -71,6 +71,7 @@ export default function CountdownScreen() {
   // already-in-flight (or fresh) /take-photo promise.
   useEffect(() => {
     if (count <= 0) {
+      playShutter();
       const navTimer = setTimeout(() => {
         setScreen("capturing");
       }, 250);
@@ -87,7 +88,7 @@ export default function CountdownScreen() {
     }, TICK_MS);
 
     return () => clearTimeout(timer);
-  }, [count, playTick, setScreen]);
+  }, [count, playTick, playShutter, setScreen]);
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-background">
