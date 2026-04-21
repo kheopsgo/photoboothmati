@@ -66,13 +66,13 @@ export async function getLatestPhoto(
 }
 
 export async function sendEmail(
-  sessionId: string,
-  email: string
+  email: string,
+  image: string
 ): Promise<SendEmailResponse> {
   const res = await fetch(`${API_BASE}/send-email`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sessionId, email }),
+    body: JSON.stringify({ email, image }),
   });
   if (!res.ok) throw new Error("Erreur lors de l'envoi de l'e-mail");
   return res.json();

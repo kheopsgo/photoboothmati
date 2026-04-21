@@ -35,7 +35,7 @@ function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onCom
 }
 
 export default function ResultScreen() {
-  const { mode, photos, finalImage, qrUrl, sessionId, restart } = usePhotobooth();
+  const { mode, photos, finalImage, qrUrl, restart } = usePhotobooth();
   const { settings } = useSettings();
   const { playSuccess } = useSound();
 
@@ -59,7 +59,9 @@ export default function ResultScreen() {
     setEmailError("");
     setEmailStatus("sending");
     try {
-      await sendEmail(sessionId!, email);
+      const imageToSend = finalImage || photos[0];
+      if (!imageToSend) throw new Error("Aucune image à envoyer");
+      await sendEmail(email, imageToSend);
       setEmailStatus("sent");
       playSuccess();
     } catch {
