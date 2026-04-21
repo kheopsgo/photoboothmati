@@ -42,6 +42,7 @@ export default function ResultScreen() {
   const [panel, setPanel] = useState<Panel>("none");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [sendErrorMessage, setSendErrorMessage] = useState("");
   const [emailStatus, setEmailStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   const handleRestart = () => {
@@ -57,6 +58,7 @@ export default function ResultScreen() {
       return;
     }
     setEmailError("");
+    setSendErrorMessage("");
     setEmailStatus("sending");
     try {
       const imageToSend = finalImage || photos[0];
@@ -64,7 +66,10 @@ export default function ResultScreen() {
       await sendEmail(email, imageToSend);
       setEmailStatus("sent");
       playSuccess();
-    } catch {
+    } catch (err) {
+      setSendErrorMessage(
+        err instanceof Error && err.message ? err.message : "Erreur lors de l'envoi de l'e-mail"
+      );
       setEmailStatus("error");
     }
   };
@@ -161,7 +166,7 @@ export default function ResultScreen() {
                 {emailStatus === "error" && (
                   <p className="text-destructive text-sm mt-2 flex items-center gap-1">
                     <AlertCircle size={14} />
-                    Erreur lors de l'envoi. Veuillez réessayer.
+                    {sendErrorMessage || "Erreur lors de l'envoi de l'e-mail"}
                   </p>
                 )}
               </div>
