@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSound } from "@/hooks/useSound";
+import { STREAM_URL } from "@/services/api";
 
 export default function CountdownScreen() {
   const { mode, setScreen, captureProgress } = usePhotobooth();
@@ -52,7 +53,23 @@ export default function CountdownScreen() {
   }, [count, playTick, triggerCapture]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-background">
+      {/* Live MJPEG preview */}
+      {!flash && (
+        <>
+          <img
+            src={STREAM_URL}
+            alt="Aperçu caméra en direct"
+            className="absolute inset-0 w-full h-full object-cover z-0"
+          />
+          <div className="absolute top-4 left-4 z-40 px-3 py-1 rounded-full bg-primary/80 text-primary-foreground font-display text-sm">
+            Aperçu caméra actif
+          </div>
+          {/* Subtle dark overlay to keep countdown legible */}
+          <div className="absolute inset-0 bg-background/30 z-10" />
+        </>
+      )}
+
       {/* Flash overlay */}
       {flash && (
         <div className="absolute inset-0 bg-primary-foreground z-50 animate-flash" />
