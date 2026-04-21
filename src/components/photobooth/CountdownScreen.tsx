@@ -77,7 +77,7 @@ export default function CountdownScreen() {
 
       {/* Progress for multi-shot */}
       {mode === "four" && (
-        <div className="absolute top-12 left-0 right-0 text-center animate-float-up">
+        <div className="absolute top-12 left-0 right-0 text-center animate-float-up z-30">
           <p className="font-display text-2xl text-muted-foreground">
             Photo {currentShot} sur {totalShots}
           </p>
@@ -98,9 +98,9 @@ export default function CountdownScreen() {
       {count > 0 && (
         <div
           key={`${captureProgress}-${count}`}
-          className={exiting ? "animate-countdown-exit" : "animate-countdown-pop"}
+          className={`relative z-30 ${exiting ? "animate-countdown-exit" : "animate-countdown-pop"}`}
         >
-          <span className="font-display text-[12rem] font-light text-primary leading-none select-none">
+          <span className="font-display text-[12rem] font-light text-primary leading-none select-none drop-shadow-lg">
             {count}
           </span>
         </div>
@@ -108,13 +108,13 @@ export default function CountdownScreen() {
 
       {/* Smile prompt */}
       {showSmile && count > 0 && (
-        <p className="font-display text-3xl text-muted-foreground italic animate-float-up mt-4">
+        <p className="font-display text-3xl text-muted-foreground italic animate-float-up mt-4 relative z-30">
           Souriez
         </p>
       )}
 
       {count <= 0 && !flash && (
-        <div className="animate-countdown-pop">
+        <div className="animate-countdown-pop relative z-30">
           <span className="font-display text-6xl text-primary">📸</span>
         </div>
       )}
