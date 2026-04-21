@@ -61,7 +61,7 @@ export default function CountdownScreen() {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-background">
       <div
-        className={`absolute inset-0 z-0 overflow-hidden border-4 border-primary/70 transition-opacity duration-200 pointer-events-none ${
+        className={`absolute inset-0 z-0 flex items-center justify-center bg-black border-4 border-primary/70 transition-opacity duration-200 pointer-events-none ${
           flash ? "opacity-0" : "opacity-100"
         }`}
         aria-hidden={flash}
@@ -70,15 +70,15 @@ export default function CountdownScreen() {
           ref={streamImgRef}
           src={streamUrl}
           alt="Aperçu caméra en direct"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="max-h-full max-w-full h-auto w-auto object-contain"
+          style={{ transform: "none" }}
           loading="eager"
         />
-        <div className="absolute inset-0 bg-background/25" />
       </div>
 
       {isStreamMounted && !flash && (
         <div className="absolute left-4 top-4 z-40 rounded-md border border-primary/40 bg-background/80 px-3 py-2 backdrop-blur-sm">
-          <p className="font-display text-sm text-foreground">Aperçu caméra actif</p>
+          <p className="font-display text-sm text-foreground">Prévisualisation complète</p>
         </div>
       )}
 
