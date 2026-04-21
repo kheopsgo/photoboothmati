@@ -14,7 +14,7 @@ export default function CountdownScreen() {
   const { mode, filter, setScreen, captureProgress } = usePhotobooth();
   const { settings } = useSettings();
   const { playTick, playShutter } = useSound();
-  const [count, setCount] = useState(3);
+  const [count, setCount] = useState(COUNTDOWN_START);
   const [showSmile, setShowSmile] = useState(false);
   const [flash, setFlash] = useState(false);
   const hasTriggeredCapture = useRef(false);
@@ -51,7 +51,7 @@ export default function CountdownScreen() {
   useEffect(() => {
     hasTriggeredCapture.current = false;
     clearPendingCapture();
-    setCount(3);
+    setCount(COUNTDOWN_START);
     setShowSmile(false);
     setFlash(false);
   }, [captureProgress]);
