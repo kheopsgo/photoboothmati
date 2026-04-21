@@ -44,18 +44,19 @@ export default function CountdownScreen() {
       setShowSmile(true);
     }
 
+    // When "1" is displayed, trigger the actual capture (API + flash + shutter)
+    // immediately to compensate for camera latency. Visually the countdown still
+    // ticks to 0 so the user perceives the photo being taken at "0".
+    if (count === 1 && !hasTriggeredCapture.current) {
+      triggerCapture();
+    }
+
     const timer = setTimeout(() => {
       setExiting(true);
       setTimeout(() => {
         setExiting(false);
         playTick();
-        const next = count - 1;
-        setCount(next);
-        // Trigger the actual capture when transitioning from 1 → 0
-        // so the photo is taken right as the user perceives "0".
-        if (next === 0) {
-          triggerCapture();
-        }
+        setCount((c) => c - 1);
       }, 250);
     }, 1000);
 
