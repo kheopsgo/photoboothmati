@@ -33,8 +33,8 @@ export default function CountdownScreen() {
       setShowSmile(true);
     }
 
-    // Déclenche la capture quand il reste 1 seconde pour compenser la latence
-    if (count === 1) {
+    // Déclenche la capture quand il reste 2 secondes pour compenser la latence
+    if (count === 2) {
       triggerCapture();
     }
 
