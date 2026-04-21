@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2 } from "lucide-react";
+import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal } from "lucide-react";
 import type { EventConfig } from "@/config/eventConfig";
-import { configureWifi } from "@/services/api";
+import { configureWifi, getWifiNetworks, type WifiNetwork } from "@/services/api";
 
 const FRAME_STYLES: { id: EventConfig["frameStyle"]; label: string }[] = [
   { id: "elegant", label: "Élégant" },
