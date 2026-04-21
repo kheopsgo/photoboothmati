@@ -70,6 +70,36 @@ export interface WifiConfigResponse {
   message?: string;
 }
 
+export interface WifiNetwork {
+  ssid: string;
+  signal: string;
+  security: string;
+}
+
+export interface WifiNetworksResponse {
+  success: boolean;
+  networks: WifiNetwork[];
+}
+
+export async function getWifiNetworks(): Promise<WifiNetworksResponse> {
+  const res = await fetch(`${API_BASE}/wifi-networks`);
+  if (!res.ok) {
+    let backendMessage = "";
+    try {
+      const data = await res.json();
+      backendMessage = data?.message || data?.error || "";
+    } catch {
+      try {
+        backendMessage = await res.text();
+      } catch {
+        // ignore
+      }
+    }
+    throw new Error(backendMessage || "Erreur lors du chargement des réseaux Wi-Fi");
+  }
+  return res.json();
+}
+
 export async function configureWifi(
   ssid: string,
   password: string

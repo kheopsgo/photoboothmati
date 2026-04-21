@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2 } from "lucide-react";
+import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal } from "lucide-react";
 import type { EventConfig } from "@/config/eventConfig";
-import { configureWifi } from "@/services/api";
+import { configureWifi, getWifiNetworks, type WifiNetwork } from "@/services/api";
 
 const FRAME_STYLES: { id: EventConfig["frameStyle"]; label: string }[] = [
   { id: "elegant", label: "Élégant" },
@@ -224,11 +224,54 @@ function ToggleRow({
   );
 }
 
+function signalBars(signalStr: string): number {
+  const n = parseInt(signalStr, 10);
+  if (isNaN(n)) return 0;
+  if (n >= 75) return 4;
+  if (n >= 50) return 3;
+  if (n >= 25) return 2;
+  if (n > 0) return 1;
+  return 0;
+}
+
 function WifiSettings() {
   const [ssid, setSsid] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+
+  const [networks, setNetworks] = useState<WifiNetwork[]>([]);
+  const [networksStatus, setNetworksStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [networksError, setNetworksError] = useState("");
+
+  const loadNetworks = useCallback(async () => {
+    setNetworksStatus("loading");
+    setNetworksError("");
+    try {
+      const data = await getWifiNetworks();
+      // Deduplicate by SSID, keep strongest signal
+      const map = new Map<string, WifiNetwork>();
+      for (const n of data.networks || []) {
+        if (!n.ssid) continue;
+        const existing = map.get(n.ssid);
+        if (!existing || parseInt(n.signal, 10) > parseInt(existing.signal, 10)) {
+          map.set(n.ssid, n);
+        }
+      }
+      const list = Array.from(map.values()).sort(
+        (a, b) => parseInt(b.signal, 10) - parseInt(a.signal, 10)
+      );
+      setNetworks(list);
+      setNetworksStatus("idle");
+    } catch (err) {
+      setNetworksError(err instanceof Error ? err.message : "Erreur lors du chargement des réseaux Wi-Fi");
+      setNetworksStatus("error");
+    }
+  }, []);
+
+  useEffect(() => {
+    loadNetworks();
+  }, [loadNetworks]);
 
   const handleConnect = async () => {
     if (!ssid.trim()) return;
@@ -243,12 +286,103 @@ function WifiSettings() {
     }
   };
 
+  const isConnecting = status === "loading";
+
   return (
     <div className="space-y-4">
       <div className="p-3 rounded-lg bg-muted/50 border border-border">
         <p className="font-body text-xs text-muted-foreground leading-relaxed">
           ⚠️ La connexion peut être temporairement interrompue pendant le changement de réseau.
         </p>
+      </div>
+
+      {/* Available networks */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="font-body text-sm font-medium text-foreground">
+            Réseaux Wi-Fi disponibles
+          </label>
+          <button
+            onClick={loadNetworks}
+            disabled={networksStatus === "loading" || isConnecting}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-muted/80 transition-colors text-xs font-body font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw size={14} className={networksStatus === "loading" ? "animate-spin" : ""} />
+            Actualiser
+          </button>
+        </div>
+
+        <div className="rounded-lg border border-border bg-card divide-y divide-border max-h-72 overflow-y-auto">
+          {networksStatus === "loading" && networks.length === 0 && (
+            <div className="flex items-center justify-center gap-2 p-6 text-muted-foreground">
+              <Loader2 size={16} className="animate-spin" />
+              <span className="font-body text-sm">Recherche des réseaux...</span>
+            </div>
+          )}
+
+          {networksStatus === "error" && networks.length === 0 && (
+            <div className="p-4">
+              <p className="font-body text-sm text-destructive">
+                {networksError || "Erreur lors du chargement des réseaux Wi-Fi"}
+              </p>
+            </div>
+          )}
+
+          {networksStatus !== "loading" && networks.length === 0 && networksStatus !== "error" && (
+            <div className="p-4">
+              <p className="font-body text-sm text-muted-foreground text-center">
+                Aucun réseau détecté
+              </p>
+            </div>
+          )}
+
+          {networks.map((net) => {
+            const bars = signalBars(net.signal);
+            const isSelected = ssid === net.ssid;
+            return (
+              <button
+                key={net.ssid}
+                onClick={() => setSsid(net.ssid)}
+                disabled={isConnecting}
+                className={`w-full flex items-center justify-between gap-3 p-4 text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isSelected ? "bg-primary/10" : "hover:bg-muted/50"
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="flex items-end gap-0.5 h-5 shrink-0">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className={`w-1 rounded-sm ${
+                          i <= bars ? "bg-primary" : "bg-border"
+                        }`}
+                        style={{ height: `${i * 25}%` }}
+                      />
+                    ))}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-body text-sm font-medium text-foreground truncate">
+                      {net.ssid}
+                    </p>
+                    <p className="font-body text-xs text-muted-foreground flex items-center gap-2">
+                      <span className="flex items-center gap-1">
+                        <Lock size={10} />
+                        {net.security || "Ouvert"}
+                      </span>
+                      <span>•</span>
+                      <span>Signal {net.signal}%</span>
+                    </p>
+                  </div>
+                </div>
+                {isSelected && (
+                  <span className="shrink-0 text-xs font-body font-medium text-primary">
+                    Sélectionné
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <InputField
@@ -265,16 +399,17 @@ function WifiSettings() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
-          className="w-full h-12 rounded-lg border border-border bg-background px-3 text-sm font-body text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none transition-colors"
+          disabled={isConnecting}
+          className="w-full h-12 rounded-lg border border-border bg-background px-3 text-sm font-body text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
 
       <button
         onClick={handleConnect}
-        disabled={status === "loading" || !ssid.trim()}
+        disabled={isConnecting || !ssid.trim()}
         className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-body text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
-        {status === "loading" ? (
+        {isConnecting ? (
           <>
             <Loader2 size={16} className="animate-spin" />
             Connexion en cours...
