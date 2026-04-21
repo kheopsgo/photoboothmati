@@ -52,23 +52,7 @@ export default function CountdownScreen() {
   }, [count, playTick, triggerCapture]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-black">
-      {/* Aperçu live de la caméra (masqué pendant le flash) */}
-      {!flash && (
-        <img
-          src={STREAM_URL}
-          alt="Aperçu en direct"
-          className="absolute inset-0 w-full h-full object-cover opacity-90"
-          onError={(e) => {
-            // Si le flux n'est pas disponible, on masque proprement l'image
-            (e.currentTarget as HTMLImageElement).style.display = "none";
-          }}
-        />
-      )}
-
-      {/* Voile sombre pour la lisibilité du compte à rebours */}
-      {!flash && <div className="absolute inset-0 bg-black/30 z-0" />}
-
+    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden">
       {/* Flash overlay */}
       {flash && (
         <div className="absolute inset-0 bg-primary-foreground z-50 animate-flash" />
@@ -76,8 +60,8 @@ export default function CountdownScreen() {
 
       {/* Progress for multi-shot */}
       {mode === "four" && (
-        <div className="absolute top-12 left-0 right-0 text-center animate-float-up z-10">
-          <p className="font-display text-2xl text-white/90 drop-shadow-lg">
+        <div className="absolute top-12 left-0 right-0 text-center animate-float-up">
+          <p className="font-display text-2xl text-muted-foreground">
             Photo {currentShot} sur {totalShots}
           </p>
           <div className="flex gap-2 justify-center mt-3">
@@ -85,7 +69,7 @@ export default function CountdownScreen() {
               <div
                 key={i}
                 className={`w-3 h-3 rounded-full transition-colors duration-300 ${
-                  i < currentShot ? "bg-primary" : "bg-white/40"
+                  i < currentShot ? "bg-primary" : "bg-border"
                 }`}
               />
             ))}
@@ -97,9 +81,9 @@ export default function CountdownScreen() {
       {count > 0 && (
         <div
           key={`${captureProgress}-${count}`}
-          className={`relative z-10 ${exiting ? "animate-countdown-exit" : "animate-countdown-pop"}`}
+          className={exiting ? "animate-countdown-exit" : "animate-countdown-pop"}
         >
-          <span className="font-display text-[12rem] font-light text-white leading-none select-none drop-shadow-2xl">
+          <span className="font-display text-[12rem] font-light text-primary leading-none select-none">
             {count}
           </span>
         </div>
@@ -107,7 +91,7 @@ export default function CountdownScreen() {
 
       {/* Smile prompt */}
       {showSmile && count > 0 && (
-        <p className="font-display text-3xl text-white/90 italic animate-float-up mt-4 z-10 drop-shadow-lg">
+        <p className="font-display text-3xl text-muted-foreground italic animate-float-up mt-4">
           Souriez
         </p>
       )}
