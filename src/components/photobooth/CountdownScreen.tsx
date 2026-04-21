@@ -5,8 +5,9 @@ import { useSound } from "@/hooks/useSound";
 import { API_BASE } from "@/services/api";
 import { startEarlyCapture, clearPendingCapture } from "@/services/captureQueue";
 
-// Visual countdown total: 3s (3 → 2 → 1 → 0, ticking once per second).
-const COUNTDOWN_TOTAL_MS = 3000;
+// Visual countdown total: 5s (5 → 4 → 3 → 2 → 1 → 0, ticking once per second).
+const COUNTDOWN_START = 5;
+const COUNTDOWN_TOTAL_MS = COUNTDOWN_START * 1000;
 const TICK_MS = 1000;
 
 export default function CountdownScreen() {
