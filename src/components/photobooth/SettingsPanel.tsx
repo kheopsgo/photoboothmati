@@ -461,3 +461,72 @@ function InputField({
     </div>
   );
 }
+
+function CaptureOffsetSetting({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  const MIN = 0;
+  const MAX = 2500;
+  const STEP = 100;
+  const safeValue = Math.max(MIN, Math.min(MAX, Number.isFinite(value) ? value : 1500));
+
+  const handleNumber = (raw: string) => {
+    const n = parseInt(raw, 10);
+    if (Number.isNaN(n)) {
+      onChange(0);
+      return;
+    }
+    const clamped = Math.max(MIN, Math.min(MAX, Math.round(n / STEP) * STEP));
+    onChange(clamped);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="space-y-1">
+        <label className="font-body text-sm font-medium text-foreground">
+          Décalage de déclenchement (ms)
+        </label>
+        <p className="font-body text-xs text-muted-foreground leading-relaxed">
+          Permet de compenser la latence de l'appareil photo. Plus la valeur est élevée,
+          plus le déclenchement réel part tôt avant la fin du décompte.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <input
+          type="range"
+          min={MIN}
+          max={MAX}
+          step={STEP}
+          value={safeValue}
+          onChange={(e) => onChange(parseInt(e.target.value, 10))}
+          className="flex-1 h-2 rounded-full bg-muted accent-primary cursor-pointer touch-manipulation"
+        />
+        <input
+          type="number"
+          min={MIN}
+          max={MAX}
+          step={STEP}
+          value={safeValue}
+          onChange={(e) => handleNumber(e.target.value)}
+          className="w-24 h-11 rounded-lg border border-border bg-background px-3 text-sm font-body text-foreground focus:border-primary focus:outline-none transition-colors text-center"
+        />
+      </div>
+
+      <div className="flex items-center justify-between text-xs font-body text-muted-foreground">
+        <span>{MIN} ms</span>
+        <span>{MAX} ms</span>
+      </div>
+
+      <p className="font-body text-sm text-foreground">
+        {safeValue === 0
+          ? "Déclenchement sans anticipation"
+          : `Le déclenchement réel part ${safeValue} ms avant la fin visuelle du décompte`}
+      </p>
+    </div>
+  );
+}
