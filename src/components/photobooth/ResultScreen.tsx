@@ -166,7 +166,7 @@ export default function ResultScreen() {
                 {emailStatus === "error" && (
                   <p className="text-destructive text-sm mt-2 flex items-center gap-1">
                     <AlertCircle size={14} />
-                    Erreur lors de l'envoi. Veuillez réessayer.
+                    {sendErrorMessage || "Erreur lors de l'envoi de l'e-mail"}
                   </p>
                 )}
               </div>
