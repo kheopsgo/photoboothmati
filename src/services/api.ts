@@ -74,6 +74,19 @@ export async function sendEmail(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, image }),
   });
-  if (!res.ok) throw new Error("Erreur lors de l'envoi de l'e-mail");
+  if (!res.ok) {
+    let backendMessage = "";
+    try {
+      const data = await res.json();
+      backendMessage = data?.message || data?.error || "";
+    } catch {
+      try {
+        backendMessage = await res.text();
+      } catch {
+        // ignore
+      }
+    }
+    throw new Error(backendMessage || "Erreur lors de l'envoi de l'e-mail");
+  }
   return res.json();
 }
