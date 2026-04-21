@@ -53,7 +53,23 @@ export default function CountdownScreen() {
   }, [count, playTick, triggerCapture]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-black">
+      {/* Aperçu live de la caméra (masqué pendant le flash) */}
+      {!flash && (
+        <img
+          src={STREAM_URL}
+          alt="Aperçu en direct"
+          className="absolute inset-0 w-full h-full object-cover opacity-90"
+          onError={(e) => {
+            // Si le flux n'est pas disponible, on masque proprement l'image
+            (e.currentTarget as HTMLImageElement).style.display = "none";
+          }}
+        />
+      )}
+
+      {/* Voile sombre pour la lisibilité du compte à rebours */}
+      {!flash && <div className="absolute inset-0 bg-black/30 z-0" />}
+
       {/* Flash overlay */}
       {flash && (
         <div className="absolute inset-0 bg-primary-foreground z-50 animate-flash" />
