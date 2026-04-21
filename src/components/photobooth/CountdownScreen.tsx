@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSound } from "@/hooks/useSound";
+import { STREAM_URL } from "@/services/api";
 
 export default function CountdownScreen() {
   const { mode, setScreen, captureProgress } = usePhotobooth();
@@ -52,7 +53,23 @@ export default function CountdownScreen() {
   }, [count, playTick, triggerCapture]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-background">
+      {/* Live MJPEG preview */}
+      {!flash && (
+        <>
+          <img
+            src={STREAM_URL}
+            alt="Aperçu caméra en direct"
+            className="absolute inset-0 w-full h-full object-cover z-0"
+          />
+          <div className="absolute top-4 left-4 z-40 px-3 py-1 rounded-full bg-primary/80 text-primary-foreground font-display text-sm">
+            Aperçu caméra actif
+          </div>
+          {/* Subtle dark overlay to keep countdown legible */}
+          <div className="absolute inset-0 bg-background/30 z-10" />
+        </>
+      )}
+
       {/* Flash overlay */}
       {flash && (
         <div className="absolute inset-0 bg-primary-foreground z-50 animate-flash" />
@@ -60,7 +77,7 @@ export default function CountdownScreen() {
 
       {/* Progress for multi-shot */}
       {mode === "four" && (
-        <div className="absolute top-12 left-0 right-0 text-center animate-float-up">
+        <div className="absolute top-12 left-0 right-0 text-center animate-float-up z-30">
           <p className="font-display text-2xl text-muted-foreground">
             Photo {currentShot} sur {totalShots}
           </p>
@@ -81,9 +98,9 @@ export default function CountdownScreen() {
       {count > 0 && (
         <div
           key={`${captureProgress}-${count}`}
-          className={exiting ? "animate-countdown-exit" : "animate-countdown-pop"}
+          className={`relative z-30 ${exiting ? "animate-countdown-exit" : "animate-countdown-pop"}`}
         >
-          <span className="font-display text-[12rem] font-light text-primary leading-none select-none">
+          <span className="font-display text-[12rem] font-light text-primary leading-none select-none drop-shadow-lg">
             {count}
           </span>
         </div>
@@ -91,13 +108,13 @@ export default function CountdownScreen() {
 
       {/* Smile prompt */}
       {showSmile && count > 0 && (
-        <p className="font-display text-3xl text-muted-foreground italic animate-float-up mt-4">
+        <p className="font-display text-3xl text-muted-foreground italic animate-float-up mt-4 relative z-30">
           Souriez
         </p>
       )}
 
       {count <= 0 && !flash && (
-        <div className="animate-countdown-pop">
+        <div className="animate-countdown-pop relative z-30">
           <span className="font-display text-6xl text-primary">📸</span>
         </div>
       )}
