@@ -138,7 +138,7 @@ export default function ResultScreen() {
           {emailStatus === "sent" ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-float-up">
               <CheckCircle size={48} className="text-accent-foreground" />
-              <p className="font-display text-xl text-foreground text-center">Votre photo a bien été envoyée</p>
+              <p className="font-display text-xl text-foreground text-center">Photo envoyée !</p>
               <p className="text-sm text-muted-foreground">{email}</p>
               <AutoRedirectCountdown seconds={10} onComplete={handleRestart} />
             </div>
