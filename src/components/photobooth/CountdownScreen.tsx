@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSound } from "@/hooks/useSound";
+import { STREAM_URL } from "@/services/api";
 
 export default function CountdownScreen() {
   const { mode, setScreen, captureProgress } = usePhotobooth();
