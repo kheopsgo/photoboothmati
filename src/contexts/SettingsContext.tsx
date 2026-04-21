@@ -13,6 +13,8 @@ export interface AppSettings {
   frameEnabled: boolean;
   /** Event config for frame & branding */
   eventConfig: EventConfig;
+  /** Milliseconds the real /take-photo call is fired before the visual end of the countdown */
+  captureOffsetMs: number;
 }
 
 interface SettingsContextType {
@@ -27,6 +29,7 @@ const defaultSettings: AppSettings = {
   filtersEnabled: true,
   frameEnabled: true,
   eventConfig: { ...defaultEventConfig },
+  captureOffsetMs: 1500,
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
