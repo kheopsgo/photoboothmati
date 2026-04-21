@@ -36,7 +36,6 @@ export default function CountdownScreen() {
     if (hasTriggeredCapture.current) return;
     hasTriggeredCapture.current = true;
 
-    playShutter();
     setFlash(true);
     setTimeout(() => setFlash(false), 180);
 
@@ -45,7 +44,7 @@ export default function CountdownScreen() {
     startEarlyCapture(filter).catch(() => {
       // Errors are surfaced/handled by CaptureFlow when it awaits the promise.
     });
-  }, [playShutter, filter]);
+  }, [filter]);
 
   // Reset state between shots (4-photo mode) when captureProgress changes.
   useEffect(() => {
@@ -72,6 +71,7 @@ export default function CountdownScreen() {
   // already-in-flight (or fresh) /take-photo promise.
   useEffect(() => {
     if (count <= 0) {
+      playShutter();
       const navTimer = setTimeout(() => {
         setScreen("capturing");
       }, 250);
@@ -88,7 +88,7 @@ export default function CountdownScreen() {
     }, TICK_MS);
 
     return () => clearTimeout(timer);
-  }, [count, playTick, setScreen]);
+  }, [count, playTick, playShutter, setScreen]);
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-background">
