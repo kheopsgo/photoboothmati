@@ -18,6 +18,12 @@ export default function CountdownScreen() {
   const currentShot = captureProgress + 1;
   const streamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
 
+  // Offset (ms) before the visual end of the countdown at which the real
+  // capture is triggered, to compensate for camera latency. The visible
+  // countdown (3 → 2 → 1 → 0) is NOT affected by this value.
+  const CAPTURE_OFFSET_MS = 1500;
+  const COUNTDOWN_TOTAL_MS = 3000; // 3 seconds: 3 → 2 → 1 → 0
+
   const triggerCapture = useCallback(() => {
     if (hasTriggeredCapture.current) return;
     hasTriggeredCapture.current = true;
@@ -43,6 +49,18 @@ export default function CountdownScreen() {
     setFlash(false);
   }, [captureProgress]);
 
+  // Schedule the real capture independently from the visual countdown.
+  // This way the user always sees 3 → 2 → 1 → 0, while the API call fires
+  // earlier (COUNTDOWN_TOTAL_MS - CAPTURE_OFFSET_MS) to compensate for latency.
+  useEffect(() => {
+    const captureDelay = Math.max(0, COUNTDOWN_TOTAL_MS - CAPTURE_OFFSET_MS);
+    const captureTimer = setTimeout(() => {
+      triggerCapture();
+    }, captureDelay);
+    return () => clearTimeout(captureTimer);
+  }, [captureProgress, triggerCapture]);
+
+  // Pure visual countdown — drives only what's displayed on screen.
   useEffect(() => {
     if (count <= 0) {
       return;
@@ -50,13 +68,6 @@ export default function CountdownScreen() {
 
     if (count <= 2) {
       setShowSmile(true);
-    }
-
-    // When "2" is displayed, trigger the actual capture (API + flash + shutter)
-    // immediately to compensate for camera latency. Visually the countdown still
-    // ticks to 0 so the user perceives the photo being taken at "0".
-    if (count === 2 && !hasTriggeredCapture.current) {
-      triggerCapture();
     }
 
     const timer = setTimeout(() => {
@@ -69,7 +80,7 @@ export default function CountdownScreen() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [count, playTick, triggerCapture]);
+  }, [count, playTick]);
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-background">
