@@ -35,7 +35,7 @@ function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onCom
 }
 
 export default function ResultScreen() {
-  const { mode, photos, finalImage, qrUrl, sessionId, restart } = usePhotobooth();
+  const { mode, photos, finalImage, qrUrl, restart } = usePhotobooth();
   const { settings } = useSettings();
   const { playSuccess } = useSound();
 
@@ -59,7 +59,9 @@ export default function ResultScreen() {
     setEmailError("");
     setEmailStatus("sending");
     try {
-      await sendEmail(sessionId!, email);
+      const imageToSend = finalImage || photos[0];
+      if (!imageToSend) throw new Error("Aucune image à envoyer");
+      await sendEmail(email, imageToSend);
       setEmailStatus("sent");
       playSuccess();
     } catch {
@@ -136,7 +138,7 @@ export default function ResultScreen() {
           {emailStatus === "sent" ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-float-up">
               <CheckCircle size={48} className="text-accent-foreground" />
-              <p className="font-display text-xl text-foreground text-center">Votre photo a bien été envoyée</p>
+              <p className="font-display text-xl text-foreground text-center">Photo envoyée !</p>
               <p className="text-sm text-muted-foreground">{email}</p>
               <AutoRedirectCountdown seconds={10} onComplete={handleRestart} />
             </div>
