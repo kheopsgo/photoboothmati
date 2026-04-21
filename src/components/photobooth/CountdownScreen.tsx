@@ -6,7 +6,7 @@ import { API_BASE } from "@/services/api";
 export default function CountdownScreen() {
   const { mode, setScreen, captureProgress } = usePhotobooth();
   const { playTick, playShutter } = useSound();
-  const [count, setCount] = useState(5);
+  const [count, setCount] = useState(3);
   const [showSmile, setShowSmile] = useState(false);
   const [flash, setFlash] = useState(false);
   const [exiting, setExiting] = useState(false);
@@ -22,13 +22,13 @@ export default function CountdownScreen() {
     if (hasTriggeredCapture.current) return;
     hasTriggeredCapture.current = true;
 
+    // Flash + shutter sound fire at the exact moment the capture API is called
     playShutter();
     setFlash(true);
-    setTimeout(() => setFlash(false), 500);
+    setTimeout(() => setFlash(false), 180);
 
-    setTimeout(() => {
-      setScreen("capturing");
-    }, 120);
+    // Navigate to capturing screen which performs the /take-photo request
+    setScreen("capturing");
   }, [playShutter, setScreen]);
 
   useEffect(() => {
@@ -40,10 +40,8 @@ export default function CountdownScreen() {
       return;
     }
 
-    if (count === 2) {
+    if (count <= 2) {
       setShowSmile(true);
-      triggerCapture();
-      return;
     }
 
     const timer = setTimeout(() => {
@@ -51,7 +49,13 @@ export default function CountdownScreen() {
       setTimeout(() => {
         setExiting(false);
         playTick();
-        setCount((c) => c - 1);
+        const next = count - 1;
+        setCount(next);
+        // Trigger the actual capture when transitioning from 1 → 0
+        // so the photo is taken right as the user perceives "0".
+        if (next === 0) {
+          triggerCapture();
+        }
       }, 250);
     }, 1000);
 
