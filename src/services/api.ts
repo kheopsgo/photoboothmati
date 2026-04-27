@@ -151,3 +151,31 @@ export async function sendEmail(
   }
   return res.json();
 }
+
+export interface PrintPhotoResponse {
+  success: boolean;
+  message?: string;
+}
+
+export async function printPhoto(image: string): Promise<PrintPhotoResponse> {
+  const res = await fetch(`${API_BASE}/print-photo`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ image }),
+  });
+  if (!res.ok) {
+    let backendMessage = "";
+    try {
+      const data = await res.json();
+      backendMessage = data?.message || data?.error || "";
+    } catch {
+      try {
+        backendMessage = await res.text();
+      } catch {
+        // ignore
+      }
+    }
+    throw new Error(backendMessage || "Erreur lors de l'impression");
+  }
+  return res.json();
+}

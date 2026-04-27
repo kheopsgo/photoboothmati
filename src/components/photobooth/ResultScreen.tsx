@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
-import { sendEmail } from "@/services/api";
+import { sendEmail, printPhoto } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { Button } from "@/components/ui/button";
-import { Mail, QrCode, RotateCcw, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
+import { Mail, QrCode, RotateCcw, ArrowLeft, CheckCircle, AlertCircle, Printer } from "lucide-react";
 import PhotoFrame from "./PhotoFrame";
 import VirtualKeyboard from "./VirtualKeyboard";
 
@@ -44,10 +44,27 @@ export default function ResultScreen() {
   const [emailError, setEmailError] = useState("");
   const [sendErrorMessage, setSendErrorMessage] = useState("");
   const [emailStatus, setEmailStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [printStatus, setPrintStatus] = useState<"idle" | "printing" | "sent" | "error">("idle");
+  const [printMessage, setPrintMessage] = useState("");
 
   const handleRestart = () => {
     setPanel("none");
     restart();
+  };
+
+  const handlePrint = async () => {
+    const imageToPrint = finalImage || photos[0];
+    if (!imageToPrint || printStatus === "printing") return;
+    setPrintStatus("printing");
+    setPrintMessage("Impression en cours...");
+    try {
+      await printPhoto(imageToPrint);
+      setPrintStatus("sent");
+      setPrintMessage("Impression lancée !");
+    } catch {
+      setPrintStatus("error");
+      setPrintMessage("Erreur lors de l'impression");
+    }
   };
 
   const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
@@ -225,6 +242,25 @@ export default function ResultScreen() {
             <QrCode size={20} />
             Afficher le QR code
           </Button>
+        )}
+        <Button
+          variant="elegant"
+          size="lg"
+          onClick={handlePrint}
+          disabled={printStatus === "printing"}
+        >
+          <Printer size={20} />
+          {printStatus === "printing" ? "Impression en cours..." : "Imprimer"}
+        </Button>
+        {printMessage && printStatus !== "printing" && (
+          <p
+            className={`text-sm text-center flex items-center justify-center gap-1.5 ${
+              printStatus === "error" ? "text-destructive" : "text-accent-foreground"
+            }`}
+          >
+            {printStatus === "error" ? <AlertCircle size={14} /> : <CheckCircle size={14} />}
+            {printMessage}
+          </p>
         )}
         <Button variant="ghost" size="lg" onClick={handleRestart} className="text-muted-foreground">
           <RotateCcw size={18} />
