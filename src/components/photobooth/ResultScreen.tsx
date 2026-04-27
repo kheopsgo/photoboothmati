@@ -44,10 +44,27 @@ export default function ResultScreen() {
   const [emailError, setEmailError] = useState("");
   const [sendErrorMessage, setSendErrorMessage] = useState("");
   const [emailStatus, setEmailStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [printStatus, setPrintStatus] = useState<"idle" | "printing" | "sent" | "error">("idle");
+  const [printMessage, setPrintMessage] = useState("");
 
   const handleRestart = () => {
     setPanel("none");
     restart();
+  };
+
+  const handlePrint = async () => {
+    const imageToPrint = finalImage || photos[0];
+    if (!imageToPrint || printStatus === "printing") return;
+    setPrintStatus("printing");
+    setPrintMessage("Impression en cours...");
+    try {
+      await printPhoto(imageToPrint);
+      setPrintStatus("sent");
+      setPrintMessage("Impression lancée !");
+    } catch {
+      setPrintStatus("error");
+      setPrintMessage("Erreur lors de l'impression");
+    }
   };
 
   const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
