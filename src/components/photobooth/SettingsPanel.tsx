@@ -103,6 +103,8 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
                     ))}
                   </div>
                 </div>
+
+                <SaveFrameButton />
               </div>
             )}
           </Section>
