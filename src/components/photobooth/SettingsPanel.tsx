@@ -562,6 +562,7 @@ function CaptureOffsetSetting({
 function SaveFrameButton() {
   const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
 
   const handleSave = async () => {
@@ -574,10 +575,13 @@ function SaveFrameButton() {
     }
     setStatus("saving");
     setMessage("");
+    setPreviewUrl(null);
     try {
-      // Wait one frame so the offscreen render is fully laid out
+      // Wait two frames so the offscreen render is fully laid out and styles applied
+      await new Promise((r) => requestAnimationFrame(() => r(null)));
       await new Promise((r) => requestAnimationFrame(() => r(null)));
       const dataUrl = await captureElementAsTransparentPng(el, 1200, 1600);
+      setPreviewUrl(dataUrl);
       await uploadFrame(dataUrl);
       setStatus("success");
       setMessage("Cadre enregistré pour l'impression");
@@ -620,9 +624,34 @@ function SaveFrameButton() {
         </p>
       )}
 
-      {/* Offscreen render of the frame with a transparent hole, used as the export source.
-          We override every background inside the export tree so only borders, text and
-          ornaments remain visible. The photo area must keep alpha = 0. */}
+      {/* Debug preview of the actual PNG that was uploaded.
+          Shown over a checkerboard so transparent areas are visible. */}
+      {previewUrl && (
+        <div className="space-y-1">
+          <p className="font-body text-xs text-muted-foreground">
+            Aperçu du PNG envoyé (les zones à damier sont transparentes) :
+          </p>
+          <div
+            className="rounded-lg border border-border p-2 flex justify-center"
+            style={{
+              background:
+                "repeating-conic-gradient(hsl(var(--muted)) 0% 25%, hsl(var(--background)) 0% 50%) 50% / 12px 12px",
+            }}
+          >
+            <img
+              src={previewUrl}
+              alt="Aperçu du cadre exporté"
+              className="max-w-full h-auto"
+              style={{ maxHeight: 320 }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Offscreen render of the frame, used as the export source.
+          We DO want to keep the decorative backgrounds (card bg, borders,
+          ornaments, text). Only the inner photo placeholder must stay
+          transparent so the backend can composite the real photo underneath. */}
       <div
         aria-hidden
         style={{
@@ -634,29 +663,22 @@ function SaveFrameButton() {
           opacity: 1,
         }}
       >
-        <style>{`
-          .frame-export-root,
-          .frame-export-root * {
-            background: transparent !important;
-            background-color: transparent !important;
-            background-image: none !important;
-            box-shadow: none !important;
-          }
-        `}</style>
         <div
           ref={frameRef}
           className="frame-export-root"
-          style={{ width: "1200px", background: "transparent" }}
+          style={{ width: "1200px" }}
         >
           <PhotoFrame variant="single">
             {/* Transparent placeholder matching the printed photo aspect ratio (3:4).
                 This area must remain fully transparent in the exported PNG so the
                 backend can composite the real photo underneath. */}
             <div
+              data-frame-photo-hole
               style={{
                 width: "100%",
                 aspectRatio: "3 / 4",
                 background: "transparent",
+                backgroundColor: "transparent",
               }}
             />
           </PhotoFrame>

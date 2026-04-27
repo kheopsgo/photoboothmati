@@ -1,12 +1,16 @@
-import { toPng } from "html-to-image";
+import { toCanvas } from "html-to-image";
 
 /**
- * Renders a given React node (the PhotoFrame containing a transparent hole)
- * as a transparent PNG matching the backend's final photo ratio.
+ * Renders a given DOM element (the PhotoFrame containing a marked photo
+ * placeholder) as a PNG matching the backend's final photo ratio.
  *
- * The element should already be mounted in the DOM (offscreen) and styled
- * so that ALL backgrounds inside it are transparent — only decorative
- * elements (borders, text, ornaments, logos) should be opaque.
+ * Strategy:
+ *   1. Render the full frame (with all decorative backgrounds, borders,
+ *      ornaments, text) to a canvas — keeps the visual match with preview.
+ *   2. Locate the child marked with [data-frame-photo-hole] and CLEAR that
+ *      rectangle on the canvas, producing a fully transparent photo area
+ *      so the backend can composite the real photo underneath.
+ *   3. Export as PNG.
  *
  * Returns a base64 data URL: "data:image/png;base64,..."
  */
@@ -18,33 +22,33 @@ export async function captureElementAsTransparentPng(
   const rect = el.getBoundingClientRect();
   const pixelRatio = Math.max(targetWidth / rect.width, targetHeight / rect.height);
 
-  const dataUrl = await toPng(el, {
+  const canvas = await toCanvas(el, {
     cacheBust: true,
     pixelRatio,
-    // Do NOT set backgroundColor — leave it undefined so the PNG keeps its
-    // alpha channel and only painted elements remain visible.
     backgroundColor: undefined,
     width: rect.width,
     height: rect.height,
     style: {
       margin: "0",
       transform: "none",
-      background: "transparent",
-      backgroundColor: "transparent",
-    },
-    // Defensive: strip any inline background that might have leaked through.
-    filter: (node) => {
-      if (node instanceof HTMLElement) {
-        if (node.style && node.style.backgroundColor) {
-          node.style.backgroundColor = "transparent";
-        }
-        if (node.style && node.style.background) {
-          node.style.background = "transparent";
-        }
-      }
-      return true;
     },
   });
 
-  return dataUrl;
+  // Punch a transparent hole over the photo placeholder area
+  const hole = el.querySelector<HTMLElement>("[data-frame-photo-hole]");
+  if (hole) {
+    const holeRect = hole.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const hx = (holeRect.left - rect.left) * scaleX;
+    const hy = (holeRect.top - rect.top) * scaleY;
+    const hw = holeRect.width * scaleX;
+    const hh = holeRect.height * scaleY;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.clearRect(hx, hy, hw, hh);
+    }
+  }
+
+  return canvas.toDataURL("image/png");
 }
