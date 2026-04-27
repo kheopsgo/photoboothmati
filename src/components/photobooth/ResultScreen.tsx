@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
-import { sendEmail } from "@/services/api";
+import { sendEmail, printPhoto } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { Button } from "@/components/ui/button";
-import { Mail, QrCode, RotateCcw, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
+import { Mail, QrCode, RotateCcw, ArrowLeft, CheckCircle, AlertCircle, Printer } from "lucide-react";
 import PhotoFrame from "./PhotoFrame";
 import VirtualKeyboard from "./VirtualKeyboard";
 
