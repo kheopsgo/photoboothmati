@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { takePhoto } from "@/services/api";
 import { consumePendingCapture } from "@/services/captureQueue";
+import { buildCollage2x2 } from "@/services/collage";
 import { Loader2 } from "lucide-react";
 
 export default function CaptureFlow() {
@@ -29,7 +30,15 @@ export default function CaptureFlow() {
             setScreen("countdown");
           } else {
             const allPhotos = [...photos, result.finalImage];
-            setCaptureResult(result.sessionId, allPhotos, result.finalImage);
+            let collage = result.finalImage;
+            try {
+              collage = await buildCollage2x2(allPhotos);
+            } catch (e) {
+              // Fallback: keep last photo if collage generation fails
+              console.error("Erreur lors de la création du collage 2x2", e);
+            }
+            if (cancelled) return;
+            setCaptureResult(result.sessionId, allPhotos, collage);
             setScreen("result");
           }
         } else {
