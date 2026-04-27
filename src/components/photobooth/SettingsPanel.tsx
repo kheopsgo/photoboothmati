@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal, Timer } from "lucide-react";
+import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal, Timer, Upload, CheckCircle, AlertCircle } from "lucide-react";
 import type { EventConfig } from "@/config/eventConfig";
-import { configureWifi, getWifiNetworks, type WifiNetwork } from "@/services/api";
+import { configureWifi, getWifiNetworks, uploadFrame, type WifiNetwork } from "@/services/api";
+import { captureElementAsTransparentPng } from "@/services/frameOverlay";
+import PhotoFrame from "./PhotoFrame";
 
 const FRAME_STYLES: { id: EventConfig["frameStyle"]; label: string }[] = [
   { id: "elegant", label: "Élégant" },
@@ -101,6 +103,8 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
                     ))}
                   </div>
                 </div>
+
+                <SaveFrameButton />
               </div>
             )}
           </Section>
@@ -527,6 +531,96 @@ function CaptureOffsetSetting({
           ? "Déclenchement sans anticipation"
           : `Le déclenchement réel part ${safeValue} ms avant la fin visuelle du décompte`}
       </p>
+    </div>
+  );
+}
+
+function SaveFrameButton() {
+  const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+  const frameRef = useRef<HTMLDivElement>(null);
+
+  const handleSave = async () => {
+    if (status === "saving") return;
+    const el = frameRef.current;
+    if (!el) {
+      setStatus("error");
+      setMessage("Cadre introuvable");
+      return;
+    }
+    setStatus("saving");
+    setMessage("");
+    try {
+      // Wait one frame so the offscreen render is fully laid out
+      await new Promise((r) => requestAnimationFrame(() => r(null)));
+      const dataUrl = await captureElementAsTransparentPng(el, 1200, 1600);
+      await uploadFrame(dataUrl);
+      setStatus("success");
+      setMessage("Cadre enregistré pour l'impression");
+    } catch (err) {
+      setStatus("error");
+      setMessage(err instanceof Error && err.message ? err.message : "Erreur lors de l'enregistrement du cadre");
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <button
+        onClick={handleSave}
+        disabled={status === "saving"}
+        className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-body text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        {status === "saving" ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Enregistrement du cadre...
+          </>
+        ) : (
+          <>
+            <Upload size={16} />
+            Enregistrer ce cadre pour l'impression
+          </>
+        )}
+      </button>
+
+      {status === "success" && message && (
+        <p className="text-sm text-accent-foreground flex items-center gap-1.5">
+          <CheckCircle size={14} />
+          {message}
+        </p>
+      )}
+      {status === "error" && message && (
+        <p className="text-sm text-destructive flex items-center gap-1.5">
+          <AlertCircle size={14} />
+          {message}
+        </p>
+      )}
+
+      {/* Offscreen render of the frame with a transparent hole, used as the export source */}
+      <div
+        aria-hidden
+        style={{
+          position: "fixed",
+          left: "-10000px",
+          top: 0,
+          width: "1200px",
+          pointerEvents: "none",
+          opacity: 1,
+        }}
+      >
+        <div ref={frameRef} style={{ width: "1200px", background: "transparent" }}>
+          <PhotoFrame variant="single">
+            {/* Transparent placeholder matching the printed photo aspect ratio (3:4) */}
+            <div
+              style={{
+                width: "100%",
+                aspectRatio: "3 / 4",
+                background: "transparent",
+              }}
+            />
+          </PhotoFrame>
+        </div>
+      </div>
     </div>
   );
 }

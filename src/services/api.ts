@@ -157,6 +157,34 @@ export interface PrintPhotoResponse {
   message?: string;
 }
 
+export interface FrameUploadResponse {
+  success: boolean;
+  message?: string;
+}
+
+export async function uploadFrame(imageDataUrl: string): Promise<FrameUploadResponse> {
+  const res = await fetch(`${API_BASE}/frame-upload`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ image: imageDataUrl }),
+  });
+  if (!res.ok) {
+    let backendMessage = "";
+    try {
+      const data = await res.json();
+      backendMessage = data?.message || data?.error || "";
+    } catch {
+      try {
+        backendMessage = await res.text();
+      } catch {
+        // ignore
+      }
+    }
+    throw new Error(backendMessage || "Erreur lors de l'enregistrement du cadre");
+  }
+  return res.json();
+}
+
 export async function printPhoto(image: string): Promise<PrintPhotoResponse> {
   const res = await fetch(`${API_BASE}/print-photo`, {
     method: "POST",
