@@ -243,6 +243,25 @@ export default function ResultScreen() {
             Afficher le QR code
           </Button>
         )}
+        <Button
+          variant="elegant"
+          size="lg"
+          onClick={handlePrint}
+          disabled={printStatus === "printing"}
+        >
+          <Printer size={20} />
+          {printStatus === "printing" ? "Impression en cours..." : "Imprimer"}
+        </Button>
+        {printMessage && printStatus !== "printing" && (
+          <p
+            className={`text-sm text-center flex items-center justify-center gap-1.5 ${
+              printStatus === "error" ? "text-destructive" : "text-accent-foreground"
+            }`}
+          >
+            {printStatus === "error" ? <AlertCircle size={14} /> : <CheckCircle size={14} />}
+            {printMessage}
+          </p>
+        )}
         <Button variant="ghost" size="lg" onClick={handleRestart} className="text-muted-foreground">
           <RotateCcw size={18} />
           Recommencer
