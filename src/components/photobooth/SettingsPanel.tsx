@@ -104,7 +104,31 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
                   </div>
                 </div>
 
+                {/* Live preview of the selected/customized frame */}
+                <div className="space-y-2">
+                  <label className="font-body text-sm font-medium text-foreground">Aperçu du cadre</label>
+                  <div className="rounded-xl bg-muted/40 border border-border p-4 flex justify-center">
+                    <div className="w-48">
+                      <PhotoFrame variant="single">
+                        <div
+                          style={{
+                            width: "100%",
+                            aspectRatio: "3 / 4",
+                            background:
+                              "repeating-conic-gradient(hsl(var(--muted)) 0% 25%, hsl(var(--background)) 0% 50%) 50% / 16px 16px",
+                            borderRadius: "4px",
+                          }}
+                        />
+                      </PhotoFrame>
+                    </div>
+                  </div>
+                </div>
+
                 <SaveFrameButton />
+
+                <p className="font-body text-xs text-muted-foreground leading-relaxed">
+                  Ce bouton applique le cadre aux impressions, aux QR codes et aux envois par e-mail.
+                </p>
               </div>
             )}
           </Section>
