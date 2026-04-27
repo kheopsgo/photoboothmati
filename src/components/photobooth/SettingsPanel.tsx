@@ -620,7 +620,9 @@ function SaveFrameButton() {
         </p>
       )}
 
-      {/* Offscreen render of the frame with a transparent hole, used as the export source */}
+      {/* Offscreen render of the frame with a transparent hole, used as the export source.
+          We override every background inside the export tree so only borders, text and
+          ornaments remain visible. The photo area must keep alpha = 0. */}
       <div
         aria-hidden
         style={{
@@ -632,9 +634,24 @@ function SaveFrameButton() {
           opacity: 1,
         }}
       >
-        <div ref={frameRef} style={{ width: "1200px", background: "transparent" }}>
+        <style>{`
+          .frame-export-root,
+          .frame-export-root * {
+            background: transparent !important;
+            background-color: transparent !important;
+            background-image: none !important;
+            box-shadow: none !important;
+          }
+        `}</style>
+        <div
+          ref={frameRef}
+          className="frame-export-root"
+          style={{ width: "1200px", background: "transparent" }}
+        >
           <PhotoFrame variant="single">
-            {/* Transparent placeholder matching the printed photo aspect ratio (3:4) */}
+            {/* Transparent placeholder matching the printed photo aspect ratio (3:4).
+                This area must remain fully transparent in the exported PNG so the
+                backend can composite the real photo underneath. */}
             <div
               style={{
                 width: "100%",
