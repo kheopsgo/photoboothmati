@@ -3,10 +3,11 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { Camera, Grid2X2, ArrowLeft } from "lucide-react";
 
 export default function ModeSelection() {
-  const { setMode, setScreen } = usePhotobooth();
+  const { setMode, setScreen, resetCaptureSession } = usePhotobooth();
   const { settings } = useSettings();
 
   const select = (mode: "single" | "four") => {
+    resetCaptureSession();
     setMode(mode);
     setScreen("preview");
   };
