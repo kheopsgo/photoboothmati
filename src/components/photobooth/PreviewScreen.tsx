@@ -11,22 +11,34 @@ const filters: { id: PhotoFilter; label: string; cssFilter: string }[] = [
 ];
 
 export default function PreviewScreen() {
-  const { filter, setFilter, setScreen } = usePhotobooth();
+  const { mode, filter, setFilter, setScreen, captureProgress } = usePhotobooth();
   const streamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
   const currentCss = filters.find((f) => f.id === filter)?.cssFilter ?? "none";
+
+  const totalShots = mode === "four" ? 4 : 1;
+  const currentShot = Math.min(captureProgress + 1, totalShots);
+  const inSequence = mode === "four" && captureProgress > 0;
 
   return (
     <div className="flex flex-col min-h-screen px-6 py-6 gap-5">
       <button
         onClick={() => setScreen("mode")}
         className="self-start flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        disabled={inSequence}
       >
         <ArrowLeft size={20} />
         <span className="font-body text-sm">Retour</span>
       </button>
 
       <div className="text-center space-y-2 animate-float-in">
-        <h2 className="font-display text-3xl text-foreground">Aperçu en direct</h2>
+        <h2 className="font-display text-3xl text-foreground">
+          {inSequence ? "Préparez-vous" : "Aperçu en direct"}
+        </h2>
+        {mode === "four" && (
+          <p className="font-display text-base text-primary">
+            Photo {currentShot}/{totalShots}
+          </p>
+        )}
         <div className="w-12 h-px bg-primary/40 mx-auto" />
       </div>
 
