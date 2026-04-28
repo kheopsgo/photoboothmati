@@ -3,6 +3,7 @@ import { SettingsProvider } from "@/contexts/SettingsContext";
 import WelcomeScreen from "./WelcomeScreen";
 import ModeSelection from "./ModeSelection";
 import FilterSelection from "./FilterSelection";
+import PreviewScreen from "./PreviewScreen";
 import CountdownScreen from "./CountdownScreen";
 import CaptureFlow from "./CaptureFlow";
 import ResultScreen from "./ResultScreen";
@@ -17,6 +18,8 @@ function ScreenRouter() {
       return <ModeSelection />;
     case "filter":
       return <FilterSelection />;
+    case "preview":
+      return <PreviewScreen />;
     case "countdown":
       return <CountdownScreen />;
     case "capturing":

@@ -5,6 +5,7 @@ export type Screen =
   | "welcome"
   | "mode"
   | "filter"
+  | "preview"
   | "countdown"
   | "capturing"
   | "result"
