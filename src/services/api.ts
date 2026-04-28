@@ -265,3 +265,30 @@ export async function printPhoto(image: string): Promise<PrintPhotoResponse> {
   }
   return res.json();
 }
+
+export interface UpdateFrontendResponse {
+  success: boolean;
+  message?: string;
+}
+
+export async function updateFrontend(): Promise<UpdateFrontendResponse> {
+  const res = await fetch(`${API_BASE}/update-frontend`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) {
+    let backendMessage = "";
+    try {
+      const data = await res.json();
+      backendMessage = data?.message || data?.error || "";
+    } catch {
+      try {
+        backendMessage = await res.text();
+      } catch {
+        // ignore
+      }
+    }
+    throw new Error(backendMessage || "Erreur lors de la mise à jour depuis GitHub");
+  }
+  return res.json();
+}
