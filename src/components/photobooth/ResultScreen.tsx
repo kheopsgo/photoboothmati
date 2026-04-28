@@ -126,7 +126,7 @@ export default function ResultScreen() {
           <h2 className="font-display text-5xl text-foreground">QR Code</h2>
           <div className="w-16 h-px bg-primary/40 mx-auto" />
 
-          <div className="w-[420px] h-[420px] max-w-[80vw] max-h-[80vw] rounded-3xl border-2 border-primary/40 bg-white flex items-center justify-center shadow-glow p-4">
+          <div className="w-[360px] h-[360px] max-w-[75vw] max-h-[75vw] rounded-3xl border-2 border-primary/40 bg-white flex items-center justify-center shadow-glow p-4">
             {qrUrl ? (
               <img src={qrUrl} alt="QR Code" className="w-full h-full rounded-lg object-contain" />
             ) : (
