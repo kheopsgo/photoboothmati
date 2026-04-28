@@ -32,6 +32,7 @@ interface PhotoboothContextType extends PhotoboothState {
   setQrUrl: (url: string) => void;
   setEmailStatus: (s: PhotoboothState["emailStatus"]) => void;
   setCaptureProgress: (n: number) => void;
+  resetCaptureSession: () => void;
   restart: () => void;
 }
 
