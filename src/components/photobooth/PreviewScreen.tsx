@@ -56,14 +56,15 @@ export default function PreviewScreen() {
       {/* Filter selector */}
       <div className="space-y-3">
         <p className="text-center font-display text-lg text-muted-foreground">
-          Choisissez un filtre
+          {inSequence ? "Filtre appliqué" : "Choisissez un filtre"}
         </p>
         <div className="grid grid-cols-3 gap-3">
           {filters.map((f) => (
             <button
               key={f.id}
-              onClick={() => setFilter(f.id)}
-              className={`rounded-xl border-2 px-3 py-3 transition-all active:scale-[0.97] ${
+              onClick={() => !inSequence && setFilter(f.id)}
+              disabled={inSequence}
+              className={`rounded-xl border-2 px-3 py-3 transition-all active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed ${
                 filter === f.id
                   ? "border-primary bg-primary/10 shadow-md"
                   : "border-border hover:border-primary/40 bg-card"
@@ -84,7 +85,7 @@ export default function PreviewScreen() {
           className="gap-2"
         >
           <Camera size={20} />
-          Prendre la photo
+          {inSequence ? `Prendre la photo ${currentShot}/${totalShots}` : "Prendre la photo"}
         </Button>
       </div>
     </div>
