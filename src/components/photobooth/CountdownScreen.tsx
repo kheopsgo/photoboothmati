@@ -126,8 +126,8 @@ export default function CountdownScreen() {
       {flash && <div className="absolute inset-0 z-50 animate-flash bg-primary-foreground" />}
 
       {mode === "four" && (
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30 px-7 h-[72px] flex items-center rounded-full bg-background/75 backdrop-blur-md border-2 border-primary/50">
-          <span className="font-display text-2xl font-semibold text-primary">
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-30 px-6 h-[64px] flex items-center rounded-full bg-background/75 backdrop-blur-md border-2 border-primary/50">
+          <span className="font-display text-xl font-semibold text-primary">
             Photo {currentShot}/{totalShots}
           </span>
         </div>
@@ -138,21 +138,21 @@ export default function CountdownScreen() {
           key={`${captureProgress}-${count}`}
           className="relative z-30 animate-countdown-pop"
         >
-          <span className="select-none font-display text-[20rem] font-light leading-none text-countdown drop-shadow-[0_0_60px_hsl(var(--primary)/0.8)]">
+          <span className="select-none font-display text-[14rem] font-light leading-none text-countdown drop-shadow-[0_0_50px_hsl(var(--primary)/0.8)]">
             {count}
           </span>
         </div>
       )}
 
       {showSmile && count > 0 && (
-        <p className="relative z-30 mt-6 font-display text-7xl font-semibold text-countdown drop-shadow-[0_0_30px_hsl(var(--primary)/0.7)] animate-float-up">
+        <p className="relative z-30 mt-4 font-display text-6xl font-semibold text-countdown drop-shadow-[0_0_30px_hsl(var(--primary)/0.7)] animate-float-up">
           Souriez 😄
         </p>
       )}
 
       {count <= 0 && !flash && (
         <div className="relative z-30 animate-countdown-pop">
-          <span className="font-display text-9xl text-countdown">📸</span>
+          <span className="font-display text-8xl text-countdown">📸</span>
         </div>
       )}
     </div>

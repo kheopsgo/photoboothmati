@@ -117,28 +117,28 @@ export default function WelcomeScreen() {
           </div>
         </div>
 
-        <div className="text-center space-y-4">
-          <h1 className="font-display text-7xl md:text-8xl font-light text-foreground tracking-wide">
+        <div className="text-center space-y-3">
+          <h1 className="font-display text-6xl font-light text-foreground tracking-wide">
             Photobooth
           </h1>
-          <div className="w-28 h-px bg-primary/60 mx-auto" />
-          <p className="font-display text-3xl text-muted-foreground italic flex items-center justify-center gap-3">
-            <Sparkles size={24} className="text-primary" />
+          <div className="w-24 h-px bg-primary/60 mx-auto" />
+          <p className="font-display text-2xl text-muted-foreground italic flex items-center justify-center gap-2">
+            <Sparkles size={20} className="text-primary" />
             Immortalisez ce moment
-            <Sparkles size={24} className="text-primary" />
+            <Sparkles size={20} className="text-primary" />
           </p>
         </div>
 
         {/* Massive luminous CTA */}
         <button
           onClick={handleStart}
-          className="group relative mt-4 animate-glow-pulse rounded-full bg-primary text-primary-foreground px-20 h-[140px] font-display text-5xl font-semibold tracking-wide active:scale-95 transition-transform duration-200 flex items-center gap-4"
+          className="group relative mt-3 animate-glow-pulse rounded-full bg-primary text-primary-foreground px-16 h-[120px] font-display text-4xl font-semibold tracking-wide active:scale-95 transition-transform duration-200 flex items-center gap-3"
         >
-          <Camera size={44} />
+          <Camera size={36} />
           Démarrer
         </button>
 
-        <p className="text-lg text-muted-foreground/70 font-body animate-gentle-pulse">
+        <p className="text-base text-muted-foreground/70 font-body animate-gentle-pulse">
           Touchez l'écran pour commencer
         </p>
       </div>

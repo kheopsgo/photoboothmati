@@ -68,15 +68,15 @@ export default function PreviewScreen() {
       </div>
 
       {/* Bottom controls */}
-      <div className="relative z-10 px-8 pb-10 space-y-6">
+      <div className="relative z-10 px-6 pb-8 space-y-5">
         {/* Filter pills — large touch targets */}
-        <div className="flex justify-center gap-4 flex-wrap">
+        <div className="flex justify-center gap-3 flex-wrap">
           {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => !inSequence && setFilter(f.id)}
               disabled={inSequence}
-              className={`px-8 h-[80px] min-w-[180px] rounded-full font-display text-2xl transition-all active:scale-95 backdrop-blur-md border-2 disabled:cursor-not-allowed ${
+              className={`px-6 h-[72px] min-w-[150px] rounded-full font-display text-xl transition-all active:scale-95 backdrop-blur-md border-2 disabled:cursor-not-allowed ${
                 filter === f.id
                   ? "bg-primary text-primary-foreground border-primary shadow-glow"
                   : "bg-card/70 text-foreground border-border"
@@ -88,12 +88,12 @@ export default function PreviewScreen() {
         </div>
 
         {/* Big capture CTA — thumb-friendly */}
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-center pt-1">
           <button
             onClick={() => setScreen("countdown")}
-            className="group relative animate-glow-pulse rounded-full bg-primary text-primary-foreground px-16 h-[110px] font-display text-4xl font-semibold tracking-wide active:scale-95 transition-transform flex items-center gap-4"
+            className="group relative animate-glow-pulse rounded-full bg-primary text-primary-foreground px-12 h-[96px] font-display text-3xl font-semibold tracking-wide active:scale-95 transition-transform flex items-center gap-3"
           >
-            <Camera size={36} />
+            <Camera size={32} />
             {inSequence ? `Prendre la photo ${currentShot}/${totalShots}` : "Prendre la photo"}
           </button>
         </div>
