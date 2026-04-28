@@ -9,7 +9,8 @@ export type Screen =
   | "countdown"
   | "capturing"
   | "result"
-  | "share";
+  | "share"
+  | "thanks";
 
 interface PhotoboothState {
   screen: Screen;

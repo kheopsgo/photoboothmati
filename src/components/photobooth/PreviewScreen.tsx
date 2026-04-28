@@ -1,11 +1,10 @@
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { API_BASE } from "@/services/api";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft, Camera } from "lucide-react";
 import type { PhotoFilter } from "@/services/api";
 
 const filters: { id: PhotoFilter; label: string; cssFilter: string }[] = [
-  { id: "none", label: "Sans filtre", cssFilter: "none" },
+  { id: "none", label: "Original", cssFilter: "none" },
   { id: "bw", label: "Noir & blanc", cssFilter: "grayscale(1)" },
   { id: "sepia", label: "Sépia", cssFilter: "sepia(1)" },
 ];
@@ -20,73 +19,83 @@ export default function PreviewScreen() {
   const inSequence = mode === "four" && captureProgress > 0;
 
   return (
-    <div className="flex flex-col min-h-screen px-6 py-6 gap-5">
-      <button
-        onClick={() => setScreen("mode")}
-        className="self-start flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        disabled={inSequence}
-      >
-        <ArrowLeft size={20} />
-        <span className="font-body text-sm">Retour</span>
-      </button>
-
-      <div className="text-center space-y-2 animate-float-in">
-        <h2 className="font-display text-3xl text-foreground">
-          {inSequence ? "Préparez-vous" : "Aperçu en direct"}
-        </h2>
-        {mode === "four" && (
-          <p className="font-display text-base text-primary">
-            Photo {currentShot}/{totalShots}
-          </p>
-        )}
-        <div className="w-12 h-px bg-primary/40 mx-auto" />
-      </div>
-
-      {/* Live preview */}
-      <div className="relative w-full overflow-hidden rounded-2xl border-2 border-border bg-black/80 aspect-[3/4] max-h-[55vh] mx-auto">
+    <div className="relative flex flex-col min-h-screen overflow-hidden bg-background">
+      {/* Fullscreen live camera */}
+      <div className="absolute inset-0 z-0">
         <img
           src={streamUrl}
-          alt="Aperçu caméra en direct"
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{ transform: "scaleX(-1)", filter: currentCss }}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl brightness-50"
+          style={{ transform: "scaleX(-1) scale(1.1)" }}
           loading="eager"
         />
+        <div className="absolute inset-0 flex items-center justify-center p-4">
+          <img
+            src={streamUrl}
+            alt="Aperçu caméra en direct"
+            className="max-h-full max-w-full h-auto w-auto object-contain rounded-2xl shadow-2xl ring-1 ring-primary/20"
+            style={{ transform: "scaleX(-1)", filter: currentCss }}
+            loading="eager"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/80 pointer-events-none" />
       </div>
 
-      {/* Filter selector */}
-      <div className="space-y-3">
-        <p className="text-center font-display text-lg text-muted-foreground">
-          {inSequence ? "Filtre appliqué" : "Choisissez un filtre"}
-        </p>
-        <div className="grid grid-cols-3 gap-3">
+      {/* Top bar */}
+      <div className="relative z-10 flex items-center justify-between px-6 pt-6">
+        <button
+          onClick={() => setScreen("mode")}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/70 backdrop-blur-md border border-border text-foreground hover:border-primary/50 transition-colors disabled:opacity-50"
+          disabled={inSequence}
+        >
+          <ArrowLeft size={18} />
+          <span className="font-body text-sm">Retour</span>
+        </button>
+
+        {mode === "four" && (
+          <div className="px-5 py-2 rounded-full bg-primary/15 backdrop-blur-md border border-primary/40">
+            <span className="font-display text-base text-primary font-semibold">
+              Photo {currentShot}/{totalShots}
+            </span>
+          </div>
+        )}
+        <div className="w-[88px]" />
+      </div>
+
+      {/* Spacer pushes controls to bottom */}
+      <div className="flex-1" />
+
+      {/* Bottom controls */}
+      <div className="relative z-10 px-6 pb-8 space-y-5">
+        {/* Filter pills */}
+        <div className="flex justify-center gap-3 flex-wrap">
           {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => !inSequence && setFilter(f.id)}
               disabled={inSequence}
-              className={`rounded-xl border-2 px-3 py-3 transition-all active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed ${
+              className={`px-5 py-3 rounded-full font-display text-base transition-all active:scale-95 backdrop-blur-md border-2 disabled:cursor-not-allowed ${
                 filter === f.id
-                  ? "border-primary bg-primary/10 shadow-md"
-                  : "border-border hover:border-primary/40 bg-card"
+                  ? "bg-primary text-primary-foreground border-primary shadow-glow"
+                  : "bg-card/70 text-foreground border-border hover:border-primary/50"
               }`}
             >
-              <p className="font-display text-sm text-foreground">{f.label}</p>
+              {f.label}
             </button>
           ))}
         </div>
-      </div>
 
-      {/* CTA */}
-      <div className="flex justify-center pt-2">
-        <Button
-          variant="hero"
-          size="touch"
-          onClick={() => setScreen("countdown")}
-          className="gap-2"
-        >
-          <Camera size={20} />
-          {inSequence ? `Prendre la photo ${currentShot}/${totalShots}` : "Prendre la photo"}
-        </Button>
+        {/* Big capture CTA */}
+        <div className="flex justify-center">
+          <button
+            onClick={() => setScreen("countdown")}
+            className="group relative animate-glow-pulse rounded-full bg-primary text-primary-foreground px-12 py-6 font-display text-2xl font-semibold tracking-wide active:scale-95 transition-transform flex items-center gap-3"
+          >
+            <Camera size={26} />
+            {inSequence ? `Prendre la photo ${currentShot}/${totalShots}` : "Prendre la photo"}
+          </button>
+        </div>
       </div>
     </div>
   );

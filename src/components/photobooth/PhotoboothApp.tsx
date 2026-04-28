@@ -7,6 +7,7 @@ import PreviewScreen from "./PreviewScreen";
 import CountdownScreen from "./CountdownScreen";
 import CaptureFlow from "./CaptureFlow";
 import ResultScreen from "./ResultScreen";
+import ThanksScreen from "./ThanksScreen";
 
 function ScreenRouter() {
   const { screen } = usePhotobooth();
@@ -27,6 +28,8 @@ function ScreenRouter() {
     case "result":
     case "share":
       return <ResultScreen />;
+    case "thanks":
+      return <ThanksScreen />;
     default:
       return <WelcomeScreen />;
   }

@@ -35,7 +35,7 @@ function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onCom
 }
 
 export default function ResultScreen() {
-  const { mode, photos, finalImage, qrUrl, restart } = usePhotobooth();
+  const { mode, photos, finalImage, qrUrl, restart, setScreen } = usePhotobooth();
   const { settings } = useSettings();
   const { playSuccess } = useSound();
 
@@ -47,9 +47,14 @@ export default function ResultScreen() {
   const [printStatus, setPrintStatus] = useState<"idle" | "printing" | "sent" | "error">("idle");
   const [printMessage, setPrintMessage] = useState("");
 
+  useEffect(() => {
+    playSuccess();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleRestart = () => {
     setPanel("none");
-    restart();
+    setScreen("thanks");
   };
 
   const handlePrint = async () => {
@@ -216,20 +221,23 @@ export default function ResultScreen() {
   return (
     <div className="flex flex-col min-h-screen px-6 py-8 animate-float-in">
       <div className="text-center mb-6">
-        <h2 className="font-display text-3xl text-foreground">Votre photo</h2>
-        <div className="w-10 h-px bg-primary/40 mx-auto mt-2" />
+        <h2 className="font-display text-4xl text-foreground text-glow-yellow">Magnifique !</h2>
+        <div className="w-12 h-px bg-primary/60 mx-auto mt-2" />
+        <p className="text-sm text-muted-foreground mt-2">Votre souvenir est prêt</p>
       </div>
 
       <div className="flex-1 flex items-center justify-center mb-8">
-        {settings.frameEnabled ? (
-          <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
-            {photoContent}
-          </PhotoFrame>
-        ) : (
-          <div className="bg-card border-2 border-border rounded-2xl p-3 shadow-xl">
-            {photoContent}
-          </div>
-        )}
+        <div className="animate-photo-reveal">
+          {settings.frameEnabled ? (
+            <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
+              {photoContent}
+            </PhotoFrame>
+          ) : (
+            <div className="bg-card border-2 border-primary/30 rounded-2xl p-3 shadow-glow">
+              {photoContent}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3 max-w-sm mx-auto w-full">
