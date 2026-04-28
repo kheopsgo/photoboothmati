@@ -58,6 +58,7 @@ export default {
         ivory: "hsl(var(--ivory))",
         blush: "hsl(var(--blush))",
         sage: "hsl(var(--sage))",
+        countdown: "hsl(var(--countdown))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
