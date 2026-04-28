@@ -2,11 +2,10 @@ import { useEffect, useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { takePhoto } from "@/services/api";
 import { consumePendingCapture } from "@/services/captureQueue";
-import { buildCollage2x2 } from "@/services/collage";
 import { Loader2 } from "lucide-react";
 
 export default function CaptureFlow() {
-  const { mode, filter, setScreen, setCaptureResult, addCapturedPhoto, setQrUrl, captureProgress, photos } = usePhotobooth();
+  const { mode, filter, setScreen, setCaptureResult, setQrUrl } = usePhotobooth();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,34 +16,15 @@ export default function CaptureFlow() {
         // Reuse the early-fired capture promise if available (countdown
         // started it before reaching 0 to compensate for camera latency).
         const pending = consumePendingCapture();
-        const result = await (pending ?? takePhoto("single", filter));
+        const result = await (pending ?? takePhoto(mode ?? "single", filter));
         if (cancelled) return;
 
         if (result.qrUrl) setQrUrl(result.qrUrl);
 
-        if (mode === "four") {
-          addCapturedPhoto(result.finalImage, result.sessionId);
-
-          const photosAfter = captureProgress + 1;
-          if (photosAfter < 4) {
-            setScreen("countdown");
-          } else {
-            const allPhotos = [...photos, result.finalImage];
-            let collage = result.finalImage;
-            try {
-              collage = await buildCollage2x2(allPhotos);
-            } catch (e) {
-              // Fallback: keep last photo if collage generation fails
-              console.error("Erreur lors de la création du collage 2x2", e);
-            }
-            if (cancelled) return;
-            setCaptureResult(result.sessionId, allPhotos, collage);
-            setScreen("result");
-          }
-        } else {
-          setCaptureResult(result.sessionId, result.photos, result.finalImage);
-          setScreen("result");
-        }
+        // Single API call for both modes. Backend handles the 4-photo
+        // sequence, 2x2 collage, frame, QR, etc. and returns finalImage.
+        setCaptureResult(result.sessionId, result.photos, result.finalImage);
+        setScreen("result");
       } catch (err) {
         if (!cancelled) {
           setError("Erreur lors de la prise de photo. Veuillez réessayer.");
@@ -76,7 +56,7 @@ export default function CaptureFlow() {
       <Loader2 size={48} className="text-primary animate-spin" />
       <p className="font-display text-2xl text-muted-foreground">
         {mode === "four"
-          ? `Capture photo ${captureProgress + 1} sur 4…`
+          ? "Capture des 4 photos en cours…"
           : "Préparation de votre photo…"}
       </p>
     </div>
