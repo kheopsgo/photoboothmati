@@ -194,8 +194,116 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
               />
             </div>
           </Section>
+
+          {/* === SYSTEM === */}
+          <Section icon={<Github size={18} />} title="Système">
+            <UpdateFromGithub />
+          </Section>
         </div>
       </div>
+    </div>
+  );
+}
+
+function UpdateFromGithub() {
+  const [status, setStatus] = useState<"idle" | "confirm" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+
+  const handleClick = () => {
+    if (status === "loading") return;
+    setStatus("confirm");
+  };
+
+  const handleConfirm = async () => {
+    setStatus("loading");
+    setMessage("");
+    try {
+      const res = await updateFrontend();
+      setMessage(res.message || "Mise à jour terminée, rechargement…");
+      setStatus("success");
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Erreur lors de la mise à jour");
+      setStatus("error");
+    }
+  };
+
+  const handleCancel = () => {
+    setStatus("idle");
+    setMessage("");
+  };
+
+  const isLoading = status === "loading";
+
+  return (
+    <div className="space-y-3">
+      <div className="p-3 rounded-lg bg-muted/50 border border-border">
+        <p className="font-body text-xs text-muted-foreground leading-relaxed">
+          Met à jour l'interface du photobooth depuis le dépôt GitHub. La page sera rechargée automatiquement.
+        </p>
+      </div>
+
+      {status === "confirm" ? (
+        <div className="space-y-3 p-3 rounded-lg border border-primary/30 bg-primary/5">
+          <p className="font-body text-sm text-foreground">
+            Voulez-vous mettre à jour l'interface depuis GitHub ?
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={handleConfirm}
+              className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground font-body text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Oui, mettre à jour
+            </button>
+            <button
+              onClick={handleCancel}
+              className="flex-1 h-11 rounded-lg bg-muted text-muted-foreground font-body text-sm font-medium hover:bg-muted/80 transition-colors"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={handleClick}
+          disabled={isLoading || status === "success"}
+          className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-body text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Mise à jour en cours…
+            </>
+          ) : status === "success" ? (
+            <>
+              <CheckCircle size={16} />
+              Rechargement…
+            </>
+          ) : (
+            <>
+              <Download size={16} />
+              Mettre à jour depuis GitHub
+            </>
+          )}
+        </button>
+      )}
+
+      {status === "success" && (
+        <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+          <p className="font-body text-sm text-foreground">✓ {message || "Mise à jour terminée, rechargement…"}</p>
+        </div>
+      )}
+
+      {status === "error" && (
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+          <p className="font-body text-sm text-destructive flex items-start gap-2">
+            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+            <span>{message || "Erreur lors de la mise à jour"}</span>
+          </p>
+        </div>
+      )}
     </div>
   );
 }
