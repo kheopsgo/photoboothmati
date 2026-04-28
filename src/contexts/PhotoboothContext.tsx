@@ -108,6 +108,7 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
         setQrUrl,
         setEmailStatus,
         setCaptureProgress,
+        resetCaptureSession,
         restart,
       }}
     >
