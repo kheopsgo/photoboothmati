@@ -20,7 +20,7 @@ export default function PreviewScreen() {
 
   return (
     <div className="relative flex flex-col min-h-screen overflow-hidden bg-background">
-      {/* Fullscreen live camera */}
+      {/* Fullscreen blurred background */}
       <div className="absolute inset-0 z-0">
         <img
           src={streamUrl}
@@ -30,55 +30,56 @@ export default function PreviewScreen() {
           style={{ transform: "scaleX(-1) scale(1.1)" }}
           loading="eager"
         />
-        <div className="absolute inset-0 flex items-center justify-center p-4">
-          <img
-            src={streamUrl}
-            alt="Aperçu caméra en direct"
-            className="max-h-full max-w-full h-auto w-auto object-contain rounded-2xl shadow-2xl ring-1 ring-primary/20"
-            style={{ transform: "scaleX(-1)", filter: currentCss }}
-            loading="eager"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/80 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/90 pointer-events-none" />
       </div>
 
       {/* Top bar */}
-      <div className="relative z-10 flex items-center justify-between px-6 pt-6">
+      <div className="relative z-10 flex items-center justify-between px-8 pt-8">
         <button
           onClick={() => setScreen("mode")}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/70 backdrop-blur-md border border-border text-foreground hover:border-primary/50 transition-colors disabled:opacity-50"
+          className="flex items-center gap-3 px-6 h-[72px] rounded-full bg-card/70 backdrop-blur-md border-2 border-border text-foreground active:scale-95 active:border-primary transition-all disabled:opacity-50"
           disabled={inSequence}
         >
-          <ArrowLeft size={18} />
-          <span className="font-body text-sm">Retour</span>
+          <ArrowLeft size={26} />
+          <span className="font-display text-xl">Retour</span>
         </button>
 
         {mode === "four" && (
-          <div className="px-5 py-2 rounded-full bg-primary/15 backdrop-blur-md border border-primary/40">
-            <span className="font-display text-base text-primary font-semibold">
+          <div className="px-7 h-[72px] flex items-center rounded-full bg-primary/20 backdrop-blur-md border-2 border-primary/50">
+            <span className="font-display text-2xl text-primary font-semibold">
               Photo {currentShot}/{totalShots}
             </span>
           </div>
         )}
-        <div className="w-[88px]" />
+        <div className="w-[140px]" />
       </div>
 
-      {/* Spacer pushes controls to bottom */}
-      <div className="flex-1" />
+      {/* Live camera — large vertical area */}
+      <div className="relative z-10 flex-1 flex items-center justify-center px-6 py-6 min-h-0">
+        <div className="relative w-full h-full max-w-[820px] flex items-center justify-center">
+          <img
+            src={streamUrl}
+            alt="Aperçu caméra en direct"
+            className="max-h-full max-w-full h-auto w-auto object-contain rounded-3xl shadow-2xl ring-2 ring-primary/30"
+            style={{ transform: "scaleX(-1)", filter: currentCss }}
+            loading="eager"
+          />
+        </div>
+      </div>
 
       {/* Bottom controls */}
-      <div className="relative z-10 px-6 pb-8 space-y-5">
-        {/* Filter pills */}
-        <div className="flex justify-center gap-3 flex-wrap">
+      <div className="relative z-10 px-8 pb-10 space-y-6">
+        {/* Filter pills — large touch targets */}
+        <div className="flex justify-center gap-4 flex-wrap">
           {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => !inSequence && setFilter(f.id)}
               disabled={inSequence}
-              className={`px-5 py-3 rounded-full font-display text-base transition-all active:scale-95 backdrop-blur-md border-2 disabled:cursor-not-allowed ${
+              className={`px-8 h-[80px] min-w-[180px] rounded-full font-display text-2xl transition-all active:scale-95 backdrop-blur-md border-2 disabled:cursor-not-allowed ${
                 filter === f.id
                   ? "bg-primary text-primary-foreground border-primary shadow-glow"
-                  : "bg-card/70 text-foreground border-border hover:border-primary/50"
+                  : "bg-card/70 text-foreground border-border"
               }`}
             >
               {f.label}
@@ -86,13 +87,13 @@ export default function PreviewScreen() {
           ))}
         </div>
 
-        {/* Big capture CTA */}
-        <div className="flex justify-center">
+        {/* Big capture CTA — thumb-friendly */}
+        <div className="flex justify-center pt-2">
           <button
             onClick={() => setScreen("countdown")}
-            className="group relative animate-glow-pulse rounded-full bg-primary text-primary-foreground px-12 py-6 font-display text-2xl font-semibold tracking-wide active:scale-95 transition-transform flex items-center gap-3"
+            className="group relative animate-glow-pulse rounded-full bg-primary text-primary-foreground px-16 h-[110px] font-display text-4xl font-semibold tracking-wide active:scale-95 transition-transform flex items-center gap-4"
           >
-            <Camera size={26} />
+            <Camera size={36} />
             {inSequence ? `Prendre la photo ${currentShot}/${totalShots}` : "Prendre la photo"}
           </button>
         </div>
