@@ -409,23 +409,60 @@ function WifiSettings() {
     loadNetworks();
   }, [loadNetworks]);
 
-  const handleConnect = async () => {
+  const [showTimeoutHint, setShowTimeoutHint] = useState(false);
+
+  const handleConnect = () => {
     if (!ssid.trim()) return;
-    setStatus("loading");
     setErrorMessage("");
-    try {
-      await configureWifi(ssid.trim(), password);
-      setStatus("success");
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Erreur lors de la connexion Wi-Fi");
-      setStatus("error");
-    }
+    setShowTimeoutHint(false);
+    // Fire-and-forget: the backend will switch network and the response will likely never come back.
+    configureWifi(ssid.trim(), password).catch(() => {
+      // Ignore — losing the connection is the expected behavior.
+    });
+    setStatus("loading");
+    // Show fallback hint after 10s if the page hasn't reloaded yet
+    window.setTimeout(() => setShowTimeoutHint(true), 10000);
+  };
+
+  const handleReconnect = () => {
+    window.location.href = "http://photobooth.local:8080";
   };
 
   const isConnecting = status === "loading";
 
   return (
     <div className="space-y-4">
+      {isConnecting && (
+        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="max-w-md w-full bg-card border border-border rounded-2xl p-8 shadow-2xl text-center space-y-5">
+            <Loader2 size={48} className="animate-spin text-primary mx-auto" />
+            <h2 className="font-display text-2xl text-foreground">Connexion en cours...</h2>
+            <div className="space-y-2">
+              <p className="font-body text-base text-foreground">
+                Le photobooth va changer de réseau
+              </p>
+              <p className="font-body text-sm text-muted-foreground">
+                Reconnectez-vous au Wi-Fi du client
+              </p>
+            </div>
+            <button
+              onClick={handleReconnect}
+              className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-body text-base font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+            >
+              <RefreshCw size={18} />
+              Reconnexion
+            </button>
+            {showTimeoutHint && (
+              <div className="p-3 rounded-lg bg-muted border border-border">
+                <p className="font-body text-xs text-muted-foreground leading-relaxed">
+                  Si la page ne se recharge pas automatiquement, reconnectez-vous au Wi-Fi et relancez l'application.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="p-3 rounded-lg bg-muted/50 border border-border">
         <p className="font-body text-xs text-muted-foreground leading-relaxed">
           ⚠️ La connexion peut être temporairement interrompue pendant le changement de réseau.
