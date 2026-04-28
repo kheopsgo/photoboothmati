@@ -409,17 +409,23 @@ function WifiSettings() {
     loadNetworks();
   }, [loadNetworks]);
 
-  const handleConnect = async () => {
+  const [showTimeoutHint, setShowTimeoutHint] = useState(false);
+
+  const handleConnect = () => {
     if (!ssid.trim()) return;
-    setStatus("loading");
     setErrorMessage("");
-    try {
-      await configureWifi(ssid.trim(), password);
-      setStatus("success");
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Erreur lors de la connexion Wi-Fi");
-      setStatus("error");
-    }
+    setShowTimeoutHint(false);
+    // Fire-and-forget: the backend will switch network and the response will likely never come back.
+    configureWifi(ssid.trim(), password).catch(() => {
+      // Ignore — losing the connection is the expected behavior.
+    });
+    setStatus("loading");
+    // Show fallback hint after 10s if the page hasn't reloaded yet
+    window.setTimeout(() => setShowTimeoutHint(true), 10000);
+  };
+
+  const handleReconnect = () => {
+    window.location.href = "http://photobooth.local:8080";
   };
 
   const isConnecting = status === "loading";
