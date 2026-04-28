@@ -125,6 +125,14 @@ export default function CountdownScreen() {
 
       {flash && <div className="absolute inset-0 z-50 animate-flash bg-primary-foreground" />}
 
+      {mode === "four" && (
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-sm border border-border">
+          <span className="font-display text-sm text-foreground">
+            Photo {currentShot}/{totalShots}
+          </span>
+        </div>
+      )}
+
       {count > 0 && (
         <div
           key={`${captureProgress}-${count}`}
