@@ -79,10 +79,10 @@ export default function WelcomeScreen() {
   const handleStart = () => {
     if (settings.allowSingle && !settings.allowFour) {
       setMode("single");
-      setScreen(settings.filtersEnabled ? "filter" : "countdown");
+      setScreen("preview");
     } else if (!settings.allowSingle && settings.allowFour) {
       setMode("four");
-      setScreen(settings.filtersEnabled ? "filter" : "countdown");
+      setScreen("preview");
     } else {
       setScreen("mode");
     }

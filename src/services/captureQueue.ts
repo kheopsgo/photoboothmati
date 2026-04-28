@@ -1,4 +1,4 @@
-import { takePhoto, type PhotoFilter, type TakePhotoResponse } from "./api";
+import { takePhoto, type PhotoFilter, type PhotoMode, type TakePhotoResponse } from "./api";
 
 // Holds an in-flight /take-photo promise that was started early (before the
 // visual countdown reached 0) so CaptureFlow can await it instead of issuing
@@ -6,10 +6,13 @@ import { takePhoto, type PhotoFilter, type TakePhotoResponse } from "./api";
 // camera trigger to compensate for camera latency.
 let pendingCapture: Promise<TakePhotoResponse> | null = null;
 
-export function startEarlyCapture(filter: PhotoFilter): Promise<TakePhotoResponse> {
+export function startEarlyCapture(
+  mode: PhotoMode,
+  filter: PhotoFilter
+): Promise<TakePhotoResponse> {
   // If one is already in-flight, reuse it (guards against double trigger).
   if (pendingCapture) return pendingCapture;
-  pendingCapture = takePhoto("single", filter).finally(() => {
+  pendingCapture = takePhoto(mode, filter).finally(() => {
     // Promise stays available for one consumer; cleared after consumption.
   });
   return pendingCapture;
@@ -24,3 +27,4 @@ export function consumePendingCapture(): Promise<TakePhotoResponse> | null {
 export function clearPendingCapture(): void {
   pendingCapture = null;
 }
+

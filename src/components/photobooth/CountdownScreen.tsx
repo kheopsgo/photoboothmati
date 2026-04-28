@@ -42,10 +42,10 @@ export default function CountdownScreen() {
 
     // Start the /take-photo request in the background. CaptureFlow will await
     // this same promise instead of issuing a new request.
-    startEarlyCapture(filter).catch(() => {
+    startEarlyCapture(mode ?? "single", filter).catch(() => {
       // Errors are surfaced/handled by CaptureFlow when it awaits the promise.
     });
-  }, [filter]);
+  }, [filter, mode]);
 
   // Reset state between shots (4-photo mode) when captureProgress changes.
   useEffect(() => {
@@ -125,44 +125,26 @@ export default function CountdownScreen() {
 
       {flash && <div className="absolute inset-0 z-50 animate-flash bg-primary-foreground" />}
 
-      {mode === "four" && (
-        <div className="absolute left-0 right-0 top-12 z-30 text-center animate-float-up">
-          <p className="font-display text-2xl text-muted-foreground drop-shadow-sm">
-            Photo {currentShot} sur {totalShots}
-          </p>
-          <div className="mt-3 flex justify-center gap-2">
-            {Array.from({ length: totalShots }).map((_, i) => (
-              <div
-                key={i}
-                className={`h-3 w-3 rounded-full transition-colors duration-300 ${
-                  i < currentShot ? "bg-primary" : "bg-border"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
       {count > 0 && (
         <div
           key={`${captureProgress}-${count}`}
           className="relative z-30 animate-countdown-pop"
         >
-          <span className="select-none font-display text-[12rem] font-light leading-none text-primary drop-shadow-lg">
+          <span className="select-none font-display text-[12rem] font-light leading-none text-countdown drop-shadow-lg">
             {count}
           </span>
         </div>
       )}
 
       {showSmile && count > 0 && (
-        <p className="relative z-30 mt-4 font-display text-3xl italic text-muted-foreground drop-shadow-sm animate-float-up">
+        <p className="relative z-30 mt-4 font-display text-5xl font-semibold text-countdown drop-shadow-lg animate-float-up">
           Souriez
         </p>
       )}
 
       {count <= 0 && !flash && (
         <div className="relative z-30 animate-countdown-pop">
-          <span className="font-display text-6xl text-primary">📸</span>
+          <span className="font-display text-6xl text-countdown">📸</span>
         </div>
       )}
     </div>
