@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal, Timer, Upload, CheckCircle, AlertCircle } from "lucide-react";
+import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal, Timer, Upload, CheckCircle, AlertCircle, Github, Download } from "lucide-react";
 import type { EventConfig } from "@/config/eventConfig";
-import { configureWifi, getWifiNetworks, uploadFrame, type WifiNetwork } from "@/services/api";
+import { configureWifi, getWifiNetworks, updateFrontend, uploadFrame, type WifiNetwork } from "@/services/api";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
 import PhotoFrame from "./PhotoFrame";
 
