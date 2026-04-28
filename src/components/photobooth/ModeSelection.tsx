@@ -8,7 +8,7 @@ export default function ModeSelection() {
 
   const select = (mode: "single" | "four") => {
     setMode(mode);
-    setScreen(settings.filtersEnabled ? "filter" : "countdown");
+    setScreen("preview");
   };
 
   return (

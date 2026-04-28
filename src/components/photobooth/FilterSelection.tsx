@@ -14,7 +14,7 @@ export default function FilterSelection() {
 
   const select = (f: PhotoFilter) => {
     setFilter(f);
-    setScreen("countdown");
+    setScreen("preview");
   };
 
   return (
