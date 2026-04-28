@@ -39,7 +39,7 @@ export default function PhotoboothApp() {
   return (
     <SettingsProvider>
       <PhotoboothProvider>
-        <div className="max-w-lg mx-auto min-h-screen bg-background relative overflow-hidden">
+        <div className="mx-auto min-h-screen w-full max-w-[1100px] bg-background relative overflow-hidden select-none touch-manipulation">
           <ScreenRouter />
         </div>
       </PhotoboothProvider>
