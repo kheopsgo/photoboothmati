@@ -219,15 +219,15 @@ export default function ResultScreen() {
 
   // Main result screen
   return (
-    <div className="flex flex-col min-h-screen px-6 py-8 animate-float-in">
-      <div className="text-center mb-6">
-        <h2 className="font-display text-4xl text-foreground text-glow-yellow">Magnifique !</h2>
-        <div className="w-12 h-px bg-primary/60 mx-auto mt-2" />
-        <p className="text-sm text-muted-foreground mt-2">Votre souvenir est prêt</p>
+    <div className="flex flex-col min-h-screen px-8 py-10 animate-float-in">
+      <div className="text-center mb-8">
+        <h2 className="font-display text-6xl text-foreground text-glow-yellow">Magnifique !</h2>
+        <div className="w-20 h-px bg-primary/60 mx-auto mt-3" />
+        <p className="text-xl text-muted-foreground mt-3">Votre souvenir est prêt</p>
       </div>
 
-      <div className="flex-1 flex items-center justify-center mb-8">
-        <div className="animate-photo-reveal">
+      <div className="flex-1 flex items-center justify-center mb-10">
+        <div className="animate-photo-reveal w-full max-w-[480px]">
           {settings.frameEnabled ? (
             <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
               {photoContent}
@@ -240,14 +240,14 @@ export default function ResultScreen() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 max-w-sm mx-auto w-full">
+      <div className="grid grid-cols-1 gap-4 max-w-xl mx-auto w-full">
         <Button variant="hero" size="lg" onClick={() => setPanel("email")}>
-          <Mail size={20} />
+          <Mail />
           Envoyer par e-mail
         </Button>
         {qrUrl && (
           <Button variant="elegant" size="lg" onClick={() => setPanel("qr")}>
-            <QrCode size={20} />
+            <QrCode />
             Afficher le QR code
           </Button>
         )}
@@ -257,21 +257,21 @@ export default function ResultScreen() {
           onClick={handlePrint}
           disabled={printStatus === "printing"}
         >
-          <Printer size={20} />
+          <Printer />
           {printStatus === "printing" ? "Impression en cours..." : "Imprimer"}
         </Button>
         {printMessage && printStatus !== "printing" && (
           <p
-            className={`text-sm text-center flex items-center justify-center gap-1.5 ${
+            className={`text-base text-center flex items-center justify-center gap-2 ${
               printStatus === "error" ? "text-destructive" : "text-accent-foreground"
             }`}
           >
-            {printStatus === "error" ? <AlertCircle size={14} /> : <CheckCircle size={14} />}
+            {printStatus === "error" ? <AlertCircle size={18} /> : <CheckCircle size={18} />}
             {printMessage}
           </p>
         )}
         <Button variant="ghost" size="lg" onClick={handleRestart} className="text-muted-foreground">
-          <RotateCcw size={18} />
+          <RotateCcw />
           Recommencer
         </Button>
       </div>
