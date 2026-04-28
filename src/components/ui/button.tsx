@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.97]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 active:scale-[0.97]",
   {
     variants: {
       variant: {
@@ -18,12 +18,12 @@ const buttonVariants = cva(
         elegant: "border-2 border-primary/30 bg-background text-foreground hover:bg-primary/5 hover:border-primary/50 font-body",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-12 rounded-xl px-8 text-base",
-        xl: "h-14 rounded-xl px-10 text-lg",
-        icon: "h-10 w-10",
-        touch: "h-16 rounded-2xl px-10 text-lg min-w-[200px]",
+        default: "h-10 px-4 py-2 [&_svg]:size-4",
+        sm: "h-9 rounded-md px-3 [&_svg]:size-4",
+        lg: "h-20 rounded-2xl px-10 text-2xl font-display [&_svg]:size-7",
+        xl: "h-24 rounded-2xl px-12 text-3xl font-display [&_svg]:size-8",
+        icon: "h-10 w-10 [&_svg]:size-4",
+        touch: "h-20 rounded-2xl px-10 text-xl min-w-[220px] [&_svg]:size-6",
       },
     },
     defaultVariants: {
