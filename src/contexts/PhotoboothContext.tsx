@@ -32,6 +32,7 @@ interface PhotoboothContextType extends PhotoboothState {
   setQrUrl: (url: string) => void;
   setEmailStatus: (s: PhotoboothState["emailStatus"]) => void;
   setCaptureProgress: (n: number) => void;
+  resetCaptureSession: () => void;
   restart: () => void;
 }
 
@@ -81,6 +82,18 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
     (captureProgress: number) => setState((s) => ({ ...s, captureProgress })),
     []
   );
+  const resetCaptureSession = useCallback(
+    () =>
+      setState((s) => ({
+        ...s,
+        sessionId: null,
+        photos: [],
+        finalImage: null,
+        qrUrl: null,
+        captureProgress: 0,
+      })),
+    []
+  );
   const restart = useCallback(() => setState(initial), []);
 
   return (
@@ -95,6 +108,7 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
         setQrUrl,
         setEmailStatus,
         setCaptureProgress,
+        resetCaptureSession,
         restart,
       }}
     >

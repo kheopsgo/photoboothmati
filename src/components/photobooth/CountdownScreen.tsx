@@ -40,12 +40,12 @@ export default function CountdownScreen() {
     setFlash(true);
     setTimeout(() => setFlash(false), 180);
 
-    // Start the /take-photo request in the background. CaptureFlow will await
-    // this same promise instead of issuing a new request.
-    startEarlyCapture(mode ?? "single", filter).catch(() => {
+    // Start the single-shot /take-photo request in the background.
+    // CaptureFlow will await this same promise instead of issuing a new one.
+    startEarlyCapture(filter).catch(() => {
       // Errors are surfaced/handled by CaptureFlow when it awaits the promise.
     });
-  }, [filter, mode]);
+  }, [filter]);
 
   // Reset state between shots (4-photo mode) when captureProgress changes.
   useEffect(() => {
@@ -124,6 +124,14 @@ export default function CountdownScreen() {
       </div>
 
       {flash && <div className="absolute inset-0 z-50 animate-flash bg-primary-foreground" />}
+
+      {mode === "four" && (
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-sm border border-border">
+          <span className="font-display text-sm text-foreground">
+            Photo {currentShot}/{totalShots}
+          </span>
+        </div>
+      )}
 
       {count > 0 && (
         <div

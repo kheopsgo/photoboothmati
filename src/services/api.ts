@@ -52,6 +52,64 @@ export async function takePhoto(
   };
 }
 
+/**
+ * Capture a single shot. Used by the frontend-driven 4-photo loop so we can
+ * show the live preview + countdown between each photo.
+ * Backend should return at least: { sessionId, photo: "/photos/xxx.jpg" }.
+ */
+export interface TakeSinglePhotoResponse {
+  sessionId: string;
+  photo: string;
+}
+
+export async function takeSinglePhoto(
+  filter: PhotoFilter,
+  sessionId?: string | null
+): Promise<TakeSinglePhotoResponse> {
+  const res = await fetch(`${API_BASE}/take-photo`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mode: "single", filter, sessionId: sessionId ?? undefined }),
+  });
+  if (!res.ok) throw new Error("Erreur lors de la prise de photo");
+  const data = await res.json();
+  // Backend may return { photo } or { photos: [..], finalImage }
+  const photoPath: string =
+    data.photo ?? (Array.isArray(data.photos) ? data.photos[0] : data.finalImage);
+  return {
+    sessionId: data.sessionId,
+    photo: buildImageUrl(photoPath),
+  };
+}
+
+/**
+ * Ask the backend to assemble the 2x2 grid from 4 already-captured photos,
+ * apply the frame, and generate the QR code.
+ */
+export async function createGrid(
+  photos: string[],
+  filter: PhotoFilter,
+  sessionId?: string | null
+): Promise<TakePhotoResponse> {
+  // Send back relative paths if possible (strip API_BASE)
+  const normalized = photos.map((p) =>
+    p.startsWith(API_BASE) ? p.slice(API_BASE.length) : p
+  );
+  const res = await fetch(`${API_BASE}/create-grid`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ photos: normalized, filter, sessionId: sessionId ?? undefined }),
+  });
+  if (!res.ok) throw new Error("Erreur lors de la création du montage");
+  const data = await res.json();
+  return {
+    sessionId: data.sessionId,
+    photos: (data.photos as string[]).map(buildImageUrl),
+    finalImage: buildImageUrl(data.finalImage),
+    qrUrl: data.qrUrl ? buildImageUrl(data.qrUrl) : undefined,
+  };
+}
+
 export async function getLatestPhoto(
   sessionId: string
 ): Promise<LatestPhotoResponse> {
