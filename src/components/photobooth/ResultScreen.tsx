@@ -122,19 +122,19 @@ export default function ResultScreen() {
           <span className="font-body text-sm">Retour</span>
         </button>
 
-        <div className="flex-1 flex flex-col items-center justify-center gap-6">
-          <h2 className="font-display text-3xl text-foreground">QR Code</h2>
-          <div className="w-10 h-px bg-primary/40 mx-auto" />
+        <div className="flex-1 flex flex-col items-center justify-center gap-8">
+          <h2 className="font-display text-5xl text-foreground">QR Code</h2>
+          <div className="w-16 h-px bg-primary/40 mx-auto" />
 
-          <div className="w-56 h-56 rounded-2xl border-2 border-border bg-card flex items-center justify-center shadow-md">
+          <div className="w-[420px] h-[420px] max-w-[80vw] max-h-[80vw] rounded-3xl border-2 border-primary/40 bg-white flex items-center justify-center shadow-glow p-4">
             {qrUrl ? (
-              <img src={qrUrl} alt="QR Code" className="w-48 h-48 rounded-lg" />
+              <img src={qrUrl} alt="QR Code" className="w-full h-full rounded-lg object-contain" />
             ) : (
-              <div className="text-muted-foreground/40 text-sm">QR code indisponible</div>
+              <div className="text-muted-foreground/40 text-base">QR code indisponible</div>
             )}
           </div>
 
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-xl text-muted-foreground text-center">
             Scannez pour télécharger votre photo
           </p>
 
