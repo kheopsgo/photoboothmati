@@ -45,7 +45,7 @@ export default function CountdownScreen() {
     startEarlyCapture(filter, null, mode ?? "single").catch(() => {
       // Errors are surfaced/handled by CaptureFlow when it awaits the promise.
     });
-  }, [filter]);
+  }, [filter, mode]);
 
   // Reset state between shots (4-photo mode) when captureProgress changes.
   useEffect(() => {
