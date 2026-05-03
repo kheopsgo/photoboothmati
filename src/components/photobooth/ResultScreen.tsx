@@ -217,17 +217,19 @@ export default function ResultScreen() {
           <p className="text-sm text-muted-foreground">Votre souvenir est prêt</p>
         </div>
         <div className="animate-photo-reveal flex-1 flex items-center justify-center min-h-0 min-w-0 w-full overflow-hidden">
-          <div className="h-full max-h-full max-w-full flex items-center justify-center [&_img]:max-h-full [&_img]:max-w-full [&_img]:object-contain [&>*]:max-h-full [&>*]:max-w-full">
-            {settings.frameEnabled ? (
+          {settings.frameEnabled ? (
+            <div className="max-h-full max-w-full h-full flex items-center justify-center [&>*]:max-h-full [&>*]:max-w-full [&>*]:h-full [&>*]:flex [&>*]:flex-col">
               <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
-                {photoContent}
+                <div className="flex-1 min-h-0 min-w-0 flex items-center justify-center overflow-hidden">
+                  {photoContent}
+                </div>
               </PhotoFrame>
-            ) : (
-              <div className="bg-card border-2 border-primary/30 rounded-2xl p-2 shadow-glow flex items-center justify-center max-h-full max-w-full overflow-hidden">
-                {photoContent}
-              </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="bg-card border-2 border-primary/30 rounded-2xl p-2 shadow-glow flex items-center justify-center max-h-full max-w-full h-full overflow-hidden">
+              {photoContent}
+            </div>
+          )}
         </div>
       </div>
 
