@@ -200,6 +200,7 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
           <Section icon={<Github size={18} />} title="Système">
             <FullscreenToggle />
             <UpdateFromGithub />
+            <TrashPhotosButton />
           </Section>
         </div>
       </div>
