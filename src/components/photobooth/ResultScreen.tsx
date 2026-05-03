@@ -209,26 +209,24 @@ export default function ResultScreen() {
 
   // Main result screen — landscape: photo left, actions right
   return (
-    <div className="flex h-screen w-full animate-float-in">
-      {/* Left: photo */}
-      <div className="flex-[6] flex flex-col items-center justify-center p-8 min-w-0">
-        <div className="text-center mb-6">
-          <h2 className="font-display text-5xl text-foreground text-glow-yellow">Magnifique !</h2>
-          <p className="text-lg text-muted-foreground mt-2">Votre souvenir est prêt</p>
+    <div className="flex h-screen w-full animate-float-in overflow-hidden">
+      {/* Left: photo (~70%) */}
+      <div className="basis-[70%] flex flex-col items-center justify-center p-6 min-w-0 min-h-0 overflow-hidden">
+        <div className="text-center mb-4 shrink-0">
+          <h2 className="font-display text-4xl text-foreground text-glow-yellow">Magnifique !</h2>
+          <p className="text-base text-muted-foreground mt-1">Votre souvenir est prêt</p>
         </div>
-        <div className="animate-photo-reveal flex-1 flex items-center justify-center min-h-0 w-full">
-          <div className="h-full max-h-full max-w-full flex items-center justify-center">
-            <div className="max-h-full">
-              {settings.frameEnabled ? (
-                <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
-                  {photoContent}
-                </PhotoFrame>
-              ) : (
-                <div className="bg-card border-2 border-primary/30 rounded-2xl p-3 shadow-glow max-w-[420px]">
-                  {photoContent}
-                </div>
-              )}
-            </div>
+        <div className="animate-photo-reveal flex-1 flex items-center justify-center min-h-0 min-w-0 w-full overflow-hidden">
+          <div className="max-h-full max-w-full flex items-center justify-center [&_img]:max-h-[calc(100vh-10rem)] [&_img]:max-w-full [&_img]:object-contain">
+            {settings.frameEnabled ? (
+              <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
+                {photoContent}
+              </PhotoFrame>
+            ) : (
+              <div className="bg-card border-2 border-primary/30 rounded-2xl p-3 shadow-glow flex items-center justify-center max-h-full">
+                {photoContent}
+              </div>
+            )}
           </div>
         </div>
       </div>
