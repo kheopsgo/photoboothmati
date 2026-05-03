@@ -3,6 +3,7 @@ import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { Settings, Camera, Sparkles } from "lucide-react";
 import SettingsPanel from "./SettingsPanel";
+import { enterFullscreen } from "@/lib/fullscreen";
 
 interface BubbleProps {
   size: number;
