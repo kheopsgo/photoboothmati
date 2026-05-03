@@ -1,19 +1,12 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { armFullscreenOnFirstGesture, enterFullscreen } from "./lib/fullscreen";
 
-// Try to lock the screen orientation to landscape (works in fullscreen / PWA on Android).
-const lockLandscape = () => {
-  const orientation = (screen as any).orientation;
-  if (orientation && typeof orientation.lock === "function") {
-    orientation.lock("landscape").catch(() => {
-      /* ignored — browsers without fullscreen / kiosk mode reject this */
-    });
-  }
-};
-
-document.addEventListener("click", lockLandscape, { once: true });
-lockLandscape();
+// Best-effort: try immediately (will likely no-op without a user gesture)
+enterFullscreen();
+// Arm a one-time listener so the first tap triggers real fullscreen + landscape lock
+armFullscreenOnFirstGesture();
 
 // Register a minimal service worker so the app is installable as a PWA.
 // Skip registration in iframes / Lovable preview to avoid caching issues.

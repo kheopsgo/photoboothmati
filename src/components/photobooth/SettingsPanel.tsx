@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal, Timer, Upload, CheckCircle, AlertCircle, Github, Download } from "lucide-react";
+import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2 } from "lucide-react";
+import { enterFullscreen, exitFullscreen, isFullscreen } from "@/lib/fullscreen";
 import type { EventConfig } from "@/config/eventConfig";
 import { configureWifi, getWifiNetworks, updateFrontend, uploadFrame, type WifiNetwork } from "@/services/api";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
@@ -197,11 +198,41 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
 
           {/* === SYSTEM === */}
           <Section icon={<Github size={18} />} title="Système">
+            <FullscreenToggle />
             <UpdateFromGithub />
           </Section>
         </div>
       </div>
     </div>
+  );
+}
+
+function FullscreenToggle() {
+  const [active, setActive] = useState(isFullscreen());
+
+  useEffect(() => {
+    const onChange = () => setActive(isFullscreen());
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const handleToggle = async () => {
+    if (active) {
+      exitFullscreen();
+    } else {
+      await enterFullscreen();
+    }
+    setActive(isFullscreen());
+  };
+
+  return (
+    <button
+      onClick={handleToggle}
+      className="w-full h-12 rounded-lg bg-muted text-foreground font-body text-sm font-medium hover:bg-muted/80 transition-colors flex items-center justify-center gap-2 border border-border"
+    >
+      {active ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+      {active ? "Quitter le plein écran" : "Activer plein écran"}
+    </button>
   );
 }
 
