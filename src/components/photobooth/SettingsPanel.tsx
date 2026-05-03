@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2, Trash2 } from "lucide-react";
+import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2, Trash2, Cloud, ExternalLink } from "lucide-react";
 import { enterFullscreen, exitFullscreen, isFullscreen } from "@/lib/fullscreen";
 import type { EventConfig } from "@/config/eventConfig";
 import { configureWifi, getWifiNetworks, trashPhotos, updateFrontend, uploadFrame, type WifiNetwork } from "@/services/api";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
 import PhotoFrame from "./PhotoFrame";
+import QRCode from "qrcode";
 
 const FRAME_STYLES: { id: EventConfig["frameStyle"]; label: string }[] = [
   { id: "elegant", label: "Élégant" },
@@ -194,6 +195,11 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
                 onChange={(v) => updateEventConfig({ footer: v || undefined })}
               />
             </div>
+          </Section>
+
+          {/* === GOOGLE DRIVE === */}
+          <Section icon={<Cloud size={18} />} title="Sauvegarde Google Drive">
+            <GoogleDriveSection />
           </Section>
 
           {/* === SYSTEM === */}
@@ -944,6 +950,56 @@ function SaveFrameButton() {
           </PhotoFrame>
         </div>
       </div>
+    </div>
+  );
+}
+
+function GoogleDriveSection() {
+  const driveUrl = import.meta.env.VITE_GOOGLE_DRIVE_FOLDER_URL;
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!driveUrl) return;
+    QRCode.toDataURL(driveUrl, { width: 200, margin: 2 })
+      .then((url) => setQrDataUrl(url))
+      .catch(() => setQrDataUrl(null));
+  }, [driveUrl]);
+
+  if (!driveUrl) {
+    return (
+      <div className="p-3 rounded-lg bg-muted/50 border border-border">
+        <p className="font-body text-sm text-muted-foreground">
+          Lien Google Drive non configuré
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="font-body text-sm text-muted-foreground leading-relaxed">
+        Scannez ce QR code pour ouvrir le dossier des photos sauvegardées
+      </p>
+
+      {qrDataUrl && (
+        <div className="flex justify-center">
+          <div className="p-3 rounded-xl bg-white border border-border">
+            <img
+              src={qrDataUrl}
+              alt="QR code Google Drive"
+              className="w-48 h-48"
+            />
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={() => window.open(driveUrl, "_blank")}
+        className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-body text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+      >
+        <ExternalLink size={16} />
+        Ouvrir Google Drive
+      </button>
     </div>
   );
 }
