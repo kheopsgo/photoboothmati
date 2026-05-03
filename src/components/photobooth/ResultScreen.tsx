@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
-import { useSettings } from "@/contexts/SettingsContext";
 import { sendEmail, printPhoto } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { Button } from "@/components/ui/button";
 import { Mail, QrCode, RotateCcw, ArrowLeft, CheckCircle, AlertCircle, Printer } from "lucide-react";
-import PhotoFrame from "./PhotoFrame";
 import VirtualKeyboard from "./VirtualKeyboard";
 
 type Panel = "none" | "qr" | "email";
@@ -36,7 +34,6 @@ function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onCom
 
 export default function ResultScreen() {
   const { mode, photos, finalImage, qrUrl, setScreen } = usePhotobooth();
-  const { settings } = useSettings();
   const { playSuccess } = useSound();
 
   const [panel, setPanel] = useState<Panel>("none");
@@ -96,19 +93,23 @@ export default function ResultScreen() {
     }
   };
 
-  const photoContent = mode === "four" ? (
-    <div className="grid grid-cols-2 grid-rows-2 gap-2 h-full max-h-full w-auto aspect-square">
+  const resultImageSrc = finalImage || photos[0];
+
+  const photoContent = resultImageSrc ? (
+    <img
+      src={resultImageSrc}
+      alt="Votre photo"
+      className="block h-auto max-h-full w-auto max-w-full rounded-xl object-contain"
+    />
+  ) : mode === "four" ? (
+    <div className="grid h-full max-h-full max-w-full aspect-square grid-cols-2 grid-rows-2 gap-2">
       {photos.map((photo, i) => (
-        <div key={i} className="rounded-lg overflow-hidden bg-muted/40 flex items-center justify-center min-h-0 min-w-0">
-          <img src={photo} alt={`Photo ${i + 1}`} className="max-w-full max-h-full object-contain" />
+        <div key={i} className="flex min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-lg bg-muted/40">
+          <img src={photo} alt={`Photo ${i + 1}`} className="block max-h-full max-w-full object-contain" />
         </div>
       ))}
     </div>
-  ) : (
-    <div className="rounded-lg overflow-hidden bg-muted/40 flex items-center justify-center h-full max-h-full w-auto">
-      <img src={finalImage || photos[0]} alt="Votre photo" className="max-w-full max-h-full object-contain" />
-    </div>
-  );
+  ) : null;
 
   // QR panel
   if (panel === "qr") {
@@ -209,32 +210,20 @@ export default function ResultScreen() {
 
   // Main result screen — landscape: photo left, actions right
   return (
-    <div className="flex h-screen max-h-screen w-full animate-float-in overflow-hidden">
-      {/* Left: photo (~70%) */}
-      <div className="basis-[70%] flex flex-col items-center justify-center p-4 min-w-0 min-h-0 overflow-hidden">
-        <div className="text-center mb-2 shrink-0">
-          <h2 className="font-display text-3xl text-foreground text-glow-yellow">Magnifique !</h2>
-          <p className="text-sm text-muted-foreground">Votre souvenir est prêt</p>
-        </div>
-        <div className="animate-photo-reveal flex-1 flex items-center justify-center min-h-0 min-w-0 w-full overflow-hidden">
-          {settings.frameEnabled ? (
-            <div className="max-h-full max-w-full h-full flex items-center justify-center [&>*]:max-h-full [&>*]:max-w-full [&>*]:h-full [&>*]:flex [&>*]:flex-col">
-              <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
-                <div className="flex-1 min-h-0 min-w-0 flex items-center justify-center overflow-hidden">
-                  {photoContent}
-                </div>
-              </PhotoFrame>
-            </div>
-          ) : (
-            <div className="bg-card border-2 border-primary/30 rounded-2xl p-2 shadow-glow flex items-center justify-center max-h-full max-w-full h-full overflow-hidden">
-              {photoContent}
-            </div>
-          )}
+    <div className="fixed inset-0 flex h-[100dvh] max-h-[100dvh] w-screen max-w-screen animate-float-in overflow-hidden bg-background">
+      {/* Left: final render (~70%) */}
+      <div className="flex h-full min-h-0 min-w-0 basis-[72%] items-center justify-center overflow-hidden p-3">
+        <div className="animate-photo-reveal flex h-full max-h-full w-full max-w-full min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-primary/25 bg-card/70 p-3 shadow-glow">
+          {photoContent}
         </div>
       </div>
 
       {/* Right: actions */}
-      <div className="basis-[30%] flex flex-col justify-center gap-4 p-6 bg-card/50 backdrop-blur-xl border-l border-border min-w-[300px] overflow-y-auto">
+      <div className="flex h-full min-h-0 min-w-[280px] basis-[28%] flex-col justify-center gap-3 overflow-hidden border-l border-border bg-card/50 p-5 backdrop-blur-xl">
+        <div className="mb-2 shrink-0 text-center">
+          <h2 className="font-display text-3xl text-foreground text-glow-yellow">Magnifique !</h2>
+          <p className="text-sm text-muted-foreground">Votre souvenir est prêt</p>
+        </div>
         <Button variant="hero" size="lg" onClick={() => setPanel("email")}>
           <Mail />
           Envoyer par e-mail
