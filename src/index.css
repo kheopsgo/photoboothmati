@@ -254,22 +254,3 @@
 .shadow-glow {
   box-shadow: 0 0 40px hsl(var(--primary) / 0.5), 0 0 80px hsl(var(--primary) / 0.25);
 }
-
-/* Landscape orientation hint for tablets */
-@media (orientation: portrait) and (min-width: 600px) {
-  .landscape-app::before {
-    content: "Veuillez tourner la tablette en mode paysage 🔄";
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: hsl(var(--background));
-    color: hsl(var(--primary));
-    font-family: var(--font-display, serif);
-    font-size: 2rem;
-    text-align: center;
-    padding: 2rem;
-  }
-}
