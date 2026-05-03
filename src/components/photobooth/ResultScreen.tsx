@@ -97,7 +97,7 @@ export default function ResultScreen() {
   };
 
   const photoContent = mode === "four" ? (
-    <div className="grid grid-cols-2 gap-2 max-h-full max-w-full h-full w-auto aspect-square">
+    <div className="grid grid-cols-2 grid-rows-2 gap-2 h-full w-full min-h-0 min-w-0">
       {photos.map((photo, i) => (
         <div key={i} className="rounded-lg overflow-hidden bg-muted/40 flex items-center justify-center min-h-0 min-w-0">
           <img src={photo} alt={`Photo ${i + 1}`} className="max-w-full max-h-full object-contain" />
@@ -105,7 +105,7 @@ export default function ResultScreen() {
       ))}
     </div>
   ) : (
-    <div className="rounded-lg overflow-hidden bg-muted/40 flex items-center justify-center max-h-full max-w-full">
+    <div className="rounded-lg overflow-hidden bg-muted/40 flex items-center justify-center h-full w-full min-h-0 min-w-0">
       <img src={finalImage || photos[0]} alt="Votre photo" className="max-w-full max-h-full object-contain" />
     </div>
   );
