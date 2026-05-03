@@ -209,21 +209,21 @@ export default function ResultScreen() {
 
   // Main result screen — landscape: photo left, actions right
   return (
-    <div className="flex h-screen w-full animate-float-in overflow-hidden">
+    <div className="flex h-screen max-h-screen w-full animate-float-in overflow-hidden">
       {/* Left: photo (~70%) */}
-      <div className="basis-[70%] flex flex-col items-center justify-center p-6 min-w-0 min-h-0 overflow-hidden">
-        <div className="text-center mb-4 shrink-0">
-          <h2 className="font-display text-4xl text-foreground text-glow-yellow">Magnifique !</h2>
-          <p className="text-base text-muted-foreground mt-1">Votre souvenir est prêt</p>
+      <div className="basis-[70%] flex flex-col items-center justify-center p-4 min-w-0 min-h-0 overflow-hidden">
+        <div className="text-center mb-2 shrink-0">
+          <h2 className="font-display text-3xl text-foreground text-glow-yellow">Magnifique !</h2>
+          <p className="text-sm text-muted-foreground">Votre souvenir est prêt</p>
         </div>
         <div className="animate-photo-reveal flex-1 flex items-center justify-center min-h-0 min-w-0 w-full overflow-hidden">
-          <div className="max-h-full max-w-full flex items-center justify-center [&_img]:max-h-[calc(100vh-10rem)] [&_img]:max-w-full [&_img]:object-contain">
+          <div className="h-full max-h-full max-w-full flex items-center justify-center [&_img]:max-h-full [&_img]:max-w-full [&_img]:object-contain [&>*]:max-h-full [&>*]:max-w-full">
             {settings.frameEnabled ? (
               <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
                 {photoContent}
               </PhotoFrame>
             ) : (
-              <div className="bg-card border-2 border-primary/30 rounded-2xl p-3 shadow-glow flex items-center justify-center max-h-full">
+              <div className="bg-card border-2 border-primary/30 rounded-2xl p-2 shadow-glow flex items-center justify-center max-h-full max-w-full overflow-hidden">
                 {photoContent}
               </div>
             )}
