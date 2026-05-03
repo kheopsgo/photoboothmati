@@ -42,7 +42,7 @@ export default function CountdownScreen() {
 
     // Start the single-shot /take-photo request in the background.
     // CaptureFlow will await this same promise instead of issuing a new one.
-    startEarlyCapture(filter).catch(() => {
+    startEarlyCapture(filter, null, mode ?? "single").catch(() => {
       // Errors are surfaced/handled by CaptureFlow when it awaits the promise.
     });
   }, [filter]);
