@@ -254,3 +254,21 @@
 .shadow-glow {
   box-shadow: 0 0 40px hsl(var(--primary) / 0.5), 0 0 80px hsl(var(--primary) / 0.25);
 }
+
+/* Force landscape rendering: if the device is held in portrait,
+   rotate the entire app 90° so it always displays as landscape. */
+@media (orientation: portrait) {
+  html, body, #root {
+    overflow: hidden;
+  }
+  .landscape-app {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vh;
+    height: 100vw;
+    transform: rotate(90deg);
+    transform-origin: top left;
+    translate: 100vw 0;
+  }
+}

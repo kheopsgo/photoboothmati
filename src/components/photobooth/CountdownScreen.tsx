@@ -92,7 +92,7 @@ export default function CountdownScreen() {
   }, [count, playTick, playShutter, setScreen]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-background">
+    <div className="relative flex flex-col items-center justify-center h-screen w-full overflow-hidden bg-background">
       <div
         className={`absolute inset-0 z-0 transition-opacity duration-200 pointer-events-none ${
           flash ? "opacity-0" : "opacity-100"
