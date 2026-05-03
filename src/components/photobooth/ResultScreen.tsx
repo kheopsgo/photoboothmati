@@ -232,7 +232,7 @@ export default function ResultScreen() {
       </div>
 
       {/* Right: actions */}
-      <div className="flex-[4] flex flex-col justify-center gap-4 p-8 bg-card/50 backdrop-blur-xl border-l border-border min-w-[320px]">
+      <div className="basis-[30%] flex flex-col justify-center gap-4 p-6 bg-card/50 backdrop-blur-xl border-l border-border min-w-[300px] overflow-y-auto">
         <Button variant="hero" size="lg" onClick={() => setPanel("email")}>
           <Mail />
           Envoyer par e-mail
