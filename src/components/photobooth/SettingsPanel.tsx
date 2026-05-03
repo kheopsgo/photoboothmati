@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2 } from "lucide-react";
+import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2, Trash2 } from "lucide-react";
 import { enterFullscreen, exitFullscreen, isFullscreen } from "@/lib/fullscreen";
 import type { EventConfig } from "@/config/eventConfig";
-import { configureWifi, getWifiNetworks, updateFrontend, uploadFrame, type WifiNetwork } from "@/services/api";
+import { configureWifi, getWifiNetworks, trashPhotos, updateFrontend, uploadFrame, type WifiNetwork } from "@/services/api";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
 import PhotoFrame from "./PhotoFrame";
 
