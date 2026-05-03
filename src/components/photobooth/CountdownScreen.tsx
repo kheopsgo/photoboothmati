@@ -54,20 +54,9 @@ export default function CountdownScreen() {
     setFlash(false);
   }, [captureProgress]);
 
-  // Schedule the real capture independently from the visual countdown.
-  // The visible countdown is NEVER tied to this timer — it always runs the
-  // full 3 → 2 → 1 → 0 sequence regardless of when capture is triggered.
-  useEffect(() => {
-    const captureDelay = Math.max(0, COUNTDOWN_TOTAL_MS - captureOffsetMs);
-    const captureTimer = setTimeout(() => {
-      triggerCapture();
-    }, captureDelay);
-    return () => clearTimeout(captureTimer);
-  }, [captureProgress, triggerCapture, captureOffsetMs]);
-
   // Pure visual countdown — drives only what's displayed on screen.
-  // After reaching 0, navigate to capturing screen which will await the
-  // already-in-flight (or fresh) /take-photo promise.
+  // The real /take-photo is fired when the visible count hits CAPTURE_AT_COUNT
+  // (≈2s before the end) to compensate for camera hardware latency.
   useEffect(() => {
     if (count <= 0) {
       playShutter();
@@ -77,7 +66,13 @@ export default function CountdownScreen() {
       return () => clearTimeout(navTimer);
     }
 
-    if (count <= 2) {
+    // Trigger real capture at t=2 (during the "2" frame).
+    if (count === CAPTURE_AT_COUNT) {
+      triggerCapture();
+    }
+
+    // "Souriez" only at the very end (during "1"), not while "2" is shown.
+    if (count <= 1) {
       setShowSmile(true);
     }
 
@@ -87,7 +82,7 @@ export default function CountdownScreen() {
     }, TICK_MS);
 
     return () => clearTimeout(timer);
-  }, [count, playTick, playShutter, setScreen]);
+  }, [count, playTick, playShutter, setScreen, triggerCapture]);
 
   return (
     <div className="relative flex flex-col items-center justify-center h-screen w-full overflow-hidden bg-background">
