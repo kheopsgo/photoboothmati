@@ -953,3 +953,53 @@ function SaveFrameButton() {
     </div>
   );
 }
+
+function GoogleDriveSection() {
+  const driveUrl = import.meta.env.VITE_GOOGLE_DRIVE_FOLDER_URL;
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!driveUrl) return;
+    QRCode.toDataURL(driveUrl, { width: 200, margin: 2 })
+      .then((url) => setQrDataUrl(url))
+      .catch(() => setQrDataUrl(null));
+  }, [driveUrl]);
+
+  if (!driveUrl) {
+    return (
+      <div className="p-3 rounded-lg bg-muted/50 border border-border">
+        <p className="font-body text-sm text-muted-foreground">
+          Lien Google Drive non configuré
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="font-body text-sm text-muted-foreground leading-relaxed">
+        Scannez ce QR code pour ouvrir le dossier des photos sauvegardées
+      </p>
+
+      {qrDataUrl && (
+        <div className="flex justify-center">
+          <div className="p-3 rounded-xl bg-white border border-border">
+            <img
+              src={qrDataUrl}
+              alt="QR code Google Drive"
+              className="w-48 h-48"
+            />
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={() => window.open(driveUrl, "_blank")}
+        className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-body text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+      >
+        <ExternalLink size={16} />
+        Ouvrir Google Drive
+      </button>
+    </div>
+  );
+}
