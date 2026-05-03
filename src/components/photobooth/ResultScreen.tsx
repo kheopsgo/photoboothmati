@@ -97,15 +97,15 @@ export default function ResultScreen() {
   };
 
   const photoContent = mode === "four" ? (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-2 max-h-full max-w-full h-full w-auto aspect-square">
       {photos.map((photo, i) => (
-        <div key={i} className="rounded-lg overflow-hidden bg-muted/40 flex items-center justify-center">
+        <div key={i} className="rounded-lg overflow-hidden bg-muted/40 flex items-center justify-center min-h-0 min-w-0">
           <img src={photo} alt={`Photo ${i + 1}`} className="max-w-full max-h-full object-contain" />
         </div>
       ))}
     </div>
   ) : (
-    <div className="rounded-lg overflow-hidden bg-muted/40 flex items-center justify-center">
+    <div className="rounded-lg overflow-hidden bg-muted/40 flex items-center justify-center max-h-full max-w-full">
       <img src={finalImage || photos[0]} alt="Votre photo" className="max-w-full max-h-full object-contain" />
     </div>
   );
@@ -209,21 +209,21 @@ export default function ResultScreen() {
 
   // Main result screen — landscape: photo left, actions right
   return (
-    <div className="flex h-screen w-full animate-float-in overflow-hidden">
+    <div className="flex h-screen max-h-screen w-full animate-float-in overflow-hidden">
       {/* Left: photo (~70%) */}
-      <div className="basis-[70%] flex flex-col items-center justify-center p-6 min-w-0 min-h-0 overflow-hidden">
-        <div className="text-center mb-4 shrink-0">
-          <h2 className="font-display text-4xl text-foreground text-glow-yellow">Magnifique !</h2>
-          <p className="text-base text-muted-foreground mt-1">Votre souvenir est prêt</p>
+      <div className="basis-[70%] flex flex-col items-center justify-center p-4 min-w-0 min-h-0 overflow-hidden">
+        <div className="text-center mb-2 shrink-0">
+          <h2 className="font-display text-3xl text-foreground text-glow-yellow">Magnifique !</h2>
+          <p className="text-sm text-muted-foreground">Votre souvenir est prêt</p>
         </div>
         <div className="animate-photo-reveal flex-1 flex items-center justify-center min-h-0 min-w-0 w-full overflow-hidden">
-          <div className="max-h-full max-w-full flex items-center justify-center [&_img]:max-h-[calc(100vh-10rem)] [&_img]:max-w-full [&_img]:object-contain">
+          <div className="h-full max-h-full max-w-full flex items-center justify-center [&_img]:max-h-full [&_img]:max-w-full [&_img]:object-contain [&>*]:max-h-full [&>*]:max-w-full">
             {settings.frameEnabled ? (
               <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
                 {photoContent}
               </PhotoFrame>
             ) : (
-              <div className="bg-card border-2 border-primary/30 rounded-2xl p-3 shadow-glow flex items-center justify-center max-h-full">
+              <div className="bg-card border-2 border-primary/30 rounded-2xl p-2 shadow-glow flex items-center justify-center max-h-full max-w-full overflow-hidden">
                 {photoContent}
               </div>
             )}
