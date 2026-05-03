@@ -6,6 +6,7 @@ import type { EventConfig } from "@/config/eventConfig";
 import { configureWifi, getWifiNetworks, trashPhotos, updateFrontend, uploadFrame, type WifiNetwork } from "@/services/api";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
 import PhotoFrame from "./PhotoFrame";
+import QRCode from "qrcode";
 
 const FRAME_STYLES: { id: EventConfig["frameStyle"]; label: string }[] = [
   { id: "elegant", label: "Élégant" },
@@ -194,6 +195,11 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
                 onChange={(v) => updateEventConfig({ footer: v || undefined })}
               />
             </div>
+          </Section>
+
+          {/* === GOOGLE DRIVE === */}
+          <Section icon={<Cloud size={18} />} title="Sauvegarde Google Drive">
+            <GoogleDriveSection />
           </Section>
 
           {/* === SYSTEM === */}
