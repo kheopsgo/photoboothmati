@@ -2,30 +2,36 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="screen-orientation" content="landscape" />
     <meta name="x5-orientation" content="landscape" />
+
     <title>Photobooth</title>
-    <meta name="description" content="Photobooth digital pour votre mariage — capturez vos plus beaux moments">
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>Lovable App</title>
-    <meta name="description" content="Lovable Generated Project" />
+    <meta name="description" content="Photobooth digital pour votre mariage — capturez vos plus beaux moments" />
     <meta name="author" content="Lovable" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    
-    
-    <meta property="og:type" content="website" />
-    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="background-color" content="#000000" />
+    <link rel="icon" href="/icon-192.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
 
+    <!-- iOS standalone -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Photobooth" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Photobooth" />
+    <meta property="og:description" content="Photobooth digital pour votre mariage — capturez vos plus beaux moments" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@Lovable" />
-    
-    <meta property="og:title" content="Photobooth">
-  <meta name="twitter:title" content="Photobooth">
-  <meta property="og:description" content="Photobooth digital pour votre mariage — capturez vos plus beaux moments">
-  <meta name="twitter:description" content="Photobooth digital pour votre mariage — capturez vos plus beaux moments">
-</head>
+    <meta name="twitter:title" content="Photobooth" />
+    <meta name="twitter:description" content="Photobooth digital pour votre mariage — capturez vos plus beaux moments" />
+  </head>
 
   <body>
     <div id="root"></div>
