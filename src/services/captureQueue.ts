@@ -1,6 +1,7 @@
 import {
   takeSinglePhoto,
   type PhotoFilter,
+  type PhotoMode,
   type TakeSinglePhotoResponse,
 } from "./api";
 
@@ -12,10 +13,17 @@ let pendingCapture: Promise<TakeSinglePhotoResponse> | null = null;
 
 export function startEarlyCapture(
   filter: PhotoFilter,
-  sessionId?: string | null
+  sessionId?: string | null,
+  mode: PhotoMode = "single"
 ): Promise<TakeSinglePhotoResponse> {
   if (pendingCapture) return pendingCapture;
-  pendingCapture = takeSinglePhoto(filter, sessionId).finally(() => {
+  // In 4-photo mode, request the raw (unframed) photo: the frame must be
+  // applied only once on the final 2x2 composition by /create-grid.
+  const partOfGrid = mode === "four";
+  pendingCapture = takeSinglePhoto(filter, sessionId, {
+    applyFrame: !partOfGrid,
+    partOfGrid,
+  }).finally(() => {
     // Promise stays available until consumed by CaptureFlow.
   });
   return pendingCapture;

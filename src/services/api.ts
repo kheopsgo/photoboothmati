@@ -64,12 +64,25 @@ export interface TakeSinglePhotoResponse {
 
 export async function takeSinglePhoto(
   filter: PhotoFilter,
-  sessionId?: string | null
+  sessionId?: string | null,
+  options?: { applyFrame?: boolean; partOfGrid?: boolean }
 ): Promise<TakeSinglePhotoResponse> {
+  const applyFrame = options?.applyFrame ?? true;
+  const partOfGrid = options?.partOfGrid ?? false;
   const res = await fetch(`${API_BASE}/take-photo`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ mode: "single", filter, sessionId: sessionId ?? undefined }),
+    body: JSON.stringify({
+      mode: "single",
+      filter,
+      sessionId: sessionId ?? undefined,
+      // Hints for the backend: when this shot is part of a 4-photo grid,
+      // we want the raw (unframed) photo so the frame is applied only once
+      // on the final 2x2 composition by /create-grid.
+      applyFrame,
+      partOfGrid,
+      raw: !applyFrame,
+    }),
   });
   if (!res.ok) throw new Error("Erreur lors de la prise de photo");
   const data = await res.json();
