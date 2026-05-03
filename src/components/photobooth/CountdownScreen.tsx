@@ -24,12 +24,10 @@ export default function CountdownScreen() {
   const currentShot = captureProgress + 1;
   const streamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
 
-  // Configurable latency offset (ms). Real /take-photo fires this many ms
-  // before the end of the visible countdown. Visible countdown is unaffected.
-  const captureOffsetMs = Math.max(
-    0,
-    Math.min(COUNTDOWN_TOTAL_MS, settings.captureOffsetMs ?? 1500)
-  );
+  // Real /take-photo is fired when the visible countdown reaches "2"
+  // (i.e. ~2s before the end), to compensate for camera hardware latency.
+  // The visible countdown is never blocked by the capture itself.
+  const CAPTURE_AT_COUNT = 2;
 
   // Fires the real capture (API call + flash + sound). Independent from the
   // visible countdown number — driven by a separate setTimeout.
