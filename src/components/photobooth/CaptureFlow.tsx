@@ -26,7 +26,10 @@ export default function CaptureFlow() {
       try {
         // 1) Capture a single photo (reuse early-fired promise if any).
         const pending = consumePendingCapture();
-        const shot = await (pending ?? takeSinglePhoto(filter, sessionId));
+        const shot = await (pending ?? takeSinglePhoto(filter, sessionId, {
+          applyFrame: mode !== "four",
+          partOfGrid: mode === "four",
+        }));
         if (cancelled) return;
 
         const newPhotos = [...photos, shot.photo];
