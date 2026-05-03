@@ -72,6 +72,9 @@ export default function WelcomeScreen() {
   const [showSettings, setShowSettings] = useState(false);
 
   const handleStart = () => {
+    // Best-effort fullscreen + landscape lock on first user gesture
+    enterFullscreen();
+
     if (settings.allowSingle && !settings.allowFour) {
       setMode("single");
       setScreen("preview");
