@@ -52,7 +52,7 @@ export default function ThanksScreen() {
   }, [playSuccess, restart]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen px-8 overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center h-screen w-full px-8 overflow-hidden">
       <Confetti />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/15 blur-3xl pointer-events-none" />
 
