@@ -340,6 +340,89 @@ function UpdateFromGithub() {
   );
 }
 
+function TrashPhotosButton() {
+  const [status, setStatus] = useState<"idle" | "confirm" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+
+  const handleConfirm = async () => {
+    setStatus("loading");
+    setMessage("");
+    try {
+      const res = await trashPhotos();
+      setMessage(res.message || "Photos mises à la corbeille");
+      setStatus("success");
+      setTimeout(() => {
+        setStatus("idle");
+        setMessage("");
+      }, 3000);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Erreur lors de la mise à la corbeille");
+      setStatus("error");
+    }
+  };
+
+  const isLoading = status === "loading";
+
+  return (
+    <div className="space-y-3">
+      {status === "confirm" ? (
+        <div className="space-y-3 p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+          <p className="font-body text-sm text-foreground">
+            Voulez-vous vraiment mettre toutes les photos à la corbeille ?
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={handleConfirm}
+              className="flex-1 h-11 rounded-lg bg-destructive text-destructive-foreground font-body text-sm font-medium hover:bg-destructive/90 transition-colors"
+            >
+              Oui, à la corbeille
+            </button>
+            <button
+              onClick={() => { setStatus("idle"); setMessage(""); }}
+              className="flex-1 h-11 rounded-lg bg-muted text-muted-foreground font-body text-sm font-medium hover:bg-muted/80 transition-colors"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => !isLoading && setStatus("confirm")}
+          disabled={isLoading}
+          className="w-full h-12 rounded-lg bg-muted text-foreground font-body text-sm font-medium hover:bg-muted/80 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-border"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Mise à la corbeille…
+            </>
+          ) : (
+            <>
+              <Trash2 size={16} />
+              Mettre les photos à la corbeille
+            </>
+          )}
+        </button>
+      )}
+
+      {status === "success" && (
+        <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
+          <p className="font-body text-sm text-foreground">✓ {message}</p>
+        </div>
+      )}
+
+      {status === "error" && (
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+          <p className="font-body text-sm text-destructive flex items-start gap-2">
+            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+            <span>{message}</span>
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* --- Sub-components --- */
 
 function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
