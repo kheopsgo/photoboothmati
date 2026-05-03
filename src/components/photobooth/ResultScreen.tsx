@@ -99,14 +99,14 @@ export default function ResultScreen() {
   const photoContent = mode === "four" ? (
     <div className="grid grid-cols-2 gap-2">
       {photos.map((photo, i) => (
-        <div key={i} className="aspect-[3/4] rounded-lg overflow-hidden bg-muted">
-          <img src={photo} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+        <div key={i} className="rounded-lg overflow-hidden bg-muted/40 flex items-center justify-center">
+          <img src={photo} alt={`Photo ${i + 1}`} className="max-w-full max-h-full object-contain" />
         </div>
       ))}
     </div>
   ) : (
-    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted">
-      <img src={finalImage || photos[0]} alt="Votre photo" className="w-full h-full object-cover" />
+    <div className="rounded-lg overflow-hidden bg-muted/40 flex items-center justify-center">
+      <img src={finalImage || photos[0]} alt="Votre photo" className="max-w-full max-h-full object-contain" />
     </div>
   );
 
