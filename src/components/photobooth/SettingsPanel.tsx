@@ -207,6 +207,35 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
   );
 }
 
+function FullscreenToggle() {
+  const [active, setActive] = useState(isFullscreen());
+
+  useEffect(() => {
+    const onChange = () => setActive(isFullscreen());
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const handleToggle = async () => {
+    if (active) {
+      exitFullscreen();
+    } else {
+      await enterFullscreen();
+    }
+    setActive(isFullscreen());
+  };
+
+  return (
+    <button
+      onClick={handleToggle}
+      className="w-full h-12 rounded-lg bg-muted text-foreground font-body text-sm font-medium hover:bg-muted/80 transition-colors flex items-center justify-center gap-2 border border-border"
+    >
+      {active ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+      {active ? "Quitter le plein écran" : "Activer plein écran"}
+    </button>
+  );
+}
+
 function UpdateFromGithub() {
   const [status, setStatus] = useState<"idle" | "confirm" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
