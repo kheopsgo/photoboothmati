@@ -35,7 +35,7 @@ function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onCom
 }
 
 export default function ResultScreen() {
-  const { mode, photos, finalImage, qrUrl, restart, setScreen } = usePhotobooth();
+  const { mode, photos, finalImage, qrUrl, setScreen } = usePhotobooth();
   const { settings } = useSettings();
   const { playSuccess } = useSound();
 
@@ -105,7 +105,7 @@ export default function ResultScreen() {
       ))}
     </div>
   ) : (
-    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted max-w-[300px]">
+    <div className="aspect-[3/4] rounded-lg overflow-hidden bg-muted">
       <img src={finalImage || photos[0]} alt="Votre photo" className="w-full h-full object-cover" />
     </div>
   );
@@ -113,31 +113,29 @@ export default function ResultScreen() {
   // QR panel
   if (panel === "qr") {
     return (
-      <div className="flex flex-col min-h-screen px-6 py-8 animate-float-in">
+      <div className="flex h-screen w-full items-center justify-center px-10 py-8 animate-float-in gap-12">
         <button
           onClick={() => setPanel("none")}
-          className="self-start flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
+          className="absolute top-6 left-6 flex items-center gap-2 px-5 h-[56px] rounded-full bg-card/70 backdrop-blur-md border-2 border-border text-foreground active:scale-95"
         >
           <ArrowLeft size={20} />
-          <span className="font-body text-sm">Retour</span>
+          <span className="font-body text-base">Retour</span>
         </button>
 
-        <div className="flex-1 flex flex-col items-center justify-center gap-8">
+        <div className="w-[420px] h-[420px] max-w-[60vh] max-h-[60vh] rounded-3xl border-2 border-primary/40 bg-white flex items-center justify-center shadow-glow p-4">
+          {qrUrl ? (
+            <img src={qrUrl} alt="QR Code" className="w-full h-full rounded-lg object-contain" />
+          ) : (
+            <div className="text-muted-foreground/40 text-base">QR code indisponible</div>
+          )}
+        </div>
+
+        <div className="flex flex-col items-center gap-4 max-w-sm">
           <h2 className="font-display text-5xl text-foreground">QR Code</h2>
-          <div className="w-16 h-px bg-primary/40 mx-auto" />
-
-          <div className="w-[360px] h-[360px] max-w-[75vw] max-h-[75vw] rounded-3xl border-2 border-primary/40 bg-white flex items-center justify-center shadow-glow p-4">
-            {qrUrl ? (
-              <img src={qrUrl} alt="QR Code" className="w-full h-full rounded-lg object-contain" />
-            ) : (
-              <div className="text-muted-foreground/40 text-base">QR code indisponible</div>
-            )}
-          </div>
-
+          <div className="w-16 h-px bg-primary/40" />
           <p className="text-xl text-muted-foreground text-center">
             Scannez pour télécharger votre photo
           </p>
-
           <AutoRedirectCountdown seconds={30} onComplete={() => setPanel("none")} />
         </div>
       </div>
@@ -147,32 +145,31 @@ export default function ResultScreen() {
   // Email panel
   if (panel === "email") {
     return (
-      <div className="flex flex-col min-h-screen px-4 py-6 animate-float-in">
+      <div className="flex h-screen w-full px-8 py-6 animate-float-in gap-8 items-center">
         <button
           onClick={() => setPanel("none")}
-          className="self-start flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
+          className="absolute top-6 left-6 flex items-center gap-2 px-5 h-[56px] rounded-full bg-card/70 backdrop-blur-md border-2 border-border text-foreground active:scale-95 z-10"
         >
           <ArrowLeft size={20} />
-          <span className="font-body text-sm">Retour</span>
+          <span className="font-body text-base">Retour</span>
         </button>
 
-        <div className="flex flex-col items-center gap-4 flex-1">
-          <div className="text-center space-y-1">
-            <h2 className="font-display text-3xl text-foreground">Recevoir votre photo</h2>
-            <div className="w-10 h-px bg-primary/40 mx-auto" />
+        {emailStatus === "sent" ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-float-up">
+            <CheckCircle size={64} className="text-accent-foreground" />
+            <p className="font-display text-3xl text-foreground text-center">Photo envoyée !</p>
+            <p className="text-lg text-muted-foreground">{email}</p>
+            <AutoRedirectCountdown seconds={10} onComplete={handleRestart} />
           </div>
-
-          {emailStatus === "sent" ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-4 animate-float-up">
-              <CheckCircle size={48} className="text-accent-foreground" />
-              <p className="font-display text-xl text-foreground text-center">Photo envoyée !</p>
-              <p className="text-sm text-muted-foreground">{email}</p>
-              <AutoRedirectCountdown seconds={10} onComplete={handleRestart} />
-            </div>
-          ) : (
-            <>
-              <div className="w-full max-w-md">
-                <div className="w-full h-14 rounded-xl border-2 border-primary/30 bg-card px-5 flex items-center text-lg font-body text-foreground">
+        ) : (
+          <>
+            <div className="flex-1 flex flex-col items-center justify-center gap-5 max-w-md">
+              <div className="text-center space-y-1">
+                <h2 className="font-display text-3xl text-foreground">Recevoir votre photo</h2>
+                <div className="w-12 h-px bg-primary/40 mx-auto" />
+              </div>
+              <div className="w-full">
+                <div className="w-full h-16 rounded-xl border-2 border-primary/30 bg-card px-5 flex items-center text-xl font-body text-foreground">
                   {email ? (
                     <span>{email}<span className="animate-pulse text-primary">|</span></span>
                   ) : (
@@ -181,8 +178,7 @@ export default function ResultScreen() {
                 </div>
                 {emailError && (
                   <p className="text-destructive text-sm mt-2 flex items-center gap-1">
-                    <AlertCircle size={14} />
-                    {emailError}
+                    <AlertCircle size={14} />{emailError}
                   </p>
                 )}
                 {emailStatus === "error" && (
@@ -192,55 +188,53 @@ export default function ResultScreen() {
                   </p>
                 )}
               </div>
-
-              <div className="w-full max-w-md mt-2">
-                <VirtualKeyboard
-                  value={email}
-                  onChange={(v) => { setEmail(v); setEmailError(""); }}
-                  onSubmit={handleSend}
-                  submitDisabled={emailStatus === "sending" || !email}
-                />
-              </div>
-
               {emailStatus === "sending" && (
-                <p className="text-muted-foreground font-body animate-pulse mt-2">Envoi en cours…</p>
+                <p className="text-muted-foreground font-body animate-pulse">Envoi en cours…</p>
               )}
+            </div>
 
-              <button onClick={handleRestart} className="text-sm text-muted-foreground/60 mt-2 flex items-center gap-1.5">
-                <RotateCcw size={14} />
-                Recommencer
-              </button>
-            </>
-          )}
-        </div>
+            <div className="flex-1 max-w-2xl">
+              <VirtualKeyboard
+                value={email}
+                onChange={(v) => { setEmail(v); setEmailError(""); }}
+                onSubmit={handleSend}
+                submitDisabled={emailStatus === "sending" || !email}
+              />
+            </div>
+          </>
+        )}
       </div>
     );
   }
 
-  // Main result screen
+  // Main result screen — landscape: photo left, actions right
   return (
-    <div className="flex flex-col min-h-screen px-8 py-10 animate-float-in">
-      <div className="text-center mb-8">
-        <h2 className="font-display text-6xl text-foreground text-glow-yellow">Magnifique !</h2>
-        <div className="w-20 h-px bg-primary/60 mx-auto mt-3" />
-        <p className="text-xl text-muted-foreground mt-3">Votre souvenir est prêt</p>
-      </div>
-
-      <div className="flex-1 flex items-center justify-center mb-10">
-        <div className="animate-photo-reveal w-full max-w-[480px]">
-          {settings.frameEnabled ? (
-            <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
-              {photoContent}
-            </PhotoFrame>
-          ) : (
-            <div className="bg-card border-2 border-primary/30 rounded-2xl p-3 shadow-glow">
-              {photoContent}
+    <div className="flex h-screen w-full animate-float-in">
+      {/* Left: photo */}
+      <div className="flex-[6] flex flex-col items-center justify-center p-8 min-w-0">
+        <div className="text-center mb-6">
+          <h2 className="font-display text-5xl text-foreground text-glow-yellow">Magnifique !</h2>
+          <p className="text-lg text-muted-foreground mt-2">Votre souvenir est prêt</p>
+        </div>
+        <div className="animate-photo-reveal flex-1 flex items-center justify-center min-h-0 w-full">
+          <div className="h-full max-h-full max-w-full flex items-center justify-center">
+            <div className="max-h-full">
+              {settings.frameEnabled ? (
+                <PhotoFrame variant={mode === "four" ? "strip" : "single"}>
+                  {photoContent}
+                </PhotoFrame>
+              ) : (
+                <div className="bg-card border-2 border-primary/30 rounded-2xl p-3 shadow-glow max-w-[420px]">
+                  {photoContent}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 max-w-xl mx-auto w-full">
+      {/* Right: actions */}
+      <div className="flex-[4] flex flex-col justify-center gap-4 p-8 bg-card/50 backdrop-blur-xl border-l border-border min-w-[320px]">
         <Button variant="hero" size="lg" onClick={() => setPanel("email")}>
           <Mail />
           Envoyer par e-mail
@@ -258,7 +252,7 @@ export default function ResultScreen() {
           disabled={printStatus === "printing"}
         >
           <Printer />
-          {printStatus === "printing" ? "Impression en cours..." : "Imprimer"}
+          {printStatus === "printing" ? "Impression..." : "Imprimer"}
         </Button>
         {printMessage && printStatus !== "printing" && (
           <p
@@ -270,7 +264,7 @@ export default function ResultScreen() {
             {printMessage}
           </p>
         )}
-        <Button variant="ghost" size="lg" onClick={handleRestart} className="text-muted-foreground">
+        <Button variant="ghost" size="lg" onClick={handleRestart} className="text-muted-foreground mt-2">
           <RotateCcw />
           Recommencer
         </Button>

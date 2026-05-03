@@ -44,7 +44,7 @@ function ChampagneBubble({ size, left, delay, duration, wobble }: BubbleProps) {
 function BubblesBackground() {
   const bubbles = useMemo<BubbleProps[]>(() => {
     const result: BubbleProps[] = [];
-    for (let i = 0; i < 24; i++) {
+    for (let i = 0; i < 30; i++) {
       result.push({
         size: 8 + Math.random() * 18,
         left: 5 + Math.random() * 90,
@@ -61,7 +61,6 @@ function BubblesBackground() {
       {bubbles.map((b, i) => (
         <ChampagneBubble key={i} {...b} />
       ))}
-      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-background via-background/80 to-transparent z-[1] pointer-events-none" />
     </>
   );
 }
@@ -84,66 +83,65 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen px-8 overflow-hidden">
+    <div className="relative flex h-screen w-full overflow-hidden">
       <BubblesBackground />
 
-      {/* Soft ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full bg-primary/10 blur-3xl" />
       </div>
 
       <button
         onClick={() => setShowSettings(true)}
-        className="absolute top-5 right-5 z-20 w-10 h-10 rounded-full bg-card/60 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground/50 hover:text-primary hover:border-primary/50 transition-all"
+        className="absolute top-5 right-5 z-20 w-12 h-12 rounded-full bg-card/60 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground/60 hover:text-primary hover:border-primary/50 transition-all"
         aria-label="Paramètres"
       >
-        <Settings size={18} />
+        <Settings size={20} />
       </button>
 
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent z-[2]" />
+      {/* Two-column landscape layout */}
+      <div className="relative z-10 flex w-full h-full items-center justify-center gap-16 px-16 animate-float-in">
+        {/* Left: branding */}
+        <div className="flex flex-col items-center gap-8 flex-1 max-w-md">
+          <div className="relative animate-idle-bob">
+            <div className="absolute inset-0 rounded-full bg-primary/30 blur-2xl animate-gentle-pulse" />
+            <div className="relative w-40 h-40 rounded-full border-2 border-primary/50 flex items-center justify-center bg-card/80 backdrop-blur-sm shadow-glow">
+              {settings.eventConfig.logoUrl ? (
+                <img src={settings.eventConfig.logoUrl} alt="Logo" className="h-24 w-auto object-contain" />
+              ) : (
+                <span className="font-script text-7xl text-primary text-glow-yellow">
+                  {settings.eventConfig.monogram}
+                </span>
+              )}
+            </div>
+          </div>
 
-      <div className="relative flex flex-col items-center gap-10 animate-float-in z-10">
-        {/* Logo / monogram with glow */}
-        <div className="relative animate-idle-bob">
-          <div className="absolute inset-0 rounded-full bg-primary/30 blur-2xl animate-gentle-pulse" />
-          <div className="relative w-32 h-32 rounded-full border-2 border-primary/50 flex items-center justify-center bg-card/80 backdrop-blur-sm shadow-glow">
-            {settings.eventConfig.logoUrl ? (
-              <img src={settings.eventConfig.logoUrl} alt="Logo" className="h-20 w-auto object-contain" />
-            ) : (
-              <span className="font-script text-6xl text-primary text-glow-yellow">
-                {settings.eventConfig.monogram}
-              </span>
-            )}
+          <div className="text-center space-y-3">
+            <h1 className="font-display text-7xl font-light text-foreground tracking-wide">
+              Photobooth
+            </h1>
+            <div className="w-24 h-px bg-primary/60 mx-auto" />
+            <p className="font-display text-2xl text-muted-foreground italic flex items-center justify-center gap-2">
+              <Sparkles size={20} className="text-primary" />
+              Immortalisez ce moment
+              <Sparkles size={20} className="text-primary" />
+            </p>
           </div>
         </div>
 
-        <div className="text-center space-y-3">
-          <h1 className="font-display text-6xl font-light text-foreground tracking-wide">
-            Photobooth
-          </h1>
-          <div className="w-24 h-px bg-primary/60 mx-auto" />
-          <p className="font-display text-2xl text-muted-foreground italic flex items-center justify-center gap-2">
-            <Sparkles size={20} className="text-primary" />
-            Immortalisez ce moment
-            <Sparkles size={20} className="text-primary" />
+        {/* Right: CTA */}
+        <div className="flex flex-col items-center gap-6 flex-1 max-w-md">
+          <button
+            onClick={handleStart}
+            className="group relative animate-glow-pulse rounded-full bg-primary text-primary-foreground px-20 h-[140px] font-display text-5xl font-semibold tracking-wide active:scale-95 transition-transform duration-200 flex items-center gap-4"
+          >
+            <Camera size={44} />
+            Démarrer
+          </button>
+          <p className="text-base text-muted-foreground/70 font-body animate-gentle-pulse">
+            Touchez l'écran pour commencer
           </p>
         </div>
-
-        {/* Massive luminous CTA */}
-        <button
-          onClick={handleStart}
-          className="group relative mt-3 animate-glow-pulse rounded-full bg-primary text-primary-foreground px-16 h-[120px] font-display text-4xl font-semibold tracking-wide active:scale-95 transition-transform duration-200 flex items-center gap-3"
-        >
-          <Camera size={36} />
-          Démarrer
-        </button>
-
-        <p className="text-base text-muted-foreground/70 font-body animate-gentle-pulse">
-          Touchez l'écran pour commencer
-        </p>
       </div>
-
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
     </div>
