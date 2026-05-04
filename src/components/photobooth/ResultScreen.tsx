@@ -4,10 +4,13 @@ import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { sendEmail, printPhoto } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { Button } from "@/components/ui/button";
-import { Mail, QrCode, RotateCcw, ArrowLeft, CheckCircle, AlertCircle, Printer } from "lucide-react";
+import { Mail, QrCode, RotateCcw, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera } from "lucide-react";
 import VirtualKeyboard from "./VirtualKeyboard";
 
-type Panel = "none" | "qr" | "email";
+type Panel = "none" | "qr" | "email" | "printed";
+
+const HOME_TIMEOUT_S = 60;
+const PRINT_CONFIRM_S = 8;
 
 function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onComplete: () => void }) {
   const [remaining, setRemaining] = useState(seconds);
