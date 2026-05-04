@@ -1,5 +1,6 @@
 import { PhotoboothProvider, usePhotobooth } from "@/contexts/PhotoboothContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
+import { BackendHealthProvider } from "@/contexts/BackendHealthContext";
 import WelcomeScreen from "./WelcomeScreen";
 import ModeSelection from "./ModeSelection";
 import FilterSelection from "./FilterSelection";
