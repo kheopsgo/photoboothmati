@@ -34,7 +34,7 @@ const defaultSettings: AppSettings = {
   frameEnabled: true,
   eventConfig: { ...defaultEventConfig },
   captureOffsetMs: 1500,
-  lockedMode: false,
+  lockedMode: true,
   adminPin: "1234",
 };
 
