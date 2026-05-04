@@ -1,9 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { Settings, Camera, Sparkles } from "lucide-react";
 import SettingsPanel from "./SettingsPanel";
+import PinPrompt from "./PinPrompt";
 import { enterFullscreen } from "@/lib/fullscreen";
+
+const LONG_PRESS_MS = 5000;
 
 interface BubbleProps {
   size: number;
