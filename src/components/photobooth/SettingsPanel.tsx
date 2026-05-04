@@ -504,26 +504,42 @@ function WifiSettings() {
   const loadNetworks = useCallback(async () => {
     setNetworksStatus("loading");
     setNetworksError("");
-    try {
-      const data = await getWifiNetworks();
-      // Deduplicate by SSID, keep strongest signal
-      const map = new Map<string, WifiNetwork>();
-      for (const n of data.networks || []) {
-        if (!n.ssid) continue;
-        const existing = map.get(n.ssid);
-        if (!existing || parseInt(n.signal, 10) > parseInt(existing.signal, 10)) {
-          map.set(n.ssid, n);
+
+    const MAX_ATTEMPTS = 3;
+    const RETRY_DELAY_MS = 6000;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    let lastErr: unknown = null;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        const data = await getWifiNetworks();
+        const map = new Map<string, WifiNetwork>();
+        for (const n of data.networks || []) {
+          if (!n.ssid) continue;
+          const existing = map.get(n.ssid);
+          if (!existing || parseInt(n.signal, 10) > parseInt(existing.signal, 10)) {
+            map.set(n.ssid, n);
+          }
+        }
+        const list = Array.from(map.values()).sort(
+          (a, b) => parseInt(b.signal, 10) - parseInt(a.signal, 10)
+        );
+        setNetworks(list);
+        setNetworksStatus("idle");
+        return;
+      } catch (err) {
+        lastErr = err;
+        if (attempt < MAX_ATTEMPTS) {
+          await sleep(RETRY_DELAY_MS);
         }
       }
-      const list = Array.from(map.values()).sort(
-        (a, b) => parseInt(b.signal, 10) - parseInt(a.signal, 10)
-      );
-      setNetworks(list);
-      setNetworksStatus("idle");
-    } catch (err) {
-      setNetworksError(err instanceof Error ? err.message : "Erreur lors du chargement des réseaux Wi-Fi");
-      setNetworksStatus("error");
     }
+
+    console.warn("Wi-Fi networks fetch failed after retries", lastErr);
+    setNetworksError(
+      "Impossible de récupérer les réseaux. Vérifiez que vous êtes reconnecté au WiFi Photobooth_Setup puis réessayez."
+    );
+    setNetworksStatus("error");
   }, []);
 
   useEffect(() => {
