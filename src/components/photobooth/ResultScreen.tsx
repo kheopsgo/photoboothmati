@@ -4,10 +4,13 @@ import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { sendEmail, printPhoto } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { Button } from "@/components/ui/button";
-import { Mail, QrCode, RotateCcw, ArrowLeft, CheckCircle, AlertCircle, Printer } from "lucide-react";
+import { Mail, QrCode, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera } from "lucide-react";
 import VirtualKeyboard from "./VirtualKeyboard";
 
-type Panel = "none" | "qr" | "email";
+type Panel = "none" | "qr" | "email" | "printed";
+
+const HOME_TIMEOUT_S = 60;
+const PRINT_CONFIRM_S = 8;
 
 function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onComplete: () => void }) {
   const [remaining, setRemaining] = useState(seconds);
@@ -65,6 +68,7 @@ export default function ResultScreen() {
       await printPhoto(imageToPrint);
       setPrintStatus("sent");
       setPrintMessage("Impression lancée !");
+      setPanel("printed");
     } catch {
       setPrintStatus("error");
       setPrintMessage("Erreur lors de l'impression");
@@ -210,6 +214,22 @@ export default function ResultScreen() {
     );
   }
 
+  // Print confirmation panel
+  if (panel === "printed") {
+    return (
+      <div className="flex h-screen w-full items-center justify-center px-10 py-8 animate-float-in">
+        <div className="flex flex-col items-center gap-5 max-w-md text-center">
+          <CheckCircle size={88} className="text-accent-foreground" />
+          <h2 className="font-display text-5xl text-foreground">Impression lancée !</h2>
+          <p className="text-lg text-muted-foreground">
+            Récupérez votre photo près de l'imprimante.
+          </p>
+          <AutoRedirectCountdown seconds={PRINT_CONFIRM_S} onComplete={handleRestart} />
+        </div>
+      </div>
+    );
+  }
+
   // Main result screen — landscape: photo left, actions right
   return (
     <div className="fixed inset-0 flex h-[100dvh] max-h-[100dvh] w-screen max-w-screen animate-float-in overflow-hidden bg-background">
@@ -226,16 +246,24 @@ export default function ResultScreen() {
           <h2 className="font-display text-3xl text-foreground text-glow-yellow">Magnifique !</h2>
           <p className="text-sm text-muted-foreground">Votre souvenir est prêt</p>
         </div>
-        <Button variant="hero" size="lg" onClick={() => setPanel("email")} disabled={!online}>
-          <Mail />
-          Envoyer par e-mail
+
+        {/* Primary action */}
+        <Button variant="hero" size="lg" onClick={handleRestart}>
+          <Camera />
+          Nouvelle photo
         </Button>
+
+        {/* Secondary actions */}
         {qrUrl && (
           <Button variant="elegant" size="lg" onClick={() => setPanel("qr")}>
             <QrCode />
-            Afficher le QR code
+            QR code
           </Button>
         )}
+        <Button variant="elegant" size="lg" onClick={() => setPanel("email")} disabled={!online}>
+          <Mail />
+          Email
+        </Button>
         <Button
           variant="elegant"
           size="lg"
@@ -245,20 +273,15 @@ export default function ResultScreen() {
           <Printer />
           {printStatus === "printing" ? "Impression..." : "Imprimer"}
         </Button>
-        {printMessage && printStatus !== "printing" && (
-          <p
-            className={`text-base text-center flex items-center justify-center gap-2 ${
-              printStatus === "error" ? "text-destructive" : "text-accent-foreground"
-            }`}
-          >
-            {printStatus === "error" ? <AlertCircle size={18} /> : <CheckCircle size={18} />}
+        {printStatus === "error" && printMessage && (
+          <p className="text-base text-center flex items-center justify-center gap-2 text-destructive">
+            <AlertCircle size={18} />
             {printMessage}
           </p>
         )}
-        <Button variant="ghost" size="lg" onClick={handleRestart} className="text-muted-foreground mt-2">
-          <RotateCcw />
-          Recommencer
-        </Button>
+
+        {/* Global auto-return */}
+        <AutoRedirectCountdown seconds={HOME_TIMEOUT_S} onComplete={handleRestart} />
       </div>
     </div>
   );
