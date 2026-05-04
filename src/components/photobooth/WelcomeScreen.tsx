@@ -1,9 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { Settings, Camera, Sparkles } from "lucide-react";
 import SettingsPanel from "./SettingsPanel";
+import PinPrompt from "./PinPrompt";
 import { enterFullscreen } from "@/lib/fullscreen";
+
+const LONG_PRESS_MS = 5000;
 
 interface BubbleProps {
   size: number;
@@ -70,6 +73,26 @@ export default function WelcomeScreen() {
   const { setScreen, setMode } = usePhotobooth();
   const { settings } = useSettings();
   const [showSettings, setShowSettings] = useState(false);
+  const [showPin, setShowPin] = useState(false);
+  const pressTimer = useRef<number | null>(null);
+
+  const startLongPress = () => {
+    if (pressTimer.current) window.clearTimeout(pressTimer.current);
+    pressTimer.current = window.setTimeout(() => {
+      if (settings.lockedMode) {
+        setShowPin(true);
+      } else {
+        setShowSettings(true);
+      }
+    }, LONG_PRESS_MS);
+  };
+
+  const cancelLongPress = () => {
+    if (pressTimer.current) {
+      window.clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  };
 
   const handleStart = () => {
     // Best-effort fullscreen + landscape lock on first user gesture
@@ -94,25 +117,34 @@ export default function WelcomeScreen() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full bg-primary/10 blur-3xl" />
       </div>
 
-      <button
-        onClick={() => setShowSettings(true)}
-        className="absolute top-5 right-5 z-20 w-12 h-12 rounded-full bg-card/60 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground/60 hover:text-primary hover:border-primary/50 transition-all"
-        aria-label="Paramètres"
-      >
-        <Settings size={20} />
-      </button>
+      {!settings.lockedMode && (
+        <button
+          onClick={() => setShowSettings(true)}
+          className="absolute top-5 right-5 z-20 w-12 h-12 rounded-full bg-card/60 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground/60 hover:text-primary hover:border-primary/50 transition-all"
+          aria-label="Paramètres"
+        >
+          <Settings size={20} />
+        </button>
+      )}
 
       {/* Two-column landscape layout */}
       <div className="relative z-10 flex w-full h-full items-center justify-center gap-16 px-16 animate-float-in">
         {/* Left: branding */}
         <div className="flex flex-col items-center gap-8 flex-1 max-w-md">
-          <div className="relative animate-idle-bob">
+          <div
+            className="relative animate-idle-bob cursor-pointer select-none"
+            onPointerDown={startLongPress}
+            onPointerUp={cancelLongPress}
+            onPointerLeave={cancelLongPress}
+            onPointerCancel={cancelLongPress}
+            onContextMenu={(e) => e.preventDefault()}
+          >
             <div className="absolute inset-0 rounded-full bg-primary/30 blur-2xl animate-gentle-pulse" />
             <div className="relative w-40 h-40 rounded-full border-2 border-primary/50 flex items-center justify-center bg-card/80 backdrop-blur-sm shadow-glow">
               {settings.eventConfig.logoUrl ? (
-                <img src={settings.eventConfig.logoUrl} alt="Logo" className="h-24 w-auto object-contain" />
+                <img src={settings.eventConfig.logoUrl} alt="Logo" className="h-24 w-auto object-contain pointer-events-none" />
               ) : (
-                <span className="font-script text-7xl text-primary text-glow-yellow">
+                <span className="font-script text-7xl text-primary text-glow-yellow pointer-events-none">
                   {settings.eventConfig.monogram}
                 </span>
               )}
@@ -148,6 +180,15 @@ export default function WelcomeScreen() {
       </div>
 
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+      {showPin && (
+        <PinPrompt
+          onSuccess={() => {
+            setShowPin(false);
+            setShowSettings(true);
+          }}
+          onCancel={() => setShowPin(false)}
+        />
+      )}
     </div>
   );
 }

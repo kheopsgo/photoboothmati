@@ -15,6 +15,10 @@ export interface AppSettings {
   eventConfig: EventConfig;
   /** Milliseconds the real /take-photo call is fired before the visual end of the countdown */
   captureOffsetMs: number;
+  /** Locked event mode: hides settings button, requires long-press + PIN */
+  lockedMode: boolean;
+  /** Admin PIN to unlock settings */
+  adminPin: string;
 }
 
 interface SettingsContextType {
@@ -30,6 +34,8 @@ const defaultSettings: AppSettings = {
   frameEnabled: true,
   eventConfig: { ...defaultEventConfig },
   captureOffsetMs: 1500,
+  lockedMode: false,
+  adminPin: "1234",
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
