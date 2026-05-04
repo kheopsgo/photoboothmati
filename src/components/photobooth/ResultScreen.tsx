@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
+import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { sendEmail, printPhoto } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { Button } from "@/components/ui/button";
