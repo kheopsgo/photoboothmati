@@ -73,6 +73,26 @@ export default function WelcomeScreen() {
   const { setScreen, setMode } = usePhotobooth();
   const { settings } = useSettings();
   const [showSettings, setShowSettings] = useState(false);
+  const [showPin, setShowPin] = useState(false);
+  const pressTimer = useRef<number | null>(null);
+
+  const startLongPress = () => {
+    if (pressTimer.current) window.clearTimeout(pressTimer.current);
+    pressTimer.current = window.setTimeout(() => {
+      if (settings.lockedMode) {
+        setShowPin(true);
+      } else {
+        setShowSettings(true);
+      }
+    }, LONG_PRESS_MS);
+  };
+
+  const cancelLongPress = () => {
+    if (pressTimer.current) {
+      window.clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  };
 
   const handleStart = () => {
     // Best-effort fullscreen + landscape lock on first user gesture
