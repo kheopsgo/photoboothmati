@@ -202,6 +202,34 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
             <GoogleDriveSection />
           </Section>
 
+          {/* === SECURITY === */}
+          <Section icon={<Lock size={18} />} title="Sécurité événement">
+            <ToggleRow
+              label="Mode événement verrouillé"
+              description="Cache les paramètres. Appui long 5s sur le logo pour accéder."
+              checked={settings.lockedMode}
+              onChange={(v) => updateSettings({ lockedMode: v })}
+            />
+            <div className="space-y-2 pt-2">
+              <label className="text-sm font-medium text-foreground">Code PIN admin</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={8}
+                value={settings.adminPin}
+                onChange={(e) =>
+                  updateSettings({ adminPin: e.target.value.replace(/\D/g, "") })
+                }
+                className="w-full h-12 rounded-lg border border-border bg-background px-4 font-mono text-lg tracking-widest"
+                placeholder="1234"
+              />
+              <p className="text-xs text-muted-foreground">
+                4 à 8 chiffres. Demandé après l'appui long sur le logo.
+              </p>
+            </div>
+          </Section>
+
           {/* === SYSTEM === */}
           <Section icon={<Github size={18} />} title="Système">
             <FullscreenToggle />
