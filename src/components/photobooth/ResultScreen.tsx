@@ -226,7 +226,7 @@ export default function ResultScreen() {
           <h2 className="font-display text-3xl text-foreground text-glow-yellow">Magnifique !</h2>
           <p className="text-sm text-muted-foreground">Votre souvenir est prêt</p>
         </div>
-        <Button variant="hero" size="lg" onClick={() => setPanel("email")}>
+        <Button variant="hero" size="lg" onClick={() => setPanel("email")} disabled={!online}>
           <Mail />
           Envoyer par e-mail
         </Button>
@@ -240,7 +240,7 @@ export default function ResultScreen() {
           variant="elegant"
           size="lg"
           onClick={handlePrint}
-          disabled={printStatus === "printing"}
+          disabled={printStatus === "printing" || !online}
         >
           <Printer />
           {printStatus === "printing" ? "Impression..." : "Imprimer"}
