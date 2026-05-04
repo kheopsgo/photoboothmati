@@ -1,5 +1,6 @@
 import { PhotoboothProvider, usePhotobooth } from "@/contexts/PhotoboothContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
+import { BackendHealthProvider } from "@/contexts/BackendHealthContext";
 import WelcomeScreen from "./WelcomeScreen";
 import ModeSelection from "./ModeSelection";
 import FilterSelection from "./FilterSelection";
@@ -38,11 +39,13 @@ function ScreenRouter() {
 export default function PhotoboothApp() {
   return (
     <SettingsProvider>
-      <PhotoboothProvider>
-        <div className="mx-auto h-screen w-full bg-background relative overflow-hidden select-none touch-manipulation landscape-app">
-          <ScreenRouter />
-        </div>
-      </PhotoboothProvider>
+      <BackendHealthProvider>
+        <PhotoboothProvider>
+          <div className="mx-auto h-screen w-full bg-background relative overflow-hidden select-none touch-manipulation landscape-app">
+            <ScreenRouter />
+          </div>
+        </PhotoboothProvider>
+      </BackendHealthProvider>
     </SettingsProvider>
   );
 }

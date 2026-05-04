@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
+import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { sendEmail, printPhoto } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onCom
 
 export default function ResultScreen() {
   const { mode, photos, finalImage, qrUrl, setScreen } = usePhotobooth();
+  const { online } = useBackendHealth();
   const { playSuccess } = useSound();
 
   const [panel, setPanel] = useState<Panel>("none");
@@ -224,7 +226,7 @@ export default function ResultScreen() {
           <h2 className="font-display text-3xl text-foreground text-glow-yellow">Magnifique !</h2>
           <p className="text-sm text-muted-foreground">Votre souvenir est prêt</p>
         </div>
-        <Button variant="hero" size="lg" onClick={() => setPanel("email")}>
+        <Button variant="hero" size="lg" onClick={() => setPanel("email")} disabled={!online}>
           <Mail />
           Envoyer par e-mail
         </Button>
@@ -238,7 +240,7 @@ export default function ResultScreen() {
           variant="elegant"
           size="lg"
           onClick={handlePrint}
-          disabled={printStatus === "printing"}
+          disabled={printStatus === "printing" || !online}
         >
           <Printer />
           {printStatus === "printing" ? "Impression..." : "Imprimer"}
