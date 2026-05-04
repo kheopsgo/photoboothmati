@@ -73,6 +73,7 @@ function BubblesBackground() {
 export default function WelcomeScreen() {
   const { setScreen, setMode } = usePhotobooth();
   const { settings } = useSettings();
+  const { online } = useBackendHealth();
   const [showSettings, setShowSettings] = useState(false);
   const [showPin, setShowPin] = useState(false);
   const pressTimer = useRef<number | null>(null);
