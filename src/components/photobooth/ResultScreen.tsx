@@ -4,7 +4,7 @@ import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { sendEmail, printPhoto } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { Button } from "@/components/ui/button";
-import { Mail, QrCode, RotateCcw, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera } from "lucide-react";
+import { Mail, QrCode, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera } from "lucide-react";
 import VirtualKeyboard from "./VirtualKeyboard";
 
 type Panel = "none" | "qr" | "email" | "printed";
