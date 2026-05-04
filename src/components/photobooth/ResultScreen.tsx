@@ -35,6 +35,7 @@ function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onCom
 
 export default function ResultScreen() {
   const { mode, photos, finalImage, qrUrl, setScreen } = usePhotobooth();
+  const { online } = useBackendHealth();
   const { playSuccess } = useSound();
 
   const [panel, setPanel] = useState<Panel>("none");
