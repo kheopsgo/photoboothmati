@@ -180,6 +180,15 @@ export default function WelcomeScreen() {
       </div>
 
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+      {showPin && (
+        <PinPrompt
+          onSuccess={() => {
+            setShowPin(false);
+            setShowSettings(true);
+          }}
+          onCancel={() => setShowPin(false)}
+        />
+      )}
     </div>
   );
 }
