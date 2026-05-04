@@ -624,9 +624,11 @@ function WifiSettings() {
 
         <div className="rounded-lg border border-border bg-card divide-y divide-border max-h-72 overflow-y-auto">
           {networksStatus === "loading" && networks.length === 0 && (
-            <div className="flex items-center justify-center gap-2 p-6 text-muted-foreground">
-              <Loader2 size={16} className="animate-spin" />
-              <span className="font-body text-sm">Recherche des réseaux...</span>
+            <div className="flex items-start gap-2 p-6 text-muted-foreground">
+              <Loader2 size={16} className="animate-spin mt-0.5 shrink-0" />
+              <span className="font-body text-sm">
+                Recherche des réseaux en cours… La connexion peut être interrompue quelques secondes.
+              </span>
             </div>
           )}
 
