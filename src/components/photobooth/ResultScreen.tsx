@@ -68,6 +68,7 @@ export default function ResultScreen() {
       await printPhoto(imageToPrint);
       setPrintStatus("sent");
       setPrintMessage("Impression lancée !");
+      setPanel("printed");
     } catch {
       setPrintStatus("error");
       setPrintMessage("Erreur lors de l'impression");
