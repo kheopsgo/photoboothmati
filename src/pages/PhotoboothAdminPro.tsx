@@ -24,14 +24,15 @@ import {
 } from "lucide-react";
 
 interface AdminStatus {
-  backend?: boolean;
-  wifiSsid?: string;
+  backend?: string;
+  camera?: string;
+  wifi?: string;
+  storage?: string;
+  ssid?: string;
   ip?: string;
   hostname?: string;
-  storageUsed?: string;
-  storageTotal?: string;
-  storagePercent?: number;
-  photoCount?: number;
+  diskPercent?: number;
+  photosCount?: number;
   [k: string]: unknown;
 }
 
