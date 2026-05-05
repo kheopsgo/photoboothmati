@@ -1001,51 +1001,121 @@ function SaveFrameButton() {
 }
 
 function GoogleDriveSection() {
-  const driveUrl = import.meta.env.VITE_GOOGLE_DRIVE_FOLDER_URL;
+  const [driveUrl, setDriveUrl] = useState<string>("");
+  const [inputUrl, setInputUrl] = useState<string>("");
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
+  // Load initial config from backend
   useEffect(() => {
-    if (!driveUrl) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { getConfig } = await import("@/services/api");
+        const cfg = await getConfig();
+        if (cancelled) return;
+        const url = cfg.googleDriveUrl || "";
+        setDriveUrl(url);
+        setInputUrl(url);
+      } catch {
+        if (!cancelled) setStatus({ type: "error", msg: "Impossible de charger la configuration" });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Regenerate QR when driveUrl changes
+  useEffect(() => {
+    if (!driveUrl) { setQrDataUrl(null); return; }
     QRCode.toDataURL(driveUrl, { width: 200, margin: 2 })
       .then((url) => setQrDataUrl(url))
       .catch(() => setQrDataUrl(null));
   }, [driveUrl]);
 
-  if (!driveUrl) {
-    return (
-      <div className="p-3 rounded-lg bg-muted/50 border border-border">
-        <p className="font-body text-sm text-muted-foreground">
-          Lien Google Drive non configuré
-        </p>
-      </div>
-    );
-  }
+  const handleSave = async () => {
+    setSaving(true);
+    setStatus(null);
+    try {
+      const { saveConfig } = await import("@/services/api");
+      await saveConfig({ googleDriveUrl: inputUrl.trim() });
+      setDriveUrl(inputUrl.trim());
+      setStatus({ type: "success", msg: "Lien sauvegardé" });
+    } catch (e) {
+      setStatus({ type: "error", msg: e instanceof Error ? e.message : "Erreur de sauvegarde" });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
       <p className="font-body text-sm text-muted-foreground leading-relaxed">
-        Scannez ce QR code pour ouvrir le dossier des photos sauvegardées
+        Lien du dossier Google Drive utilisé pour le QR code de partage. Sauvegardé sur le Raspberry.
       </p>
 
-      {qrDataUrl && (
-        <div className="flex justify-center">
-          <div className="p-3 rounded-xl bg-white border border-border">
-            <img
-              src={qrDataUrl}
-              alt="QR code Google Drive"
-              className="w-48 h-48"
-            />
-          </div>
+      <div className="space-y-2">
+        <label className="font-body text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          Lien Google Drive
+        </label>
+        <input
+          type="url"
+          value={inputUrl}
+          onChange={(e) => setInputUrl(e.target.value)}
+          placeholder="https://drive.google.com/drive/folders/..."
+          disabled={loading || saving}
+          className="w-full h-11 px-3 rounded-lg border border-border bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+        />
+      </div>
+
+      <button
+        onClick={handleSave}
+        disabled={loading || saving || !inputUrl.trim() || inputUrl.trim() === driveUrl}
+        className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-body text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+        {saving ? "Sauvegarde..." : "Sauvegarder"}
+      </button>
+
+      {status && (
+        <div className={`p-3 rounded-lg text-sm font-body flex items-center gap-2 ${
+          status.type === "success"
+            ? "bg-primary/10 text-primary border border-primary/20"
+            : "bg-destructive/10 text-destructive border border-destructive/20"
+        }`}>
+          {status.type === "success" ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+          {status.msg}
         </div>
       )}
 
-      <button
-        onClick={() => window.open(driveUrl, "_blank")}
-        className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-body text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
-      >
-        <ExternalLink size={16} />
-        Ouvrir Google Drive
-      </button>
+      {driveUrl && qrDataUrl && (
+        <>
+          <div className="flex justify-center pt-2">
+            <div className="p-3 rounded-xl bg-white border border-border">
+              <img src={qrDataUrl} alt="QR code Google Drive" className="w-48 h-48" />
+            </div>
+          </div>
+
+          <button
+            onClick={() => window.open(driveUrl, "_blank")}
+            className="w-full h-11 rounded-lg bg-secondary text-secondary-foreground font-body text-sm font-medium hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2"
+          >
+            <ExternalLink size={16} />
+            Ouvrir Google Drive
+          </button>
+        </>
+      )}
+
+      {!loading && !driveUrl && (
+        <div className="p-3 rounded-lg bg-muted/50 border border-border">
+          <p className="font-body text-sm text-muted-foreground">
+            Aucun lien configuré pour le moment
+          </p>
+        </div>
+      )}
     </div>
   );
 }
