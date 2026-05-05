@@ -1,0 +1,340 @@
+import { useEffect, useState, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import {
+  API_BASE,
+  trashPhotos,
+  updateFrontend,
+} from "@/services/api";
+import {
+  Activity,
+  Wifi,
+  HardDrive,
+  Image as ImageIcon,
+  Server,
+  RefreshCw,
+  Radio,
+  Trash2,
+  Download,
+  ExternalLink,
+  Network,
+  Loader2,
+} from "lucide-react";
+
+interface AdminStatus {
+  backend?: boolean;
+  wifiSsid?: string;
+  ip?: string;
+  hostname?: string;
+  storageUsed?: string;
+  storageTotal?: string;
+  storagePercent?: number;
+  photoCount?: number;
+  [k: string]: unknown;
+}
+
+const SETUP_URL = "http://10.42.0.1:5000/setup";
+
+export default function PhotoboothAdminPro() {
+  const { toast } = useToast();
+  const [status, setStatus] = useState<AdminStatus | null>(null);
+  const [healthOk, setHealthOk] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const fetchStatus = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [healthRes, statusRes] = await Promise.allSettled([
+        fetch(`${API_BASE}/health`, { cache: "no-store" }),
+        fetch(`${API_BASE}/admin/status`, { cache: "no-store" }),
+      ]);
+
+      if (healthRes.status === "fulfilled") {
+        setHealthOk(healthRes.value.ok);
+      } else {
+        setHealthOk(false);
+      }
+
+      if (statusRes.status === "fulfilled" && statusRes.value.ok) {
+        const data = await statusRes.value.json();
+        setStatus(data);
+      }
+    } catch {
+      setHealthOk(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStatus();
+    const id = window.setInterval(fetchStatus, 10000);
+    return () => window.clearInterval(id);
+  }, [fetchStatus]);
+
+  const handleHotspot = async () => {
+    setBusy("hotspot");
+    try {
+      const res = await fetch(`${API_BASE}/admin/hotspot`, { method: "POST" });
+      if (!res.ok) throw new Error("Erreur");
+      toast({ title: "Hotspot activé", description: "Le mode hotspot est en cours d'activation." });
+    } catch {
+      toast({ title: "Échec", description: "Impossible d'activer le hotspot.", variant: "destructive" });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleTrash = async () => {
+    setBusy("trash");
+    try {
+      await trashPhotos();
+      toast({ title: "Photos vidées", description: "Toutes les photos ont été déplacées à la corbeille." });
+      fetchStatus();
+    } catch (e) {
+      toast({ title: "Échec", description: e instanceof Error ? e.message : "Erreur", variant: "destructive" });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleUpdate = async () => {
+    setBusy("update");
+    try {
+      await updateFrontend();
+      toast({ title: "Mise à jour lancée", description: "Le frontend est en cours de mise à jour." });
+    } catch (e) {
+      toast({ title: "Échec", description: e instanceof Error ? e.message : "Erreur", variant: "destructive" });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const StatusDot = ({ ok }: { ok: boolean | null | undefined }) => (
+    <span className="relative flex h-3 w-3">
+      {ok && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-60" />}
+      <span
+        className={`relative inline-flex h-3 w-3 rounded-full ${
+          ok === true ? "bg-green-500" : ok === false ? "bg-red-500" : "bg-yellow-500"
+        }`}
+      />
+    </span>
+  );
+
+  const links = [
+    { label: "Interface photobooth", url: "http://pi.local:8080" },
+    { label: "Admin", url: "http://pi.local:8080/#/admin" },
+    { label: "Setup Wi-Fi", url: SETUP_URL },
+    { label: "API health", url: "http://pi.local:5000/health" },
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8">
+      <div className="mx-auto max-w-7xl space-y-6">
+        {/* Header */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Photobooth Admin</h1>
+            <p className="text-slate-400 mt-1">Tableau de bord terrain</p>
+          </div>
+          <Button
+            onClick={fetchStatus}
+            disabled={loading}
+            className="bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700"
+          >
+            {loading ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+            Actualiser
+          </Button>
+        </div>
+
+        {/* Statut système */}
+        <Card className="bg-slate-900 border-slate-800 text-slate-100">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-slate-100">
+              <Activity className="h-5 w-5" /> Statut système
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <StatBox
+                icon={<Server className="h-5 w-5" />}
+                label="Backend Flask"
+                value={
+                  <span className="flex items-center gap-2">
+                    <StatusDot ok={healthOk} />
+                    {healthOk === true ? "En ligne" : healthOk === false ? "Hors ligne" : "—"}
+                  </span>
+                }
+              />
+              <StatBox
+                icon={<Wifi className="h-5 w-5" />}
+                label="Wi-Fi connecté"
+                value={status?.wifiSsid || "—"}
+              />
+              <StatBox
+                icon={<Network className="h-5 w-5" />}
+                label="Adresse IP"
+                value={status?.ip || "—"}
+              />
+              <StatBox
+                icon={<Server className="h-5 w-5" />}
+                label="Hostname"
+                value={status?.hostname || "—"}
+              />
+              <StatBox
+                icon={<HardDrive className="h-5 w-5" />}
+                label="Stockage utilisé"
+                value={
+                  status?.storageUsed
+                    ? `${status.storageUsed}${status.storageTotal ? ` / ${status.storageTotal}` : ""}${
+                        status.storagePercent != null ? ` (${status.storagePercent}%)` : ""
+                      }`
+                    : "—"
+                }
+              />
+              <StatBox
+                icon={<ImageIcon className="h-5 w-5" />}
+                label="Nombre de photos"
+                value={status?.photoCount != null ? String(status.photoCount) : "—"}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Actions rapides */}
+        <Card className="bg-slate-900 border-slate-800 text-slate-100">
+          <CardHeader>
+            <CardTitle className="text-slate-100">Actions rapides</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <Button
+                onClick={fetchStatus}
+                disabled={loading}
+                className="h-16 bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700"
+              >
+                {loading ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+                Actualiser
+              </Button>
+              <Button
+                onClick={handleHotspot}
+                disabled={busy === "hotspot"}
+                className="h-16 bg-amber-600 hover:bg-amber-500 text-white"
+              >
+                {busy === "hotspot" ? <Loader2 className="animate-spin" /> : <Radio />}
+                Forcer hotspot
+              </Button>
+              <Button
+                onClick={handleTrash}
+                disabled={busy === "trash"}
+                className="h-16 bg-red-700 hover:bg-red-600 text-white"
+              >
+                {busy === "trash" ? <Loader2 className="animate-spin" /> : <Trash2 />}
+                Vider photos
+              </Button>
+              <Button
+                onClick={handleUpdate}
+                disabled={busy === "update"}
+                className="h-16 bg-blue-700 hover:bg-blue-600 text-white"
+              >
+                {busy === "update" ? <Loader2 className="animate-spin" /> : <Download />}
+                MAJ frontend
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* WiFi */}
+        <Card className="bg-slate-900 border-slate-800 text-slate-100">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-slate-100">
+              <Wifi className="h-5 w-5" /> Wi-Fi
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-slate-400">Réseau actuel :</span>
+              <Badge variant="secondary" className="bg-slate-800 text-slate-100 border border-slate-700 text-base px-3 py-1">
+                {status?.wifiSsid || "Non connecté"}
+              </Badge>
+            </div>
+            <p className="text-sm text-slate-400">
+              Pour changer de réseau, connectez la tablette au hotspot <code className="text-slate-200">Photobooth_Setup</code>,
+              puis ouvrez la page de configuration ci-dessous.
+            </p>
+            <Button
+              asChild
+              className="h-14 bg-emerald-700 hover:bg-emerald-600 text-white"
+            >
+              <a href={SETUP_URL} target="_blank" rel="noopener noreferrer">
+                <ExternalLink /> Ouvrir la page de configuration Wi-Fi
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Adresses utiles */}
+        <Card className="bg-slate-900 border-slate-800 text-slate-100">
+          <CardHeader>
+            <CardTitle className="text-slate-100">Adresses utiles</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="divide-y divide-slate-800">
+              {links.map((l) => (
+                <li key={l.url} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                  <div>
+                    <div className="font-medium">{l.label}</div>
+                    <a
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-slate-400 hover:text-slate-200 break-all"
+                    >
+                      {l.url}
+                    </a>
+                  </div>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="bg-slate-800 hover:bg-slate-700 text-slate-100 border-slate-700"
+                  >
+                    <a href={l.url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink /> Ouvrir
+                    </a>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+
+        <p className="text-center text-xs text-slate-500 pt-4">
+          API : <code>{API_BASE}</code>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function StatBox({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-4">
+      <div className="flex items-center gap-2 text-slate-400 text-sm">
+        {icon}
+        <span>{label}</span>
+      </div>
+      <div className="mt-2 text-lg font-semibold break-all">{value}</div>
+    </div>
+  );
+}
