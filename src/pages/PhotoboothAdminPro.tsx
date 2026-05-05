@@ -24,15 +24,15 @@ import {
 } from "lucide-react";
 
 interface AdminStatus {
-  backend?: boolean;
-  wifiSsid?: string;
+  backend?: string;
+  camera?: string;
+  wifi?: string;
+  storage?: string;
+  ssid?: string;
   ip?: string;
   hostname?: string;
-  storageUsed?: string;
-  storageTotal?: string;
-  storagePercent?: number;
-  photoCount?: number;
-  [k: string]: unknown;
+  diskPercent?: number;
+  photosCount?: number;
 }
 
 const SETUP_URL = "http://10.42.0.1:5000/setup";
@@ -164,15 +164,19 @@ export default function PhotoboothAdminPro() {
                 label="Backend Flask"
                 value={
                   <span className="flex items-center gap-2">
-                    <StatusDot ok={healthOk} />
-                    {healthOk === true ? "En ligne" : healthOk === false ? "Hors ligne" : "—"}
+                    <StatusDot ok={healthOk === true || status?.backend === "ok"} />
+                    {status?.backend === "ok" || healthOk === true
+                      ? "En ligne"
+                      : healthOk === false
+                      ? "Hors ligne"
+                      : "—"}
                   </span>
                 }
               />
               <StatBox
                 icon={<Wifi className="h-5 w-5" />}
                 label="Wi-Fi connecté"
-                value={status?.wifiSsid || "—"}
+                value={status?.ssid || "—"}
               />
               <StatBox
                 icon={<Network className="h-5 w-5" />}
@@ -187,18 +191,12 @@ export default function PhotoboothAdminPro() {
               <StatBox
                 icon={<HardDrive className="h-5 w-5" />}
                 label="Stockage utilisé"
-                value={
-                  status?.storageUsed
-                    ? `${status.storageUsed}${status.storageTotal ? ` / ${status.storageTotal}` : ""}${
-                        status.storagePercent != null ? ` (${status.storagePercent}%)` : ""
-                      }`
-                    : "—"
-                }
+                value={status?.diskPercent != null ? `${status.diskPercent}%` : "—"}
               />
               <StatBox
                 icon={<ImageIcon className="h-5 w-5" />}
                 label="Nombre de photos"
-                value={status?.photoCount != null ? String(status.photoCount) : "—"}
+                value={status?.photosCount != null ? String(status.photosCount) : "—"}
               />
             </div>
           </CardContent>
@@ -258,7 +256,7 @@ export default function PhotoboothAdminPro() {
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-slate-400">Réseau actuel :</span>
               <Badge variant="secondary" className="bg-slate-800 text-slate-100 border border-slate-700 text-base px-3 py-1">
-                {status?.wifiSsid || "Non connecté"}
+                {status?.ssid || "Non connecté"}
               </Badge>
             </div>
             <p className="text-sm text-slate-400">
