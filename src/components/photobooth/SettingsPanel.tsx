@@ -1077,7 +1077,7 @@ function GoogleDriveSection() {
         className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-body text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {saving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
-        {saving ? "Sauvegarde..." : "Sauvegarder"}
+        {saving ? "Sauvegarde..." : "Sauvegarder le lien"}
       </button>
 
       {status && (
@@ -1112,7 +1112,7 @@ function GoogleDriveSection() {
       {!loading && !driveUrl && (
         <div className="p-3 rounded-lg bg-muted/50 border border-border">
           <p className="font-body text-sm text-muted-foreground">
-            Aucun lien configuré pour le moment
+            Lien Google Drive non configuré
           </p>
         </div>
       )}
