@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, RefreshCw, Lock, Signal, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2, Trash2, Cloud, ExternalLink } from "lucide-react";
+import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, Lock, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2, Trash2, Cloud, ExternalLink } from "lucide-react";
 import { enterFullscreen, exitFullscreen, isFullscreen } from "@/lib/fullscreen";
 import type { EventConfig } from "@/config/eventConfig";
-import { configureWifi, getWifiNetworks, trashPhotos, updateFrontend, uploadFrame, type WifiNetwork } from "@/services/api";
+import { trashPhotos, updateFrontend, uploadFrame } from "@/services/api";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
 import PhotoFrame from "./PhotoFrame";
 import QRCode from "qrcode";
@@ -509,267 +509,42 @@ function ToggleRow({
   );
 }
 
-function signalBars(signalStr: string): number {
-  const n = parseInt(signalStr, 10);
-  if (isNaN(n)) return 0;
-  if (n >= 75) return 4;
-  if (n >= 50) return 3;
-  if (n >= 25) return 2;
-  if (n > 0) return 1;
-  return 0;
-}
+
 
 function WifiSettings() {
-  const [ssid, setSsid] = useState("");
-  const [password, setPassword] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [errorMessage, setErrorMessage] = useState("");
+  const SETUP_URL = "http://10.42.0.1:5000/setup";
 
-  const [networks, setNetworks] = useState<WifiNetwork[]>([]);
-  const [networksStatus, setNetworksStatus] = useState<"idle" | "loading" | "error">("idle");
-  const [networksError, setNetworksError] = useState("");
-
-  const loadNetworks = useCallback(async () => {
-    setNetworksStatus("loading");
-    setNetworksError("");
-
-    const MAX_ATTEMPTS = 3;
-    const RETRY_DELAY_MS = 6000;
-    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-    let lastErr: unknown = null;
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-      try {
-        const data = await getWifiNetworks();
-        const map = new Map<string, WifiNetwork>();
-        for (const n of data.networks || []) {
-          if (!n.ssid) continue;
-          const existing = map.get(n.ssid);
-          if (!existing || parseInt(n.signal, 10) > parseInt(existing.signal, 10)) {
-            map.set(n.ssid, n);
-          }
-        }
-        const list = Array.from(map.values()).sort(
-          (a, b) => parseInt(b.signal, 10) - parseInt(a.signal, 10)
-        );
-        setNetworks(list);
-        setNetworksStatus("idle");
-        return;
-      } catch (err) {
-        lastErr = err;
-        if (attempt < MAX_ATTEMPTS) {
-          await sleep(RETRY_DELAY_MS);
-        }
-      }
-    }
-
-    console.warn("Wi-Fi networks fetch failed after retries", lastErr);
-    setNetworksError(
-      "Impossible de récupérer les réseaux. Vérifiez que vous êtes reconnecté au WiFi Photobooth_Setup puis réessayez."
-    );
-    setNetworksStatus("error");
-  }, []);
-
-  useEffect(() => {
-    loadNetworks();
-  }, [loadNetworks]);
-
-  const [showTimeoutHint, setShowTimeoutHint] = useState(false);
-
-  const handleConnect = () => {
-    if (!ssid.trim()) return;
-    setErrorMessage("");
-    setShowTimeoutHint(false);
-    // Fire-and-forget: the backend will switch network and the response will likely never come back.
-    configureWifi(ssid.trim(), password).catch(() => {
-      // Ignore — losing the connection is the expected behavior.
-    });
-    setStatus("loading");
-    // Show fallback hint after 10s if the page hasn't reloaded yet
-    window.setTimeout(() => setShowTimeoutHint(true), 10000);
+  const handleOpenSetup = () => {
+    window.open(SETUP_URL, "_blank", "noopener,noreferrer");
   };
-
-  const handleReconnect = () => {
-    window.location.href = "http://photobooth.local:8080";
-  };
-
-  const isConnecting = status === "loading";
 
   return (
     <div className="space-y-4">
-      {isConnecting && (
-        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="max-w-md w-full bg-card border border-border rounded-2xl p-8 shadow-2xl text-center space-y-5">
-            <Loader2 size={48} className="animate-spin text-primary mx-auto" />
-            <h2 className="font-display text-2xl text-foreground">Connexion en cours...</h2>
-            <div className="space-y-2">
-              <p className="font-body text-base text-foreground">
-                Le photobooth va changer de réseau
-              </p>
-              <p className="font-body text-sm text-muted-foreground">
-                Reconnectez-vous au Wi-Fi du client
-              </p>
-            </div>
-            <button
-              onClick={handleReconnect}
-              className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-body text-base font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
-            >
-              <RefreshCw size={18} />
-              Reconnexion
-            </button>
-            {showTimeoutHint && (
-              <div className="p-3 rounded-lg bg-muted border border-border">
-                <p className="font-body text-xs text-muted-foreground leading-relaxed">
-                  Si la page ne se recharge pas automatiquement, reconnectez-vous au Wi-Fi et relancez l'application.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
+        <p className="font-body text-sm text-foreground font-medium">
+          Configuration manuelle du Wi-Fi
+        </p>
+        <ol className="font-body text-xs text-muted-foreground leading-relaxed list-decimal list-inside space-y-1">
+          <li>Connectez-vous au hotspot <strong>Photobooth_Setup</strong></li>
+          <li>Ouvrez <code className="px-1 py-0.5 rounded bg-background border border-border">http://10.42.0.1:5000/setup</code></li>
+          <li>Saisissez le nom du Wi-Fi et le mot de passe</li>
+          <li>Le Raspberry se connectera automatiquement au réseau choisi</li>
+        </ol>
+      </div>
 
-      <div className="p-3 rounded-lg bg-muted/50 border border-border">
+      <div className="p-3 rounded-lg bg-muted/30 border border-border">
         <p className="font-body text-xs text-muted-foreground leading-relaxed">
-          ⚠️ La connexion peut être temporairement interrompue pendant le changement de réseau.
+          ℹ️ Le scan automatique des réseaux a été désactivé pour éviter de couper le hotspot et le SSH du Raspberry Pi (carte Wi-Fi unique).
         </p>
       </div>
 
-      {/* Available networks */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label className="font-body text-sm font-medium text-foreground">
-            Réseaux Wi-Fi disponibles
-          </label>
-          <button
-            onClick={loadNetworks}
-            disabled={networksStatus === "loading" || isConnecting}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-muted/80 transition-colors text-xs font-body font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <RefreshCw size={14} className={networksStatus === "loading" ? "animate-spin" : ""} />
-            Actualiser
-          </button>
-        </div>
-
-        <div className="rounded-lg border border-border bg-card divide-y divide-border max-h-72 overflow-y-auto">
-          {networksStatus === "loading" && networks.length === 0 && (
-            <div className="flex items-start gap-2 p-6 text-muted-foreground">
-              <Loader2 size={16} className="animate-spin mt-0.5 shrink-0" />
-              <span className="font-body text-sm">
-                Recherche des réseaux en cours… La connexion peut être interrompue quelques secondes.
-              </span>
-            </div>
-          )}
-
-          {networksStatus === "error" && networks.length === 0 && (
-            <div className="p-4">
-              <p className="font-body text-sm text-destructive">
-                {networksError || "Erreur lors du chargement des réseaux Wi-Fi"}
-              </p>
-            </div>
-          )}
-
-          {networksStatus !== "loading" && networks.length === 0 && networksStatus !== "error" && (
-            <div className="p-4">
-              <p className="font-body text-sm text-muted-foreground text-center">
-                Aucun réseau détecté
-              </p>
-            </div>
-          )}
-
-          {networks.map((net) => {
-            const bars = signalBars(net.signal);
-            const isSelected = ssid === net.ssid;
-            return (
-              <button
-                key={net.ssid}
-                onClick={() => setSsid(net.ssid)}
-                disabled={isConnecting}
-                className={`w-full flex items-center justify-between gap-3 p-4 text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                  isSelected ? "bg-primary/10" : "hover:bg-muted/50"
-                }`}
-              >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="flex items-end gap-0.5 h-5 shrink-0">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className={`w-1 rounded-sm ${
-                          i <= bars ? "bg-primary" : "bg-border"
-                        }`}
-                        style={{ height: `${i * 25}%` }}
-                      />
-                    ))}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-body text-sm font-medium text-foreground truncate">
-                      {net.ssid}
-                    </p>
-                    <p className="font-body text-xs text-muted-foreground flex items-center gap-2">
-                      <span className="flex items-center gap-1">
-                        <Lock size={10} />
-                        {net.security || "Ouvert"}
-                      </span>
-                      <span>•</span>
-                      <span>Signal {net.signal}%</span>
-                    </p>
-                  </div>
-                </div>
-                {isSelected && (
-                  <span className="shrink-0 text-xs font-body font-medium text-primary">
-                    Sélectionné
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <InputField
-        label="Nom du Wi-Fi"
-        placeholder="MonReseauWifi"
-        value={ssid}
-        onChange={setSsid}
-      />
-
-      <div className="space-y-1">
-        <label className="font-body text-sm font-medium text-foreground">Mot de passe</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          disabled={isConnecting}
-          className="w-full h-12 rounded-lg border border-border bg-background px-3 text-sm font-body text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        />
-      </div>
-
       <button
-        onClick={handleConnect}
-        disabled={isConnecting || !ssid.trim()}
-        className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-body text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        onClick={handleOpenSetup}
+        className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-body text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
       >
-        {isConnecting ? (
-          <>
-            <Loader2 size={16} className="animate-spin" />
-            Connexion en cours...
-          </>
-        ) : (
-          "Connecter"
-        )}
+        <Wifi size={16} />
+        Configurer le Wi-Fi
       </button>
-
-      {status === "success" && (
-        <div className="p-3 rounded-lg bg-primary/10 border border-primary/30">
-          <p className="font-body text-sm text-foreground">✓ Connexion Wi-Fi réussie !</p>
-        </div>
-      )}
-
-      {status === "error" && (
-        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
-          <p className="font-body text-sm text-destructive">{errorMessage || "Erreur lors de la connexion Wi-Fi"}</p>
-        </div>
-      )}
     </div>
   );
 }
