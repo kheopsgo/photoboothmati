@@ -332,3 +332,31 @@ export async function updateFrontend(): Promise<UpdateFrontendResponse> {
   }
   return res.json();
 }
+
+export interface AppConfig {
+  googleDriveUrl?: string;
+  [key: string]: unknown;
+}
+
+export async function getConfig(): Promise<AppConfig> {
+  const res = await fetch(`${API_BASE}/config`);
+  if (!res.ok) throw new Error("Erreur lors du chargement de la configuration");
+  return res.json();
+}
+
+export async function saveConfig(config: Partial<AppConfig>): Promise<AppConfig> {
+  const res = await fetch(`${API_BASE}/config`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(config),
+  });
+  if (!res.ok) {
+    let backendMessage = "";
+    try {
+      const data = await res.json();
+      backendMessage = data?.message || data?.error || "";
+    } catch { /* ignore */ }
+    throw new Error(backendMessage || "Erreur lors de la sauvegarde de la configuration");
+  }
+  return res.json();
+}
