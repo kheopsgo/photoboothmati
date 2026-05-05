@@ -532,11 +532,8 @@ function WifiSettings() {
         </ol>
       </div>
 
-      <div className="p-3 rounded-lg bg-muted/30 border border-border">
-        <p className="font-body text-xs text-muted-foreground leading-relaxed">
-          ℹ️ Le scan automatique des réseaux a été désactivé pour éviter de couper le hotspot et le SSH du Raspberry Pi (carte Wi-Fi unique).
-        </p>
-      </div>
+
+
 
       <button
         onClick={handleOpenSetup}
