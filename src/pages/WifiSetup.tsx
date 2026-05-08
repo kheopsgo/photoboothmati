@@ -7,26 +7,23 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-// On the Raspberry Pi, /setup may be opened either from Flask (:5000)
-// or from the frontend server (:8080). Prefer same-origin /api routes first
-// to avoid CORS issues, then fall back to Flask on port 5000 and legacy routes.
+// The Wi-Fi setup page is served from the photobooth hotspot.
+// The Flask backend always runs on the same host on port 5000.
+// We always target http://<hostname>:5000 directly (e.g. http://10.42.0.1:5000),
+// and fall back to VITE_API_BASE when running outside the Pi (e.g. preview).
 function resolveApiBases(): string[] {
   const configured = import.meta.env.VITE_API_BASE || "";
   if (typeof window === "undefined") return configured ? [configured] : [""];
-  const { hostname, port, protocol } = window.location;
-  const isLocalHost =
-    hostname === "10.42.0.1" ||
-    hostname === "pi.local" ||
-    hostname.endsWith(".local") ||
-    /^10\./.test(hostname) ||
-    /^192\.168\./.test(hostname) ||
-    /^172\.(1[6-9]|2\d|3[01])\./.test(hostname);
-  const bases = [
-    port === "5000" || isLocalHost ? "" : null,
-    isLocalHost && port !== "5000" ? `${protocol}//${hostname}:5000` : null,
-    configured || null,
-  ].filter((base): base is string => base !== null);
-  return [...new Set(bases.length ? bases : [""])];
+  const { hostname, protocol, port } = window.location;
+  const sameHostFlask = `${protocol}//${hostname}:5000`;
+  const bases: string[] = [];
+  // If already on Flask (:5000), prefer same-origin
+  if (port === "5000") bases.push("");
+  // Always try Flask on the same host (the Pi)
+  bases.push(sameHostFlask);
+  // Configured fallback (preview / dev)
+  if (configured) bases.push(configured);
+  return [...new Set(bases)];
 }
 const API_BASES = resolveApiBases();
 
