@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Wifi, WifiOff, RefreshCw, Globe, Lock, Loader2, CheckCircle2, AlertCircle, Signal } from "lucide-react";
+import { Wifi, WifiOff, RefreshCw, Globe, Lock, Loader2, CheckCircle2, AlertCircle, Signal, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -119,6 +119,7 @@ export default function WifiSetup() {
   const [password, setPassword] = useState("");
   const [connecting, setConnecting] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Allow scrolling on this page (override photobooth global lock)
   useEffect(() => {
@@ -352,14 +353,25 @@ export default function WifiSetup() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="pwd">Mot de passe</Label>
-              <Input
-                id="pwd"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mot de passe Wi-Fi"
-                autoComplete="off"
-              />
+              <div className="relative">
+                <Input
+                  id="pwd"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mot de passe Wi-Fi"
+                  autoComplete="off"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
             </div>
             <Button onClick={connect} disabled={connecting || !selected} className="w-full" size="lg">
               {connecting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wifi className="h-5 w-5" />}
