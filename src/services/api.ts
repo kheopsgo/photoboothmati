@@ -1,5 +1,32 @@
-// Configurable via VITE_API_BASE env var or defaults to same-network Raspberry Pi
-export const API_BASE = import.meta.env.VITE_API_BASE || "http://10.10.10.191:5000";
+const FLASK_PORT = "5000";
+const HOTSPOT_HOST = "10.42.0.1";
+
+export function resolveApiBase(): string {
+  const configured = import.meta.env.VITE_API_BASE;
+  if (configured) return configured.replace(/\/$/, "");
+  if (typeof window === "undefined") return `http://${HOTSPOT_HOST}:${FLASK_PORT}`;
+
+  const { hostname, port, protocol } = window.location;
+  if (port === FLASK_PORT) return "";
+
+  const isPreviewHost = hostname.includes("lovable") || hostname === "localhost" || hostname === "127.0.0.1";
+  const backendHost = isPreviewHost ? HOTSPOT_HOST : hostname;
+  return `http://${backendHost}:${FLASK_PORT}`;
+}
+
+export function resolveApiBases(): string[] {
+  const primary = resolveApiBase();
+  const bases = [primary];
+  if (typeof window !== "undefined") {
+    const { hostname, port } = window.location;
+    if (port !== FLASK_PORT) bases.push(`http://${HOTSPOT_HOST}:${FLASK_PORT}`);
+    if (hostname !== HOTSPOT_HOST && !hostname.includes("lovable")) bases.push(`http://${hostname}:${FLASK_PORT}`);
+  }
+  return [...new Set(bases.map((base) => base.replace(/\/$/, "")))];
+}
+
+// Backend Flask du Raspberry Pi, résolu dynamiquement depuis la page courante.
+export const API_BASE = resolveApiBase();
 
 // URL du flux MJPEG live de la caméra (Raspberry Pi). Configurable via VITE_STREAM_URL.
 export const STREAM_URL =

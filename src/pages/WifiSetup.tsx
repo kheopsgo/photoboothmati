@@ -6,25 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { resolveApiBases } from "@/services/api";
 
-// The Wi-Fi setup page is served from the photobooth hotspot.
-// The Flask backend always runs on the same host on port 5000.
-// We always target http://<hostname>:5000 directly (e.g. http://10.42.0.1:5000),
-// and fall back to VITE_API_BASE when running outside the Pi (e.g. preview).
-function resolveApiBases(): string[] {
-  const configured = import.meta.env.VITE_API_BASE || "";
-  if (typeof window === "undefined") return configured ? [configured] : [""];
-  const { hostname, protocol, port } = window.location;
-  const sameHostFlask = `${protocol}//${hostname}:5000`;
-  const bases: string[] = [];
-  // If already on Flask (:5000), prefer same-origin
-  if (port === "5000") bases.push("");
-  // Always try Flask on the same host (the Pi)
-  bases.push(sameHostFlask);
-  // Configured fallback (preview / dev)
-  if (configured) bases.push(configured);
-  return [...new Set(bases)];
-}
 const API_BASES = resolveApiBases();
 
 async function fetchJson<T>(
