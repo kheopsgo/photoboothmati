@@ -234,8 +234,8 @@ export default function WifiSetup() {
   const internetOk = status?.internet === true;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-2xl p-4 sm:p-6 space-y-6">
+    <div className="h-dvh overflow-y-auto bg-background text-foreground">
+      <div className="mx-auto max-w-2xl p-4 sm:p-6 space-y-6 pb-12">
         <header className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">Configuration Wi-Fi</h1>
           <p className="text-sm text-muted-foreground">
