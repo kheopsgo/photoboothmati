@@ -36,11 +36,13 @@ async function fetchJson<T>(paths: string[], options?: RequestInit): Promise<T> 
     for (const path of paths) {
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), 12000);
+      const headers = new Headers(options?.headers);
+      if (!headers.has("Accept")) headers.set("Accept", "application/json");
       try {
         const res = await fetch(`${base}${path}`, {
           cache: "no-store",
           ...options,
-          headers: { Accept: "application/json", ...(options?.headers || {}) },
+          headers,
           signal: controller.signal,
         });
         const text = await res.text();
@@ -153,9 +155,7 @@ export default function WifiSetup() {
   const fetchStatus = useCallback(async () => {
     setLoadingStatus(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/status`);
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
+      const data = await fetchJson<AdminStatus>(["/api/admin/status", "/admin/status"]);
       setStatus(data);
     } catch (e) {
       // Don't toast on initial silent load failures
@@ -173,15 +173,10 @@ export default function WifiSetup() {
     setScanning(true);
     setNetworks([]);
     try {
-      // Try the legacy endpoint first (backend exposes /wifi-networks),
-      // then fall back to the namespaced one if available.
-      let res = await fetch(`${API_BASE}/wifi-networks`);
-      if (!res.ok) {
-        const alt = await fetch(`${API_BASE}/api/wifi/networks`);
-        if (alt.ok) res = alt;
-      }
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
+      const data = await fetchJson<WifiNet[] | { networks?: WifiNet[]; results?: WifiNet[] }>([
+        "/api/wifi/networks",
+        "/wifi-networks",
+      ]);
       const list: WifiNet[] = Array.isArray(data)
         ? data
         : data.networks || data.results || [];
@@ -211,22 +206,11 @@ export default function WifiSetup() {
     }
     setConnecting(true);
     try {
-      let res = await fetch(`${API_BASE}/wifi-config`, {
+      await fetchJson<{ success?: boolean; message?: string; error?: string }>(["/api/wifi/connect", "/wifi-config"], {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ssid: selected, password, interface: "wlan0" }),
       });
-      if (!res.ok && res.status === 404) {
-        res = await fetch(`${API_BASE}/api/wifi/connect`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ssid: selected, password, interface: "wlan0" }),
-        });
-      }
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data.success === false) {
-        throw new Error(data.message || data.error || "Échec de la connexion");
-      }
       toast.success(`Connecté à ${selected}`);
       setPassword("");
       setTimeout(fetchStatus, 2500);
@@ -241,12 +225,11 @@ export default function WifiSetup() {
   const testInternet = async () => {
     setTesting(true);
     try {
-      let res = await fetch(`${API_BASE}/wifi/internet-test`);
-      if (!res.ok && res.status === 404) {
-        res = await fetch(`${API_BASE}/api/wifi/internet-test`);
-      }
-      const data = await res.json().catch(() => ({}));
-      const ok = data.internet ?? data.success ?? res.ok;
+      const data = await fetchJson<{ internet?: boolean; success?: boolean }>([
+        "/api/wifi/internet-test",
+        "/wifi/internet-test",
+      ]);
+      const ok = data.internet ?? data.success ?? true;
       if (ok) toast.success("Internet disponible ✓");
       else toast.error("Pas d'accès Internet");
       setStatus((s) => ({ ...(s || {}), internet: !!ok }));
