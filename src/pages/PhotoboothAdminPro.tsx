@@ -120,6 +120,30 @@ function AdminPage() {
     return () => window.clearInterval(id);
   }, [fetchStatus]);
 
+  // The global photobooth CSS forces html/body/#root to height:100% with
+  // overflow:hidden (to lock the landscape capture UI). On the admin page we
+  // need normal scrolling, so we relax those rules while this page is mounted.
+  useEffect(() => {
+    const targets = [document.documentElement, document.body];
+    const root = document.getElementById("root");
+    if (root) targets.push(root);
+    const previous = targets.map((el) => ({
+      el,
+      overflow: el.style.overflow,
+      height: el.style.height,
+    }));
+    targets.forEach((el) => {
+      el.style.overflow = "auto";
+      el.style.height = "auto";
+    });
+    return () => {
+      previous.forEach(({ el, overflow, height }) => {
+        el.style.overflow = overflow;
+        el.style.height = height;
+      });
+    };
+  }, []);
+
   const handleHotspot = async () => {
     setBusy("hotspot");
     try {
