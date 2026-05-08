@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import PhotoboothAdminPro from "./pages/PhotoboothAdminPro.tsx";
+import WifiSetup from "./pages/WifiSetup.tsx";
 
 const queryClient = new QueryClient();
 
