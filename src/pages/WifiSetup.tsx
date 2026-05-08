@@ -9,10 +9,24 @@ import { toast } from "sonner";
 
 // On the Raspberry the page is served by Flask on the same host (10.42.0.1:5000),
 // so relative URLs work. In dev/preview we fall back to the configured API base.
-const API_BASE =
-  typeof window !== "undefined" && window.location.port === "5000"
-    ? ""
-    : import.meta.env.VITE_API_BASE || "";
+// When the page is served from the Raspberry Pi (hotspot 10.42.0.1, pi.local,
+// or any local IP on port 8080/5000), talk to the Flask backend on port 5000
+// of the same host. Otherwise fall back to the configured API base.
+function resolveApiBase(): string {
+  if (typeof window === "undefined") return import.meta.env.VITE_API_BASE || "";
+  const { hostname, port, protocol } = window.location;
+  if (port === "5000") return ""; // same origin
+  const isLocalHost =
+    hostname === "10.42.0.1" ||
+    hostname === "pi.local" ||
+    hostname.endsWith(".local") ||
+    /^10\./.test(hostname) ||
+    /^192\.168\./.test(hostname) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(hostname);
+  if (isLocalHost) return `${protocol}//${hostname}:5000`;
+  return import.meta.env.VITE_API_BASE || "";
+}
+const API_BASE = resolveApiBase();
 
 interface AdminStatus {
   hotspot?: { active?: boolean; ip?: string; ssid?: string };
