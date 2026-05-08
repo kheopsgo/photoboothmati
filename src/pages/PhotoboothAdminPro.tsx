@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Component, ErrorInfo, ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +37,54 @@ interface AdminStatus {
 
 const SETUP_URL = "http://10.42.0.1:5000/setup";
 
-export default function PhotoboothAdminPro() {
+// Error boundary to avoid a fully blank screen if something throws.
+class AdminErrorBoundary extends Component<
+  { children: ReactNode },
+  { error: Error | null }
+> {
+  state = { error: null as Error | null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    // eslint-disable-next-line no-console
+    console.error("[AdminPro] crash:", error, info);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen bg-slate-950 text-slate-100 p-6">
+          <div className="mx-auto max-w-3xl space-y-4">
+            <h1 className="text-2xl font-bold">Erreur sur la page admin</h1>
+            <pre className="whitespace-pre-wrap rounded-lg border border-red-800 bg-red-950/40 p-4 text-sm text-red-200">
+              {String(this.state.error?.message || this.state.error)}
+            </pre>
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-md bg-slate-800 px-4 py-2 text-slate-100 hover:bg-slate-700"
+            >
+              Recharger
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function safeFetch(url: string, init?: RequestInit) {
+  return fetch(url, init).catch((err) => {
+    // eslint-disable-next-line no-console
+    console.warn("[AdminPro] fetch failed", url, err);
+    return null as unknown as Response;
+  });
+}
+
+function AdminPage() {
   const { toast } = useToast();
   const [status, setStatus] = useState<AdminStatus | null>(null);
   const [healthOk, setHealthOk] = useState<boolean | null>(null);
@@ -47,23 +94,21 @@ export default function PhotoboothAdminPro() {
   const fetchStatus = useCallback(async () => {
     setLoading(true);
     try {
-      const [healthRes, statusRes] = await Promise.allSettled([
-        fetch(`${API_BASE}/health`, { cache: "no-store" }),
-        fetch(`${API_BASE}/admin/status`, { cache: "no-store" }),
+      const [healthRes, statusRes] = await Promise.all([
+        safeFetch(`${API_BASE}/health`, { cache: "no-store" }),
+        safeFetch(`${API_BASE}/admin/status`, { cache: "no-store" }),
       ]);
 
-      if (healthRes.status === "fulfilled") {
-        setHealthOk(healthRes.value.ok);
-      } else {
-        setHealthOk(false);
-      }
+      setHealthOk(healthRes?.ok === true);
 
-      if (statusRes.status === "fulfilled" && statusRes.value.ok) {
-        const data = await statusRes.value.json();
-        setStatus(data);
+      if (statusRes && statusRes.ok) {
+        try {
+          const data = await statusRes.json();
+          setStatus(data && typeof data === "object" ? data : {});
+        } catch {
+          setStatus({});
+        }
       }
-    } catch {
-      setHealthOk(false);
     } finally {
       setLoading(false);
     }
@@ -74,6 +119,30 @@ export default function PhotoboothAdminPro() {
     const id = window.setInterval(fetchStatus, 10000);
     return () => window.clearInterval(id);
   }, [fetchStatus]);
+
+  // The global photobooth CSS forces html/body/#root to height:100% with
+  // overflow:hidden (to lock the landscape capture UI). On the admin page we
+  // need normal scrolling, so we relax those rules while this page is mounted.
+  useEffect(() => {
+    const targets = [document.documentElement, document.body];
+    const root = document.getElementById("root");
+    if (root) targets.push(root);
+    const previous = targets.map((el) => ({
+      el,
+      overflow: el.style.overflow,
+      height: el.style.height,
+    }));
+    targets.forEach((el) => {
+      el.style.overflow = "auto";
+      el.style.height = "auto";
+    });
+    return () => {
+      previous.forEach(({ el, overflow, height }) => {
+        el.style.overflow = overflow;
+        el.style.height = height;
+      });
+    };
+  }, []);
 
   const handleHotspot = async () => {
     setBusy("hotspot");
@@ -132,7 +201,7 @@ export default function PhotoboothAdminPro() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8">
+    <div className="min-h-screen w-full bg-slate-950 text-slate-100 p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -334,5 +403,13 @@ function StatBox({
       </div>
       <div className="mt-2 text-lg font-semibold break-all">{value}</div>
     </div>
+  );
+}
+
+export default function PhotoboothAdminPro() {
+  return (
+    <AdminErrorBoundary>
+      <AdminPage />
+    </AdminErrorBoundary>
   );
 }
