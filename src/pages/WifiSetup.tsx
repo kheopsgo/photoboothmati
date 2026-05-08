@@ -7,15 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-// On the Raspberry the page is served by Flask on the same host (10.42.0.1:5000),
-// so relative URLs work. In dev/preview we fall back to the configured API base.
-// When the page is served from the Raspberry Pi (hotspot 10.42.0.1, pi.local,
-// or any local IP on port 8080/5000), talk to the Flask backend on port 5000
-// of the same host. Otherwise fall back to the configured API base.
-function resolveApiBase(): string {
-  if (typeof window === "undefined") return import.meta.env.VITE_API_BASE || "";
+// On the Raspberry Pi, /setup may be opened either from Flask (:5000)
+// or from the frontend server (:8080). Prefer same-origin /api routes first
+// to avoid CORS issues, then fall back to Flask on port 5000 and legacy routes.
+function resolveApiBases(): string[] {
+  const configured = import.meta.env.VITE_API_BASE || "";
+  if (typeof window === "undefined") return configured ? [configured] : [""];
   const { hostname, port, protocol } = window.location;
-  if (port === "5000") return ""; // same origin
   const isLocalHost =
     hostname === "10.42.0.1" ||
     hostname === "pi.local" ||
@@ -23,10 +21,43 @@ function resolveApiBase(): string {
     /^10\./.test(hostname) ||
     /^192\.168\./.test(hostname) ||
     /^172\.(1[6-9]|2\d|3[01])\./.test(hostname);
-  if (isLocalHost) return `${protocol}//${hostname}:5000`;
-  return import.meta.env.VITE_API_BASE || "";
+  const bases = [
+    port === "5000" || isLocalHost ? "" : null,
+    isLocalHost && port !== "5000" ? `${protocol}//${hostname}:5000` : null,
+    configured || null,
+  ].filter((base): base is string => base !== null);
+  return [...new Set(bases.length ? bases : [""])];
 }
-const API_BASE = resolveApiBase();
+const API_BASES = resolveApiBases();
+
+async function fetchJson<T>(paths: string[], options?: RequestInit): Promise<T> {
+  let lastError: unknown;
+  for (const base of API_BASES) {
+    for (const path of paths) {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 12000);
+      const headers = new Headers(options?.headers);
+      if (!headers.has("Accept")) headers.set("Accept", "application/json");
+      try {
+        const res = await fetch(`${base}${path}`, {
+          cache: "no-store",
+          ...options,
+          headers,
+          signal: controller.signal,
+        });
+        const text = await res.text();
+        const data = text ? JSON.parse(text) : {};
+        if (res.ok && data?.success !== false) return data as T;
+        lastError = new Error(data?.message || data?.error || `HTTP ${res.status}`);
+      } catch (error) {
+        lastError = error;
+      } finally {
+        window.clearTimeout(timeout);
+      }
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("API Wi-Fi indisponible");
+}
 
 interface AdminStatus {
   hotspot?: { active?: boolean; ip?: string; ssid?: string };
@@ -124,9 +155,7 @@ export default function WifiSetup() {
   const fetchStatus = useCallback(async () => {
     setLoadingStatus(true);
     try {
-      const res = await fetch(`${API_BASE}/admin/status`);
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
+      const data = await fetchJson<AdminStatus>(["/api/admin/status", "/admin/status"]);
       setStatus(data);
     } catch (e) {
       // Don't toast on initial silent load failures
@@ -144,15 +173,10 @@ export default function WifiSetup() {
     setScanning(true);
     setNetworks([]);
     try {
-      // Try the legacy endpoint first (backend exposes /wifi-networks),
-      // then fall back to the namespaced one if available.
-      let res = await fetch(`${API_BASE}/wifi-networks`);
-      if (!res.ok) {
-        const alt = await fetch(`${API_BASE}/api/wifi/networks`);
-        if (alt.ok) res = alt;
-      }
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
+      const data = await fetchJson<WifiNet[] | { networks?: WifiNet[]; results?: WifiNet[] }>([
+        "/api/wifi/networks",
+        "/wifi-networks",
+      ]);
       const list: WifiNet[] = Array.isArray(data)
         ? data
         : data.networks || data.results || [];
@@ -182,22 +206,11 @@ export default function WifiSetup() {
     }
     setConnecting(true);
     try {
-      let res = await fetch(`${API_BASE}/wifi-config`, {
+      await fetchJson<{ success?: boolean; message?: string; error?: string }>(["/api/wifi/connect", "/wifi-config"], {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ssid: selected, password, interface: "wlan0" }),
       });
-      if (!res.ok && res.status === 404) {
-        res = await fetch(`${API_BASE}/api/wifi/connect`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ssid: selected, password, interface: "wlan0" }),
-        });
-      }
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data.success === false) {
-        throw new Error(data.message || data.error || "Échec de la connexion");
-      }
       toast.success(`Connecté à ${selected}`);
       setPassword("");
       setTimeout(fetchStatus, 2500);
@@ -212,12 +225,11 @@ export default function WifiSetup() {
   const testInternet = async () => {
     setTesting(true);
     try {
-      let res = await fetch(`${API_BASE}/wifi/internet-test`);
-      if (!res.ok && res.status === 404) {
-        res = await fetch(`${API_BASE}/api/wifi/internet-test`);
-      }
-      const data = await res.json().catch(() => ({}));
-      const ok = data.internet ?? data.success ?? res.ok;
+      const data = await fetchJson<{ internet?: boolean; success?: boolean }>([
+        "/api/wifi/internet-test",
+        "/wifi/internet-test",
+      ]);
+      const ok = data.internet ?? data.success ?? true;
       if (ok) toast.success("Internet disponible ✓");
       else toast.error("Pas d'accès Internet");
       setStatus((s) => ({ ...(s || {}), internet: !!ok }));
