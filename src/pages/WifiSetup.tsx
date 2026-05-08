@@ -27,18 +27,22 @@ function resolveApiBases(): string[] {
 }
 const API_BASES = resolveApiBases();
 
-async function fetchJson<T>(paths: string[], options?: RequestInit): Promise<T> {
+async function fetchJson<T>(
+  paths: string[],
+  options?: RequestInit & { timeoutMs?: number },
+): Promise<T> {
+  const { timeoutMs = 12000, ...fetchOptions } = options || {};
   let lastError: unknown;
   for (const base of API_BASES) {
     for (const path of paths) {
       const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 12000);
-      const headers = new Headers(options?.headers);
+      const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+      const headers = new Headers(fetchOptions.headers);
       if (!headers.has("Accept")) headers.set("Accept", "application/json");
       try {
         const res = await fetch(`${base}${path}`, {
           cache: "no-store",
-          ...options,
+          ...fetchOptions,
           headers,
           signal: controller.signal,
         });
@@ -208,6 +212,7 @@ export default function WifiSetup() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ssid: selected, password, interface: "wlan0" }),
+        timeoutMs: 45000,
       });
       toast.success(`Connecté à ${selected}`);
       setPassword("");
