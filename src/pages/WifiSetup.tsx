@@ -9,10 +9,24 @@ import { toast } from "sonner";
 
 // On the Raspberry the page is served by Flask on the same host (10.42.0.1:5000),
 // so relative URLs work. In dev/preview we fall back to the configured API base.
-const API_BASE =
-  typeof window !== "undefined" && window.location.port === "5000"
-    ? ""
-    : import.meta.env.VITE_API_BASE || "";
+// When the page is served from the Raspberry Pi (hotspot 10.42.0.1, pi.local,
+// or any local IP on port 8080/5000), talk to the Flask backend on port 5000
+// of the same host. Otherwise fall back to the configured API base.
+function resolveApiBase(): string {
+  if (typeof window === "undefined") return import.meta.env.VITE_API_BASE || "";
+  const { hostname, port, protocol } = window.location;
+  if (port === "5000") return ""; // same origin
+  const isLocalHost =
+    hostname === "10.42.0.1" ||
+    hostname === "pi.local" ||
+    hostname.endsWith(".local") ||
+    /^10\./.test(hostname) ||
+    /^192\.168\./.test(hostname) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(hostname);
+  if (isLocalHost) return `${protocol}//${hostname}:5000`;
+  return import.meta.env.VITE_API_BASE || "";
+}
+const API_BASE = resolveApiBase();
 
 interface AdminStatus {
   hotspot?: { active?: boolean; ip?: string; ssid?: string };
@@ -102,7 +116,7 @@ export default function WifiSetup() {
   const fetchStatus = useCallback(async () => {
     setLoadingStatus(true);
     try {
-      const res = await fetch(`${API_BASE}/api/admin/status`);
+      const res = await fetch(`${API_BASE}/admin/status`);
       if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       setStatus(data);
@@ -122,10 +136,18 @@ export default function WifiSetup() {
     setScanning(true);
     setNetworks([]);
     try {
-      const res = await fetch(`${API_BASE}/api/wifi/networks`);
+      // Try the legacy endpoint first (backend exposes /wifi-networks),
+      // then fall back to the namespaced one if available.
+      let res = await fetch(`${API_BASE}/wifi-networks`);
+      if (!res.ok) {
+        const alt = await fetch(`${API_BASE}/api/wifi/networks`);
+        if (alt.ok) res = alt;
+      }
       if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
-      const list: WifiNet[] = Array.isArray(data) ? data : data.networks || [];
+      const list: WifiNet[] = Array.isArray(data)
+        ? data
+        : data.networks || data.results || [];
       // Dédupliquer par SSID, garder le meilleur signal
       const map = new Map<string, WifiNet>();
       for (const n of list) {
@@ -137,7 +159,9 @@ export default function WifiSetup() {
       }
       setNetworks([...map.values()].sort((a, b) => signalBars(b.signal) - signalBars(a.signal)));
     } catch (e) {
-      toast.error("Impossible de scanner les réseaux Wi-Fi");
+      console.error("wifi scan failed", e);
+      const msg = e instanceof Error ? e.message : "";
+      toast.error(`Impossible de scanner les réseaux Wi-Fi${msg ? ` (${msg})` : ""}`);
     } finally {
       setScanning(false);
     }
@@ -150,11 +174,18 @@ export default function WifiSetup() {
     }
     setConnecting(true);
     try {
-      const res = await fetch(`${API_BASE}/api/wifi/connect`, {
+      let res = await fetch(`${API_BASE}/wifi-config`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ssid: selected, password, interface: "wlan0" }),
       });
+      if (!res.ok && res.status === 404) {
+        res = await fetch(`${API_BASE}/api/wifi/connect`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ssid: selected, password, interface: "wlan0" }),
+        });
+      }
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data.success === false) {
         throw new Error(data.message || data.error || "Échec de la connexion");
@@ -173,7 +204,10 @@ export default function WifiSetup() {
   const testInternet = async () => {
     setTesting(true);
     try {
-      const res = await fetch(`${API_BASE}/api/wifi/internet-test`);
+      let res = await fetch(`${API_BASE}/wifi/internet-test`);
+      if (!res.ok && res.status === 404) {
+        res = await fetch(`${API_BASE}/api/wifi/internet-test`);
+      }
       const data = await res.json().catch(() => ({}));
       const ok = data.internet ?? data.success ?? res.ok;
       if (ok) toast.success("Internet disponible ✓");
