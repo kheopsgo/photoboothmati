@@ -95,11 +95,18 @@ export default function WifiSetup() {
   // Allow scrolling on this page (override photobooth global lock)
   useEffect(() => {
     const targets = [document.documentElement, document.body, document.getElementById("root")];
-    const prev = targets.map((el) => el && { overflow: el.style.overflow, height: el.style.height });
+    const prev = targets.map((el) =>
+      el && {
+        overflow: el.style.overflow,
+        height: el.style.height,
+        overscrollBehavior: (el as HTMLElement).style.overscrollBehavior,
+      }
+    );
     targets.forEach((el) => {
       if (el) {
         el.style.overflow = "auto";
         el.style.height = "auto";
+        (el as HTMLElement).style.overscrollBehavior = "auto";
       }
     });
     return () => {
@@ -108,6 +115,7 @@ export default function WifiSetup() {
         if (el && p) {
           el.style.overflow = p.overflow;
           el.style.height = p.height;
+          (el as HTMLElement).style.overscrollBehavior = p.overscrollBehavior;
         }
       });
     };
