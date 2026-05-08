@@ -3,6 +3,30 @@ import App from "./App.tsx";
 import "./index.css";
 import { armFullscreenOnFirstGesture, enterFullscreen } from "./lib/fullscreen";
 
+function installDomMutationGuard() {
+  if (typeof Node !== "function" || !Node.prototype) return;
+
+  const nodePrototype = Node.prototype as Node & { __photoboothDomGuardInstalled?: boolean };
+  if (nodePrototype.__photoboothDomGuardInstalled) return;
+  nodePrototype.__photoboothDomGuardInstalled = true;
+
+  const originalInsertBefore = Node.prototype.insertBefore;
+  Node.prototype.insertBefore = function <T extends Node>(newNode: T, referenceNode: Node | null): T {
+    if (referenceNode && referenceNode.parentNode !== this) {
+      return originalInsertBefore.call(this, newNode, null) as T;
+    }
+    return originalInsertBefore.call(this, newNode, referenceNode) as T;
+  };
+
+  const originalRemoveChild = Node.prototype.removeChild;
+  Node.prototype.removeChild = function <T extends Node>(child: T): T {
+    if (child.parentNode !== this) return child;
+    return originalRemoveChild.call(this, child) as T;
+  };
+}
+
+installDomMutationGuard();
+
 // Best-effort: try immediately (will likely no-op without a user gesture)
 enterFullscreen();
 // Arm a one-time listener so the first tap triggers real fullscreen + landscape lock
