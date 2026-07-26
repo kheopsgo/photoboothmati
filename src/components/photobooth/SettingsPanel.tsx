@@ -6,6 +6,7 @@ import type { EventConfig } from "@/config/eventConfig";
 import { trashPhotos, updateFrontend, uploadFrame, API_BASE } from "@/services/api";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
 import PhotoFrame from "./PhotoFrame";
+import RotatedPortraitImage from "./RotatedPortraitImage";
 import QRCode from "qrcode";
 
 const FRAME_STYLES: { id: EventConfig["frameStyle"]; label: string }[] = [
