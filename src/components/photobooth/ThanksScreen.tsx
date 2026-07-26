@@ -4,6 +4,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { useSound } from "@/hooks/useSound";
 import { Sparkles } from "lucide-react";
 import { useMemo } from "react";
+import RotatedPortraitImage from "./RotatedPortraitImage";
 
 const HOME_TIMEOUT_S = 6;
 
