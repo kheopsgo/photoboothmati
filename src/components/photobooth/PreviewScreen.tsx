@@ -3,6 +3,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { API_BASE } from "@/services/api";
 import { ArrowLeft, Camera } from "lucide-react";
 import type { PhotoFilter } from "@/services/api";
+import RotatedPortraitImage from "./RotatedPortraitImage";
 
 const filters: { id: PhotoFilter; label: string; cssFilter: string }[] = [
   { id: "none", label: "Original", cssFilter: "none" },
