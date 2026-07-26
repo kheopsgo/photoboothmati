@@ -24,14 +24,16 @@ export default function PreviewScreen() {
     <div className="relative flex h-screen w-full overflow-hidden bg-background">
       {/* Blurred fullscreen background */}
       <div className="absolute inset-0 z-0">
-        <img
-          src={streamUrl}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl brightness-50"
-          style={{ transform: "scaleX(-1) scale(1.1)" }}
-          loading="eager"
-        />
+        {settings.cameraEnabled && (
+          <img
+            src={streamUrl}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl brightness-50"
+            style={{ transform: "scaleX(-1) scale(1.1)" }}
+            loading="eager"
+          />
+        )}
         <div className="absolute inset-0 bg-background/60" />
       </div>
 
