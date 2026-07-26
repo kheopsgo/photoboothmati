@@ -30,6 +30,7 @@ export default function RotatedPortraitImage({
           alt={alt}
           className="block h-full w-auto max-w-none max-h-none object-cover"
           style={{ transform: mirrored ? "scaleX(-1)" : undefined }}
+          onError={onError}
         />
       </div>
     </div>
