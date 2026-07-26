@@ -4,19 +4,21 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { useSound } from "@/hooks/useSound";
 import { API_BASE } from "@/services/api";
 import { startEarlyCapture, clearPendingCapture } from "@/services/captureQueue";
+import { hapticCapture, hapticMedium } from "@/lib/haptics";
 
-// Visual countdown total: 5s (5 → 4 → 3 → 2 → 1 → 0, ticking once per second).
 const COUNTDOWN_START = 5;
-const COUNTDOWN_TOTAL_MS = COUNTDOWN_START * 1000;
 const TICK_MS = 1000;
 
 export default function CountdownScreen() {
   const { mode, filter, setScreen, captureProgress } = usePhotobooth();
   const { settings } = useSettings();
-  const { playTick, playShutter } = useSound();
+  const { playTick, playReadyBeep, playShutter } = useSound({
+    enabled: settings.soundsEnabled,
+  });
   const [count, setCount] = useState(COUNTDOWN_START);
   const [showSmile, setShowSmile] = useState(false);
   const [flash, setFlash] = useState(false);
+  const [ringKey, setRingKey] = useState(0);
   const hasTriggeredCapture = useRef(false);
   const streamImgRef = useRef<HTMLImageElement | null>(null);
 
@@ -24,28 +26,21 @@ export default function CountdownScreen() {
   const currentShot = captureProgress + 1;
   const streamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
 
-  // Real /take-photo is fired when the visible countdown reaches "2"
-  // (i.e. ~2s before the end), to compensate for camera hardware latency.
-  // The visible countdown is never blocked by the capture itself.
   const CAPTURE_AT_COUNT = 1;
 
-  // Fires the real capture (API call + flash + sound). Independent from the
-  // visible countdown number — driven by a separate setTimeout.
   const triggerCapture = useCallback(() => {
     if (hasTriggeredCapture.current) return;
     hasTriggeredCapture.current = true;
 
     setFlash(true);
-    setTimeout(() => setFlash(false), 180);
+    hapticCapture();
+    setTimeout(() => setFlash(false), 220);
 
-    // Start the single-shot /take-photo request in the background.
-    // CaptureFlow will await this same promise instead of issuing a new one.
     startEarlyCapture(filter, null, mode ?? "single").catch(() => {
       // Errors are surfaced/handled by CaptureFlow when it awaits the promise.
     });
   }, [filter, mode]);
 
-  // Reset state between shots (4-photo mode) when captureProgress changes.
   useEffect(() => {
     hasTriggeredCapture.current = false;
     clearPendingCapture();
@@ -54,35 +49,34 @@ export default function CountdownScreen() {
     setFlash(false);
   }, [captureProgress]);
 
-  // Pure visual countdown — drives only what's displayed on screen.
-  // The real /take-photo is fired when the visible count hits CAPTURE_AT_COUNT
-  // (≈2s before the end) to compensate for camera hardware latency.
   useEffect(() => {
     if (count <= 0) {
       playShutter();
+      hapticMedium();
       const navTimer = setTimeout(() => {
         setScreen("capturing");
-      }, 250);
+      }, 350);
       return () => clearTimeout(navTimer);
     }
 
-    // Trigger real capture at t=2 (during the "2" frame).
     if (count === CAPTURE_AT_COUNT) {
       triggerCapture();
+      playReadyBeep();
+      setShowSmile(true);
+      setRingKey((k) => k + 1);
     }
 
-    // "Souriez" only at the very end (during "1"), not while "2" is shown.
-    if (count <= 1) {
-      setShowSmile(true);
+    if (count > CAPTURE_AT_COUNT) {
+      playTick();
+      setRingKey((k) => k + 1);
     }
 
     const timer = setTimeout(() => {
-      playTick();
       setCount((c) => c - 1);
     }, TICK_MS);
 
     return () => clearTimeout(timer);
-  }, [count, playTick, playShutter, setScreen, triggerCapture]);
+  }, [count, playTick, playReadyBeep, playShutter, setScreen, triggerCapture]);
 
   return (
     <div className="relative flex flex-col items-center justify-center h-screen w-full overflow-hidden bg-background">
@@ -94,7 +88,6 @@ export default function CountdownScreen() {
       >
         {settings.cameraEnabled ? (
           <>
-            {/* Blurred background layer (same stream, fills container) */}
             <img
               src={streamUrl}
               alt=""
@@ -105,7 +98,6 @@ export default function CountdownScreen() {
             />
             <div className="absolute inset-0 bg-background/30" />
 
-            {/* Foreground sharp preview, portrait-cropped to match final print */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative h-full aspect-[3/4] max-h-full max-w-full overflow-hidden rounded-2xl drop-shadow-2xl bg-black">
                 <img
@@ -126,7 +118,7 @@ export default function CountdownScreen() {
         )}
       </div>
 
-      {flash && <div className="absolute inset-0 z-50 animate-flash bg-primary-foreground" />}
+      {flash && <div className="absolute inset-0 z-50 animate-flash-strong bg-primary-foreground" />}
 
       {mode === "four" && (
         <div className="absolute top-6 left-1/2 -translate-x-1/2 z-30 px-6 h-[64px] flex items-center rounded-full bg-background/75 backdrop-blur-md border-2 border-primary/50">
@@ -137,18 +129,21 @@ export default function CountdownScreen() {
       )}
 
       {count > 0 && (
-        <div
-          key={`${captureProgress}-${count}`}
-          className="relative z-30 animate-countdown-pop"
-        >
-          <span className="select-none font-display text-[14rem] font-light leading-none text-countdown drop-shadow-[0_0_50px_hsl(var(--primary)/0.8)]">
-            {count}
-          </span>
+        <div className="relative z-30 flex items-center justify-center">
+          <div key={ringKey} className="absolute inset-0 rounded-full border-4 border-primary/40 w-80 h-80 animate-countdown-ring" />
+          <div
+            key={`${captureProgress}-${count}`}
+            className="animate-countdown-pulse"
+          >
+            <span className="select-none font-display text-[14rem] font-light leading-none text-countdown drop-shadow-[0_0_50px_hsl(var(--primary)/0.8)]">
+              {count}
+            </span>
+          </div>
         </div>
       )}
 
       {showSmile && count > 0 && (
-        <p className="relative z-30 mt-4 font-display text-6xl font-semibold text-countdown drop-shadow-[0_0_30px_hsl(var(--primary)/0.7)] animate-float-up">
+        <p className="relative z-30 mt-4 font-display text-6xl font-semibold text-countdown drop-shadow-[0_0_30px_hsl(var(--primary)/0.7)] animate-smile-pop">
           Souriez 😄
         </p>
       )}
