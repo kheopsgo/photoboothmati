@@ -30,6 +30,7 @@ interface PhotoboothContextType extends PhotoboothState {
   setFilter: (f: PhotoFilter) => void;
   setCaptureResult: (sessionId: string, photos: string[], finalImage: string) => void;
   addCapturedPhoto: (photo: string, sessionId: string) => void;
+  removeLastPhoto: () => void;
   setQrUrl: (url: string) => void;
   setEmailStatus: (s: PhotoboothState["emailStatus"]) => void;
   setCaptureProgress: (n: number) => void;
