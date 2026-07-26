@@ -19,6 +19,8 @@ export interface EventConfig {
   frameStyle: "elegant" | "minimal" | "botanical" | "geometric" | "polaroid";
   /** Optional small footer text */
   footer?: string;
+  /** Optional welcome message shown on home screen */
+  welcomeMessage?: string;
 }
 
 // ✏️ EDIT THIS to match your event
@@ -31,6 +33,7 @@ const eventConfig: EventConfig = {
   accentColor: undefined, // uses default rose-gold if undefined
   frameStyle: "elegant",
   footer: "Merci d'avoir partagé ce moment avec nous",
+  welcomeMessage: "Bienvenue au mariage d'Alice & Baptiste",
 };
 
 export default eventConfig;

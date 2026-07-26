@@ -21,6 +21,16 @@ export interface AppSettings {
   adminPin: string;
   /** Enable the PiCam live stream in capture screens */
   cameraEnabled: boolean;
+  /** Play sound effects during countdown/success */
+  soundsEnabled: boolean;
+  /** Provide haptic feedback on buttons and capture */
+  hapticsEnabled: boolean;
+  /** Show quick review screen between photos in 4-photo mode */
+  quickReviewEnabled: boolean;
+  /** Custom welcome message shown on home screen */
+  welcomeMessage: string;
+  /** Show event title as watermark on result screen */
+  showEventWatermark: boolean;
 }
 
 interface SettingsContextType {
@@ -39,6 +49,11 @@ const defaultSettings: AppSettings = {
   lockedMode: true,
   adminPin: "1234",
   cameraEnabled: true,
+  soundsEnabled: true,
+  hapticsEnabled: true,
+  quickReviewEnabled: false,
+  welcomeMessage: "",
+  showEventWatermark: true,
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);

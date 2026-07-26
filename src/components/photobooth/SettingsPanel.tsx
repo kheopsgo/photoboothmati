@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, Lock, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2, Trash2, Cloud, ExternalLink } from "lucide-react";
+import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, Lock, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2, Trash2, Cloud, ExternalLink, Sparkles } from "lucide-react";
 import { enterFullscreen, exitFullscreen, isFullscreen } from "@/lib/fullscreen";
 import type { EventConfig } from "@/config/eventConfig";
 import { trashPhotos, updateFrontend, uploadFrame, API_BASE } from "@/services/api";
@@ -72,6 +72,34 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
               description="Proposer le choix du filtre aux invités"
               checked={settings.filtersEnabled}
               onChange={(v) => updateSettings({ filtersEnabled: v })}
+            />
+          </Section>
+
+          {/* === GUEST EXPERIENCE === */}
+          <Section icon={<Sparkles size={18} />} title="Expérience invité">
+            <ToggleRow
+              label="Sons"
+              description="Activer les effets sonores (décompte, obturateur, succès)"
+              checked={settings.soundsEnabled}
+              onChange={(v) => updateSettings({ soundsEnabled: v })}
+            />
+            <ToggleRow
+              label="Vibrations"
+              description="Activer les retours haptiques sur Android"
+              checked={settings.hapticsEnabled}
+              onChange={(v) => updateSettings({ hapticsEnabled: v })}
+            />
+            <ToggleRow
+              label="Validation rapide"
+              description="Permettre de valider/recommencer chaque photo en mode 4 photos"
+              checked={settings.quickReviewEnabled}
+              onChange={(v) => updateSettings({ quickReviewEnabled: v })}
+            />
+            <ToggleRow
+              label="Filigrane événement"
+              description="Afficher le titre de l'événement sur les résultats"
+              checked={settings.showEventWatermark}
+              onChange={(v) => updateSettings({ showEventWatermark: v })}
             />
           </Section>
 
@@ -194,6 +222,12 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
                 value={eventConfig.footer || ""}
                 onChange={(v) => updateEventConfig({ footer: v || undefined })}
               />
+              <InputField
+                label="Message d'accueil"
+                placeholder="Immortalisez ce moment"
+                value={settings.welcomeMessage || eventConfig.welcomeMessage || ""}
+                onChange={(v) => updateSettings({ welcomeMessage: v || undefined })}
+              />
             </div>
           </Section>
 
@@ -244,6 +278,10 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
           {/* === SYSTEM === */}
           <Section icon={<Github size={18} />} title="Système">
             <FullscreenToggle />
+            <CaptureOffsetSetting
+              value={settings.captureOffsetMs}
+              onChange={(v) => updateSettings({ captureOffsetMs: v })}
+            />
             <UpdateFromGithub />
             <TrashPhotosButton />
           </Section>

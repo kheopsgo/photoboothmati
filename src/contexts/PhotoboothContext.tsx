@@ -8,6 +8,7 @@ export type Screen =
   | "preview"
   | "countdown"
   | "capturing"
+  | "review"
   | "result"
   | "share"
   | "thanks";
@@ -30,6 +31,7 @@ interface PhotoboothContextType extends PhotoboothState {
   setFilter: (f: PhotoFilter) => void;
   setCaptureResult: (sessionId: string, photos: string[], finalImage: string) => void;
   addCapturedPhoto: (photo: string, sessionId: string) => void;
+  removeLastPhoto: () => void;
   setQrUrl: (url: string) => void;
   setEmailStatus: (s: PhotoboothState["emailStatus"]) => void;
   setCaptureProgress: (n: number) => void;
@@ -73,6 +75,17 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
       })),
     []
   );
+  const removeLastPhoto = useCallback(() => {
+    setState((s) => {
+      const nextPhotos = s.photos.slice(0, -1);
+      return {
+        ...s,
+        photos: nextPhotos,
+        finalImage: nextPhotos[nextPhotos.length - 1] || null,
+        captureProgress: Math.max(0, s.captureProgress - 1),
+      };
+    });
+  }, []);
   const setQrUrl = useCallback((qrUrl: string) => setState((s) => ({ ...s, qrUrl })), []);
   const setEmailStatus = useCallback(
     (emailStatus: PhotoboothState["emailStatus"]) =>
@@ -106,6 +119,7 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
         setFilter,
         setCaptureResult,
         addCapturedPhoto,
+        removeLastPhoto,
         setQrUrl,
         setEmailStatus,
         setCaptureProgress,
