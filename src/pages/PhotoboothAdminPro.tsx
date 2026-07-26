@@ -21,7 +21,16 @@ import {
   ExternalLink,
   Network,
   Loader2,
+  Usb,
 } from "lucide-react";
+
+interface UsbStatus {
+  connected: boolean;
+  freeGb?: number;
+  totalGb?: number;
+  photoCount?: number;
+  error?: string;
+}
 
 interface AdminStatus {
   backend?: string;
