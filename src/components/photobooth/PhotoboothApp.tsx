@@ -7,6 +7,7 @@ import FilterSelection from "./FilterSelection";
 import PreviewScreen from "./PreviewScreen";
 import CountdownScreen from "./CountdownScreen";
 import CaptureFlow from "./CaptureFlow";
+import QuickReviewScreen from "./QuickReviewScreen";
 import ResultScreen from "./ResultScreen";
 import ThanksScreen from "./ThanksScreen";
 
@@ -26,6 +27,8 @@ function ScreenRouter() {
       return <CountdownScreen />;
     case "capturing":
       return <CaptureFlow />;
+    case "review":
+      return <QuickReviewScreen />;
     case "result":
     case "share":
       return <ResultScreen />;
