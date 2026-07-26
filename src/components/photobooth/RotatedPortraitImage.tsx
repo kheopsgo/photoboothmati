@@ -20,6 +20,7 @@ export default function RotatedPortraitImage({
   mirrored = false,
   className = "",
   style,
+  onError,
 }: RotatedPortraitImageProps) {
   return (
     <div className={`relative overflow-hidden ${className}`} style={style}>
