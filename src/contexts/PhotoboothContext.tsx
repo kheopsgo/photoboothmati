@@ -118,6 +118,7 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
         setFilter,
         setCaptureResult,
         addCapturedPhoto,
+        removeLastPhoto,
         setQrUrl,
         setEmailStatus,
         setCaptureProgress,
