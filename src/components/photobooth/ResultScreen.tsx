@@ -106,22 +106,20 @@ export default function ResultScreen() {
       <img
         src={resultImageSrc}
         alt="Votre photo"
-        className="block h-auto max-h-full w-auto max-w-full rounded-xl object-contain"
+        className="block h-auto max-h-full w-auto max-w-full rounded-xl object-contain -rotate-90"
       />
     ) : (
-      <div className="relative h-full aspect-[3/4] max-h-full max-w-full overflow-hidden rounded-xl bg-black">
-        <img
-          src={resultImageSrc}
-          alt="Votre photo"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      </div>
+      <img
+        src={resultImageSrc}
+        alt="Votre photo"
+        className="block h-auto max-h-full w-auto max-w-full rounded-xl object-contain -rotate-90"
+      />
     )
   ) : mode === "four" ? (
     <div className="grid h-full max-h-full max-w-full aspect-square grid-cols-2 grid-rows-2 gap-2">
       {photos.map((photo, i) => (
         <div key={i} className="flex min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-lg bg-muted/40">
-          <img src={photo} alt={`Photo ${i + 1}`} className="block max-h-full max-w-full object-contain" />
+          <img src={photo} alt={`Photo ${i + 1}`} className="block max-h-full max-w-full object-contain -rotate-90" />
         </div>
       ))}
     </div>
