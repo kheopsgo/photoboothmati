@@ -100,16 +100,12 @@ export default function CountdownScreen() {
             <div className="absolute inset-0 bg-background/30" />
 
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative h-full aspect-[3/4] max-h-full max-w-full overflow-hidden rounded-2xl drop-shadow-2xl bg-black">
-                <img
-                  ref={streamImgRef}
-                  src={streamUrl}
-                  alt="Aperçu caméra en direct"
-                  className="absolute inset-0 h-full w-full object-cover"
-                  style={{ transform: "scaleX(-1)" }}
-                  loading="eager"
-                />
-              </div>
+              <RotatedPortraitImage
+                src={streamUrl}
+                alt="Aperçu caméra en direct"
+                mirrored
+                className="h-full aspect-[3/4] rounded-2xl drop-shadow-2xl"
+              />
             </div>
           </>
         ) : (
