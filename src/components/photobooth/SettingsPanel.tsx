@@ -954,17 +954,17 @@ function CameraPreview({ enabled }: { enabled: boolean }) {
 
   return (
     <div className="space-y-3">
-      <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-border bg-black flex items-center justify-center">
+      <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border border-border bg-black flex items-center justify-center">
         {!enabled ? (
           <p className="text-xs text-muted-foreground px-4 text-center">
             Caméra désactivée
           </p>
         ) : live && !error ? (
-          <img
+          <RotatedPortraitImage
             src={`${streamUrl}?t=${nonce}`}
             alt="Aperçu PiCam"
-            className="absolute inset-0 h-full w-full object-cover"
-            style={{ transform: "scaleX(-1)" }}
+            mirrored
+            className="absolute inset-0 h-full w-full aspect-[3/4]"
             onError={() => setError(true)}
           />
         ) : (
