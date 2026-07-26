@@ -67,7 +67,7 @@ export default function CaptureFlow() {
       <div className="flex flex-col items-center justify-center min-h-screen px-8 gap-6">
         <p className="text-destructive font-body text-center text-lg">{error}</p>
         <button
-          onClick={() => setScreen(mode === "four" && photos.length > 0 ? "review" : "countdown")}
+          onClick={() => setScreen("countdown")}
           className="font-display text-xl text-primary underline"
         >
           Réessayer
