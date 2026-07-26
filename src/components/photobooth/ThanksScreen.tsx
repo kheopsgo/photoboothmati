@@ -82,13 +82,11 @@ export default function ThanksScreen() {
         </p>
 
         {finalImage && (
-          <div className="relative w-40 aspect-[3/4] rounded-xl overflow-hidden border-2 border-primary/30 shadow-glow bg-black">
-            <img
-              src={finalImage}
-              alt="Votre souvenir"
-              className="h-full w-full object-cover -rotate-90"
-            />
-          </div>
+          <RotatedPortraitImage
+            src={finalImage}
+            alt="Votre souvenir"
+            className="w-40 aspect-[3/4] rounded-xl border-2 border-primary/30 shadow-glow bg-black"
+          />
         )}
 
         <p className="text-sm text-muted-foreground">
