@@ -97,15 +97,17 @@ function AdminPage() {
   const { toast } = useToast();
   const [status, setStatus] = useState<AdminStatus | null>(null);
   const [healthOk, setHealthOk] = useState<boolean | null>(null);
+  const [usb, setUsb] = useState<UsbStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
 
   const fetchStatus = useCallback(async () => {
     setLoading(true);
     try {
-      const [healthRes, statusRes] = await Promise.all([
+      const [healthRes, statusRes, usbRes] = await Promise.all([
         safeFetch(`${API_BASE}/health`, { cache: "no-store" }),
         safeFetch(`${API_BASE}/admin/status`, { cache: "no-store" }),
+        safeFetch(`${API_BASE}/usb-status`, { cache: "no-store" }),
       ]);
 
       setHealthOk(healthRes?.ok === true);
@@ -117,6 +119,17 @@ function AdminPage() {
         } catch {
           setStatus({});
         }
+      }
+
+      if (usbRes && usbRes.ok) {
+        try {
+          const data = await usbRes.json();
+          setUsb(data && typeof data === "object" ? data : { connected: false });
+        } catch {
+          setUsb({ connected: false });
+        }
+      } else {
+        setUsb({ connected: false });
       }
     } finally {
       setLoading(false);
