@@ -74,6 +74,17 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
       })),
     []
   );
+  const removeLastPhoto = useCallback(() => {
+    setState((s) => {
+      const nextPhotos = s.photos.slice(0, -1);
+      return {
+        ...s,
+        photos: nextPhotos,
+        finalImage: nextPhotos[nextPhotos.length - 1] || null,
+        captureProgress: Math.max(0, s.captureProgress - 1),
+      };
+    });
+  }, []);
   const setQrUrl = useCallback((qrUrl: string) => setState((s) => ({ ...s, qrUrl })), []);
   const setEmailStatus = useCallback(
     (emailStatus: PhotoboothState["emailStatus"]) =>
