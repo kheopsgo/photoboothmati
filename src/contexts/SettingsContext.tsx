@@ -38,6 +38,7 @@ const defaultSettings: AppSettings = {
   captureOffsetMs: 1500,
   lockedMode: true,
   adminPin: "1234",
+  cameraEnabled: true,
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
