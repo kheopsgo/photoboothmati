@@ -230,6 +230,17 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
             </div>
           </Section>
 
+          {/* === CAMERA === */}
+          <Section icon={<Camera size={18} />} title="Caméra">
+            <ToggleRow
+              label="Caméra activée"
+              description="Désactivez pour masquer le flux PiCam pendant les captures"
+              checked={settings.cameraEnabled}
+              onChange={(v) => updateSettings({ cameraEnabled: v })}
+            />
+            <CameraPreview enabled={settings.cameraEnabled} />
+          </Section>
+
           {/* === SYSTEM === */}
           <Section icon={<Github size={18} />} title="Système">
             <FullscreenToggle />
