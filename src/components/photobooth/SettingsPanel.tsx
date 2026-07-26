@@ -278,7 +278,10 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
           {/* === SYSTEM === */}
           <Section icon={<Github size={18} />} title="Système">
             <FullscreenToggle />
-            <CaptureOffsetSetting />
+            <CaptureOffsetSetting
+              value={settings.captureOffsetMs}
+              onChange={(v) => updateSettings({ captureOffsetMs: v })}
+            />
             <UpdateFromGithub />
             <TrashPhotosButton />
           </Section>
