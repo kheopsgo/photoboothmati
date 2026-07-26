@@ -167,10 +167,10 @@ export default function ResultScreen() {
 
   const photoContent = resultImageSrc ? (
     <div className="relative h-full w-full flex items-center justify-center">
-      <img
+      <RotatedPortraitImage
         src={resultImageSrc}
         alt="Votre photo"
-        className="block h-auto max-h-full w-auto max-w-full rounded-xl object-contain -rotate-90 animate-polaroid-reveal"
+        className="h-full max-h-full w-auto aspect-[3/4] rounded-xl animate-polaroid-reveal"
       />
       {watermark && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-md border border-primary/20">
@@ -182,7 +182,11 @@ export default function ResultScreen() {
     <div className="grid h-full max-h-full max-w-full aspect-square grid-cols-2 grid-rows-2 gap-2">
       {photos.map((photo, i) => (
         <div key={i} className="flex min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-lg bg-muted/40">
-          <img src={photo} alt={`Photo ${i + 1}`} className="block max-h-full max-w-full object-contain -rotate-90" />
+          <RotatedPortraitImage
+            src={photo}
+            alt={`Photo ${i + 1}`}
+            className="h-full max-h-full w-auto aspect-[3/4] rounded-lg"
+          />
         </div>
       ))}
     </div>
