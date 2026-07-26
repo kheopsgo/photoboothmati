@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
-import { useSettings } from "@/contexts/SettingsContext";
 import { createGrid, takeSinglePhoto } from "@/services/api";
 import { consumePendingCapture } from "@/services/captureQueue";
 import { Loader2 } from "lucide-react";
-import QuickReviewScreen from "./QuickReviewScreen";
 
 export default function CaptureFlow() {
   const {
@@ -18,7 +16,6 @@ export default function CaptureFlow() {
     addCapturedPhoto,
     setQrUrl,
   } = usePhotobooth();
-  const { settings } = useSettings();
   const [error, setError] = useState<string | null>(null);
   const [assembling, setAssembling] = useState(false);
 
@@ -39,11 +36,7 @@ export default function CaptureFlow() {
         if (mode === "four") {
           const nextCount = captureProgress + 1;
           if (nextCount < 4) {
-            if (settings.quickReviewEnabled) {
-              setScreen("review");
-            } else {
-              setScreen("countdown");
-            }
+            setScreen("countdown");
             return;
           }
 
@@ -74,7 +67,7 @@ export default function CaptureFlow() {
       <div className="flex flex-col items-center justify-center min-h-screen px-8 gap-6">
         <p className="text-destructive font-body text-center text-lg">{error}</p>
         <button
-          onClick={() => setScreen(mode === "four" && photos.length > 0 ? "review" : "countdown")}
+          onClick={() => setScreen("countdown")}
           className="font-display text-xl text-primary underline"
         >
           Réessayer

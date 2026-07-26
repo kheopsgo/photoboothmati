@@ -90,12 +90,6 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
               onChange={(v) => updateSettings({ hapticsEnabled: v })}
             />
             <ToggleRow
-              label="Validation rapide"
-              description="Permettre de valider/recommencer chaque photo en mode 4 photos"
-              checked={settings.quickReviewEnabled}
-              onChange={(v) => updateSettings({ quickReviewEnabled: v })}
-            />
-            <ToggleRow
               label="Filigrane événement"
               description="Afficher le titre de l'événement sur les résultats"
               checked={settings.showEventWatermark}
