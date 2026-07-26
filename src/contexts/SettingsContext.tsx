@@ -25,8 +25,6 @@ export interface AppSettings {
   soundsEnabled: boolean;
   /** Provide haptic feedback on buttons and capture */
   hapticsEnabled: boolean;
-  /** Show quick review screen between photos in 4-photo mode */
-  quickReviewEnabled: boolean;
   /** Custom welcome message shown on home screen */
   welcomeMessage: string;
   /** Show event title as watermark on result screen */
@@ -51,7 +49,6 @@ const defaultSettings: AppSettings = {
   cameraEnabled: true,
   soundsEnabled: true,
   hapticsEnabled: true,
-  quickReviewEnabled: false,
   welcomeMessage: "",
   showEventWatermark: true,
 };
