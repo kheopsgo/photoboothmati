@@ -5,6 +5,7 @@ import { useSound } from "@/hooks/useSound";
 import { API_BASE } from "@/services/api";
 import { startEarlyCapture, clearPendingCapture } from "@/services/captureQueue";
 import { hapticCapture, hapticMedium } from "@/lib/haptics";
+import RotatedPortraitImage from "./RotatedPortraitImage";
 
 const COUNTDOWN_START = 5;
 const TICK_MS = 1000;
@@ -20,7 +21,6 @@ export default function CountdownScreen() {
   const [flash, setFlash] = useState(false);
   const [ringKey, setRingKey] = useState(0);
   const hasTriggeredCapture = useRef(false);
-  const streamImgRef = useRef<HTMLImageElement | null>(null);
 
   const totalShots = mode === "four" ? 4 : 1;
   const currentShot = captureProgress + 1;
@@ -99,16 +99,12 @@ export default function CountdownScreen() {
             <div className="absolute inset-0 bg-background/30" />
 
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative h-full aspect-[3/4] max-h-full max-w-full overflow-hidden rounded-2xl drop-shadow-2xl bg-black">
-                <img
-                  ref={streamImgRef}
-                  src={streamUrl}
-                  alt="Aperçu caméra en direct"
-                  className="absolute inset-0 h-full w-full object-cover"
-                  style={{ transform: "scaleX(-1)" }}
-                  loading="eager"
-                />
-              </div>
+              <RotatedPortraitImage
+                src={streamUrl}
+                alt="Aperçu caméra en direct"
+                mirrored
+                className="h-full aspect-[3/4] rounded-2xl drop-shadow-2xl"
+              />
             </div>
           </>
         ) : (
