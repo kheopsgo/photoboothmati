@@ -222,6 +222,12 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
                 value={eventConfig.footer || ""}
                 onChange={(v) => updateEventConfig({ footer: v || undefined })}
               />
+              <InputField
+                label="Message d'accueil"
+                placeholder="Immortalisez ce moment"
+                value={settings.welcomeMessage || eventConfig.welcomeMessage || ""}
+                onChange={(v) => updateSettings({ welcomeMessage: v || undefined })}
+              />
             </div>
           </Section>
 
