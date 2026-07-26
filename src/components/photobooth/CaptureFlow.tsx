@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { createGrid, takeSinglePhoto } from "@/services/api";
 import { consumePendingCapture } from "@/services/captureQueue";
 import { Loader2 } from "lucide-react";
+import QuickReviewScreen from "./QuickReviewScreen";
 
 export default function CaptureFlow() {
   const {
@@ -16,6 +18,7 @@ export default function CaptureFlow() {
     addCapturedPhoto,
     setQrUrl,
   } = usePhotobooth();
+  const { settings } = useSettings();
   const [error, setError] = useState<string | null>(null);
   const [assembling, setAssembling] = useState(false);
 
@@ -24,7 +27,6 @@ export default function CaptureFlow() {
 
     async function run() {
       try {
-        // 1) Capture a single photo (reuse early-fired promise if any).
         const pending = consumePendingCapture();
         const shot = await (pending ?? takeSinglePhoto(filter, sessionId, {
           applyFrame: mode !== "four",
@@ -32,26 +34,26 @@ export default function CaptureFlow() {
         }));
         if (cancelled) return;
 
-        const newPhotos = [...photos, shot.photo];
         addCapturedPhoto(shot.photo, shot.sessionId);
 
-        // 2) Decide what's next.
         if (mode === "four") {
-          if (newPhotos.length < 4) {
-            // Enchaînement automatique : retour direct au countdown.
-            setScreen("countdown");
+          const nextCount = captureProgress + 1;
+          if (nextCount < 4) {
+            if (settings.quickReviewEnabled) {
+              setScreen("review");
+            } else {
+              setScreen("countdown");
+            }
             return;
           }
 
-          // 4 photos captured — ask backend to assemble the 2x2 grid.
           setAssembling(true);
-          const result = await createGrid(newPhotos, filter, shot.sessionId);
+          const result = await createGrid(photos.concat(shot.photo), filter, shot.sessionId);
           if (cancelled) return;
           if (result.qrUrl) setQrUrl(result.qrUrl);
           setCaptureResult(result.sessionId, result.photos, result.finalImage);
           setScreen("result");
         } else {
-          // Single mode: the captured photo IS the final image.
           setCaptureResult(shot.sessionId, [shot.photo], shot.photo);
           setScreen("result");
         }
@@ -72,7 +74,7 @@ export default function CaptureFlow() {
       <div className="flex flex-col items-center justify-center min-h-screen px-8 gap-6">
         <p className="text-destructive font-body text-center text-lg">{error}</p>
         <button
-          onClick={() => setScreen(mode === "four" && photos.length > 0 ? "preview" : "countdown")}
+          onClick={() => setScreen(mode === "four" && photos.length > 0 ? "review" : "countdown")}
           className="font-display text-xl text-primary underline"
         >
           Réessayer
