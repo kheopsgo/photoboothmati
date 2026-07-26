@@ -103,16 +103,18 @@ export default function CountdownScreen() {
         />
         <div className="absolute inset-0 bg-background/30" />
 
-        {/* Foreground sharp preview, centered, no cropping */}
+        {/* Foreground sharp preview, portrait-cropped to match final print */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <img
-            ref={streamImgRef}
-            src={streamUrl}
-            alt="Aperçu caméra en direct"
-            className="max-h-full max-w-full h-auto w-auto object-contain drop-shadow-2xl"
-            style={{ transform: "scaleX(-1)" }}
-            loading="eager"
-          />
+          <div className="relative h-full aspect-[3/4] max-h-full max-w-full overflow-hidden rounded-2xl drop-shadow-2xl bg-black">
+            <img
+              ref={streamImgRef}
+              src={streamUrl}
+              alt="Aperçu caméra en direct"
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{ transform: "scaleX(-1)" }}
+              loading="eager"
+            />
+          </div>
         </div>
       </div>
 
