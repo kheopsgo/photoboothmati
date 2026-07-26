@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { sendEmail, printPhoto } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
+import { hapticSuccess, hapticLight } from "@/lib/haptics";
 import { Button } from "@/components/ui/button";
-import { Mail, QrCode, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera } from "lucide-react";
+import { Mail, QrCode, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera, Share2 } from "lucide-react";
 import VirtualKeyboard from "./VirtualKeyboard";
 
-type Panel = "none" | "qr" | "email" | "printed";
+type Panel = "none" | "qr" | "email" | "printed" | "share";
 
 const HOME_TIMEOUT_S = 60;
 const PRINT_CONFIRM_S = 8;
@@ -36,10 +38,48 @@ function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onCom
   );
 }
 
+function Confetti() {
+  const pieces = useMemo(
+    () =>
+      Array.from({ length: 70 }).map((_, i) => ({
+        left: Math.random() * 100,
+        delay: Math.random() * 1.5,
+        duration: 2.5 + Math.random() * 2.5,
+        size: 6 + Math.random() * 10,
+        rotate: Math.random() * 360,
+        hue: Math.random() > 0.5 ? "hsl(48 100% 60%)" : "hsl(45 30% 96%)",
+        key: i,
+      })),
+    []
+  );
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-40">
+      {pieces.map((p) => (
+        <span
+          key={p.key}
+          className="absolute top-0 animate-confetti"
+          style={{
+            left: `${p.left}%`,
+            width: p.size,
+            height: p.size * 1.4,
+            background: p.hue,
+            transform: `rotate(${p.rotate}deg)`,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`,
+            borderRadius: 2,
+            boxShadow: `0 0 8px ${p.hue}`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function ResultScreen() {
   const { mode, photos, finalImage, qrUrl, setScreen } = usePhotobooth();
+  const { settings } = useSettings();
   const { online } = useBackendHealth();
-  const { playSuccess } = useSound();
+  const { playSuccess } = useSound({ enabled: settings.soundsEnabled });
 
   const [panel, setPanel] = useState<Panel>("none");
   const [email, setEmail] = useState("");
@@ -51,6 +91,7 @@ export default function ResultScreen() {
 
   useEffect(() => {
     playSuccess();
+    hapticSuccess();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -99,22 +140,43 @@ export default function ResultScreen() {
     }
   };
 
+  const handleNativeShare = async () => {
+    const imageToShare = finalImage || photos[0];
+    if (!imageToShare) return;
+    hapticLight();
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: settings.eventConfig.title || "Photobooth",
+          text: settings.eventConfig.footer || "Votre souvenir du photobooth",
+          url: imageToShare,
+        });
+      } else {
+        setPanel("qr");
+      }
+    } catch {
+      // User cancelled or share failed
+    }
+  };
+
   const resultImageSrc = finalImage || photos[0];
+  const watermark = settings.showEventWatermark
+    ? `${settings.eventConfig.title}${settings.eventConfig.subtitle ? ` — ${settings.eventConfig.subtitle}` : ""}`
+    : "";
 
   const photoContent = resultImageSrc ? (
-    mode === "four" ? (
+    <div className="relative h-full w-full flex items-center justify-center">
       <img
         src={resultImageSrc}
         alt="Votre photo"
-        className="block h-auto max-h-full w-auto max-w-full rounded-xl object-contain -rotate-90"
+        className="block h-auto max-h-full w-auto max-w-full rounded-xl object-contain -rotate-90 animate-polaroid-reveal"
       />
-    ) : (
-      <img
-        src={resultImageSrc}
-        alt="Votre photo"
-        className="block h-auto max-h-full w-auto max-w-full rounded-xl object-contain -rotate-90"
-      />
-    )
+      {watermark && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-md border border-primary/20">
+          <p className="font-body text-xs text-foreground/80 whitespace-nowrap">{watermark}</p>
+        </div>
+      )}
+    </div>
   ) : mode === "four" ? (
     <div className="grid h-full max-h-full max-w-full aspect-square grid-cols-2 grid-rows-2 gap-2">
       {photos.map((photo, i) => (
@@ -125,13 +187,12 @@ export default function ResultScreen() {
     </div>
   ) : null;
 
-  // QR panel
   if (panel === "qr") {
     return (
       <div className="flex h-screen w-full items-center justify-center px-10 py-8 animate-float-in gap-12">
         <button
           onClick={() => setPanel("none")}
-          className="absolute top-6 left-6 flex items-center gap-2 px-5 h-[56px] rounded-full bg-card/70 backdrop-blur-md border-2 border-border text-foreground active:scale-95"
+          className="absolute top-6 left-6 flex items-center gap-2 px-5 h-[56px] rounded-full bg-card/70 backdrop-blur-md border-2 border-border text-foreground active:scale-95 z-10"
         >
           <ArrowLeft size={20} />
           <span className="font-body text-base">Retour</span>
@@ -157,7 +218,6 @@ export default function ResultScreen() {
     );
   }
 
-  // Email panel
   if (panel === "email") {
     return (
       <div className="flex h-screen w-full px-8 py-6 animate-float-in gap-8 items-center">
@@ -222,7 +282,6 @@ export default function ResultScreen() {
     );
   }
 
-  // Print confirmation panel
   if (panel === "printed") {
     return (
       <div className="flex h-screen w-full items-center justify-center px-10 py-8 animate-float-in">
@@ -238,40 +297,44 @@ export default function ResultScreen() {
     );
   }
 
-  // Main result screen — landscape: photo left, actions right
   return (
     <div className="fixed inset-0 flex h-[100dvh] max-h-[100dvh] w-screen max-w-screen animate-float-in overflow-hidden bg-background">
-      {/* Left: final render (~70%) */}
+      <Confetti />
+
       <div className="flex h-full min-h-0 min-w-0 basis-[72%] items-center justify-center overflow-hidden p-3">
-        <div className="animate-photo-reveal flex h-full max-h-full w-full max-w-full min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-primary/25 bg-card/70 p-3 shadow-glow">
+        <div className="flex h-full max-h-full w-full max-w-full min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-primary/25 bg-card/70 p-3 shadow-glow">
           {photoContent}
         </div>
       </div>
 
-      {/* Right: actions */}
       <div className="flex h-full min-h-0 min-w-[280px] basis-[28%] flex-col justify-center gap-3 overflow-hidden border-l border-border bg-card/50 p-5 backdrop-blur-xl">
         <div className="mb-2 shrink-0 text-center">
           <h2 className="font-display text-3xl text-foreground text-glow-yellow">Magnifique !</h2>
           <p className="text-sm text-muted-foreground">Votre souvenir est prêt</p>
         </div>
 
-        {/* Primary action */}
         <Button variant="hero" size="lg" onClick={handleRestart}>
           <Camera />
           Nouvelle photo
         </Button>
 
-        {/* Secondary actions */}
         {qrUrl && (
-          <Button variant="elegant" size="lg" onClick={() => setPanel("qr")}>
-            <QrCode />
-            QR code
-          </Button>
+          <div className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white border border-primary/20 shadow-glow">
+            <img src={qrUrl} alt="QR Code" className="w-32 h-32 object-contain" />
+            <p className="text-xs text-muted-foreground font-body">Scannez pour télécharger</p>
+          </div>
         )}
+
+        <Button variant="elegant" size="lg" onClick={handleNativeShare}>
+          <Share2 />
+          Partager
+        </Button>
+
         <Button variant="elegant" size="lg" onClick={() => setPanel("email")} disabled={!online}>
           <Mail />
           Email
         </Button>
+
         <Button
           variant="elegant"
           size="lg"
@@ -281,6 +344,7 @@ export default function ResultScreen() {
           <Printer />
           {printStatus === "printing" ? "Impression..." : "Imprimer"}
         </Button>
+
         {printStatus === "error" && printMessage && (
           <p className="text-base text-center flex items-center justify-center gap-2 text-destructive">
             <AlertCircle size={18} />
@@ -288,7 +352,6 @@ export default function ResultScreen() {
           </p>
         )}
 
-        {/* Global auto-return */}
         <AutoRedirectCountdown seconds={HOME_TIMEOUT_S} onComplete={handleRestart} />
       </div>
     </div>
