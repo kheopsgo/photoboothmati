@@ -27,7 +27,7 @@ export default function CountdownScreen() {
   // Real /take-photo is fired when the visible countdown reaches "2"
   // (i.e. ~2s before the end), to compensate for camera hardware latency.
   // The visible countdown is never blocked by the capture itself.
-  const CAPTURE_AT_COUNT = 2;
+  const CAPTURE_AT_COUNT = 1;
 
   // Fires the real capture (API call + flash + sound). Independent from the
   // visible countdown number — driven by a separate setTimeout.
