@@ -19,6 +19,8 @@ export interface AppSettings {
   lockedMode: boolean;
   /** Admin PIN to unlock settings */
   adminPin: string;
+  /** Enable the PiCam live stream in capture screens */
+  cameraEnabled: boolean;
 }
 
 interface SettingsContextType {
