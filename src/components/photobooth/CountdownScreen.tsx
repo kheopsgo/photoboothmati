@@ -5,6 +5,7 @@ import { useSound } from "@/hooks/useSound";
 import { API_BASE } from "@/services/api";
 import { startEarlyCapture, clearPendingCapture } from "@/services/captureQueue";
 import { hapticCapture, hapticMedium } from "@/lib/haptics";
+import RotatedPortraitImage from "./RotatedPortraitImage";
 
 const COUNTDOWN_START = 5;
 const TICK_MS = 1000;
