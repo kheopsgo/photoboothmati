@@ -1,4 +1,5 @@
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { API_BASE } from "@/services/api";
 import { ArrowLeft, Camera } from "lucide-react";
 import type { PhotoFilter } from "@/services/api";
