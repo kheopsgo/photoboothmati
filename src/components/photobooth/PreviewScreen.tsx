@@ -12,6 +12,7 @@ const filters: { id: PhotoFilter; label: string; cssFilter: string }[] = [
 
 export default function PreviewScreen() {
   const { mode, filter, setFilter, setScreen, captureProgress } = usePhotobooth();
+  const { settings } = useSettings();
   const streamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
   const currentCss = filters.find((f) => f.id === filter)?.cssFilter ?? "none";
 
