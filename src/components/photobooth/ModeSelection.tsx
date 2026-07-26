@@ -1,5 +1,6 @@
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
+import { hapticLight } from "@/lib/haptics";
 import { Camera, Grid2X2, ArrowLeft } from "lucide-react";
 
 export default function ModeSelection() {
@@ -7,9 +8,10 @@ export default function ModeSelection() {
   const { settings } = useSettings();
 
   const select = (mode: "single" | "four") => {
+    hapticLight();
     resetCaptureSession();
     setMode(mode);
-    setScreen("preview");
+    setScreen(settings.filtersEnabled ? "filter" : "preview");
   };
 
   return (
