@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, Lock, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2, Trash2, Cloud, ExternalLink } from "lucide-react";
+import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, Lock, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2, Trash2, Cloud, ExternalLink, Sparkles } from "lucide-react";
 import { enterFullscreen, exitFullscreen, isFullscreen } from "@/lib/fullscreen";
 import type { EventConfig } from "@/config/eventConfig";
 import { trashPhotos, updateFrontend, uploadFrame, API_BASE } from "@/services/api";
