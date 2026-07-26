@@ -38,8 +38,8 @@ export default function CaptureFlow() {
         // 2) Decide what's next.
         if (mode === "four") {
           if (newPhotos.length < 4) {
-            // Back to live preview for the next shot.
-            setScreen("preview");
+            // Enchaînement automatique : retour direct au countdown.
+            setScreen("countdown");
             return;
           }
 
