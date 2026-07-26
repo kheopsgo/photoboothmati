@@ -21,7 +21,6 @@ export default function CountdownScreen() {
   const [flash, setFlash] = useState(false);
   const [ringKey, setRingKey] = useState(0);
   const hasTriggeredCapture = useRef(false);
-  const streamImgRef = useRef<HTMLImageElement | null>(null);
 
   const totalShots = mode === "four" ? 4 : 1;
   const currentShot = captureProgress + 1;
