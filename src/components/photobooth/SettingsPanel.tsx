@@ -75,6 +75,34 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
             />
           </Section>
 
+          {/* === GUEST EXPERIENCE === */}
+          <Section icon={<Sparkles size={18} />} title="Expérience invité">
+            <ToggleRow
+              label="Sons"
+              description="Activer les effets sonores (décompte, obturateur, succès)"
+              checked={settings.soundsEnabled}
+              onChange={(v) => updateSettings({ soundsEnabled: v })}
+            />
+            <ToggleRow
+              label="Vibrations"
+              description="Activer les retours haptiques sur Android"
+              checked={settings.hapticsEnabled}
+              onChange={(v) => updateSettings({ hapticsEnabled: v })}
+            />
+            <ToggleRow
+              label="Validation rapide"
+              description="Permettre de valider/recommencer chaque photo en mode 4 photos"
+              checked={settings.quickReviewEnabled}
+              onChange={(v) => updateSettings({ quickReviewEnabled: v })}
+            />
+            <ToggleRow
+              label="Filigrane événement"
+              description="Afficher le titre de l'événement sur les résultats"
+              checked={settings.showEventWatermark}
+              onChange={(v) => updateSettings({ showEventWatermark: v })}
+            />
+          </Section>
+
           {/* === FRAME === */}
           <Section icon={<Frame size={18} />} title="Cadre photo">
             <ToggleRow
