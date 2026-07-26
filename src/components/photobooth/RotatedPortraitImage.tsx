@@ -11,6 +11,7 @@ interface RotatedPortraitImageProps {
   mirrored?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  onError?: React.ReactEventHandler<HTMLImageElement>;
 }
 
 export default function RotatedPortraitImage({
