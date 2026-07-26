@@ -58,14 +58,20 @@ export default function PreviewScreen() {
         </div>
 
         <div className="flex-1 flex items-center justify-center min-h-0">
-          <div className="relative h-full aspect-[3/4] max-h-full max-w-full overflow-hidden rounded-3xl shadow-2xl ring-2 ring-primary/30 bg-black">
-            <img
-              src={streamUrl}
-              alt="Aperçu caméra en direct"
-              className="absolute inset-0 h-full w-full object-cover"
-              style={{ transform: "scaleX(-1)", filter: currentCss }}
-              loading="eager"
-            />
+          <div className="relative h-full aspect-[3/4] max-h-full max-w-full overflow-hidden rounded-3xl shadow-2xl ring-2 ring-primary/30 bg-black flex items-center justify-center">
+            {settings.cameraEnabled ? (
+              <img
+                src={streamUrl}
+                alt="Aperçu caméra en direct"
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{ transform: "scaleX(-1)", filter: currentCss }}
+                loading="eager"
+              />
+            ) : (
+              <p className="font-display text-xl text-muted-foreground px-6 text-center">
+                Caméra désactivée
+              </p>
+            )}
           </div>
         </div>
       </div>
