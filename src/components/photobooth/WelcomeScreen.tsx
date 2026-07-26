@@ -2,6 +2,8 @@ import { useState, useMemo, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useBackendHealth } from "@/contexts/BackendHealthContext";
+import { useSound } from "@/hooks/useSound";
+import { hapticMedium } from "@/lib/haptics";
 import { Settings, Camera, Sparkles } from "lucide-react";
 import SettingsPanel from "./SettingsPanel";
 import PinPrompt from "./PinPrompt";
@@ -74,6 +76,7 @@ export default function WelcomeScreen() {
   const { setScreen, setMode } = usePhotobooth();
   const { settings } = useSettings();
   const { online } = useBackendHealth();
+  const { playStart } = useSound({ enabled: settings.soundsEnabled });
   const [showSettings, setShowSettings] = useState(false);
   const [showPin, setShowPin] = useState(false);
   const pressTimer = useRef<number | null>(null);
@@ -97,8 +100,9 @@ export default function WelcomeScreen() {
   };
 
   const handleStart = () => {
-    // Best-effort fullscreen + landscape lock on first user gesture
     enterFullscreen();
+    hapticMedium();
+    playStart();
 
     if (settings.allowSingle && !settings.allowFour) {
       setMode("single");
@@ -110,6 +114,11 @@ export default function WelcomeScreen() {
       setScreen("mode");
     }
   };
+
+  const welcomeText =
+    settings.welcomeMessage ||
+    settings.eventConfig.welcomeMessage ||
+    "Immortalisez ce moment";
 
   return (
     <div className="relative flex h-screen w-full overflow-hidden">
@@ -129,9 +138,7 @@ export default function WelcomeScreen() {
         </button>
       )}
 
-      {/* Two-column landscape layout */}
       <div className="relative z-10 flex w-full h-full items-center justify-center gap-16 px-16 animate-float-in">
-        {/* Left: branding */}
         <div className="flex flex-col items-center gap-8 flex-1 max-w-md">
           <div
             className="relative animate-idle-bob cursor-pointer select-none"
@@ -160,13 +167,22 @@ export default function WelcomeScreen() {
             <div className="w-24 h-px bg-primary/60 mx-auto" />
             <p className="font-display text-2xl text-muted-foreground italic flex items-center justify-center gap-2">
               <Sparkles size={20} className="text-primary" />
-              Immortalisez ce moment
+              {welcomeText}
               <Sparkles size={20} className="text-primary" />
             </p>
+            {(settings.eventConfig.title || settings.eventConfig.subtitle) && (
+              <div className="pt-2">
+                <p className="font-display text-3xl text-primary text-glow-yellow">
+                  {settings.eventConfig.title}
+                </p>
+                <p className="font-body text-lg text-muted-foreground">
+                  {settings.eventConfig.subtitle}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right: CTA */}
         <div className="flex flex-col items-center gap-6 flex-1 max-w-md">
           <button
             onClick={handleStart}
