@@ -19,6 +19,8 @@ export interface AppSettings {
   lockedMode: boolean;
   /** Admin PIN to unlock settings */
   adminPin: string;
+  /** Enable the PiCam live stream in capture screens */
+  cameraEnabled: boolean;
 }
 
 interface SettingsContextType {
@@ -36,6 +38,7 @@ const defaultSettings: AppSettings = {
   captureOffsetMs: 1500,
   lockedMode: true,
   adminPin: "1234",
+  cameraEnabled: true,
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);

@@ -3,7 +3,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, Lock, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2, Trash2, Cloud, ExternalLink } from "lucide-react";
 import { enterFullscreen, exitFullscreen, isFullscreen } from "@/lib/fullscreen";
 import type { EventConfig } from "@/config/eventConfig";
-import { trashPhotos, updateFrontend, uploadFrame } from "@/services/api";
+import { trashPhotos, updateFrontend, uploadFrame, API_BASE } from "@/services/api";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
 import PhotoFrame from "./PhotoFrame";
 import QRCode from "qrcode";
@@ -228,6 +228,17 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
                 4 à 8 chiffres. Demandé après l'appui long sur le logo.
               </p>
             </div>
+          </Section>
+
+          {/* === CAMERA === */}
+          <Section icon={<Camera size={18} />} title="Caméra">
+            <ToggleRow
+              label="Caméra activée"
+              description="Désactivez pour masquer le flux PiCam pendant les captures"
+              checked={settings.cameraEnabled}
+              onChange={(v) => updateSettings({ cameraEnabled: v })}
+            />
+            <CameraPreview enabled={settings.cameraEnabled} />
           </Section>
 
           {/* === SYSTEM === */}
@@ -888,6 +899,57 @@ function GoogleDriveSection() {
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+function CameraPreview({ enabled }: { enabled: boolean }) {
+  const [live, setLive] = useState(false);
+  const [error, setError] = useState(false);
+  const [nonce, setNonce] = useState(() => Date.now());
+  const streamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
+
+  useEffect(() => {
+    if (!enabled) setLive(false);
+  }, [enabled]);
+
+  const handleStart = () => {
+    setError(false);
+    setNonce(Date.now());
+    setLive(true);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-border bg-black flex items-center justify-center">
+        {!enabled ? (
+          <p className="text-xs text-muted-foreground px-4 text-center">
+            Caméra désactivée
+          </p>
+        ) : live && !error ? (
+          <img
+            src={`${streamUrl}?t=${nonce}`}
+            alt="Aperçu PiCam"
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ transform: "scaleX(-1)" }}
+            onError={() => setError(true)}
+          />
+        ) : (
+          <div className="text-center px-4 space-y-1">
+            <Camera size={28} className="mx-auto text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">
+              {error ? "Flux caméra indisponible" : "Aperçu inactif"}
+            </p>
+          </div>
+        )}
+      </div>
+      <button
+        onClick={live ? () => setLive(false) : handleStart}
+        disabled={!enabled}
+        className="w-full h-11 rounded-lg bg-muted text-foreground font-body text-sm font-medium hover:bg-muted/80 transition-colors border border-border disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {live ? "Arrêter l'aperçu" : "Prévisualiser la caméra"}
+      </button>
     </div>
   );
 }

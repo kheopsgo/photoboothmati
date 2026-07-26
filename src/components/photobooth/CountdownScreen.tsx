@@ -92,30 +92,38 @@ export default function CountdownScreen() {
         }`}
         aria-hidden={flash}
       >
-        {/* Blurred background layer (same stream, fills container) */}
-        <img
-          src={streamUrl}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl brightness-75"
-          style={{ transform: "scaleX(-1) scale(1.1)" }}
-          loading="eager"
-        />
-        <div className="absolute inset-0 bg-background/30" />
-
-        {/* Foreground sharp preview, portrait-cropped to match final print */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative h-full aspect-[3/4] max-h-full max-w-full overflow-hidden rounded-2xl drop-shadow-2xl bg-black">
+        {settings.cameraEnabled ? (
+          <>
+            {/* Blurred background layer (same stream, fills container) */}
             <img
-              ref={streamImgRef}
               src={streamUrl}
-              alt="Aperçu caméra en direct"
-              className="absolute inset-0 h-full w-full object-cover"
-              style={{ transform: "scaleX(-1)" }}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl brightness-75"
+              style={{ transform: "scaleX(-1) scale(1.1)" }}
               loading="eager"
             />
+            <div className="absolute inset-0 bg-background/30" />
+
+            {/* Foreground sharp preview, portrait-cropped to match final print */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="relative h-full aspect-[3/4] max-h-full max-w-full overflow-hidden rounded-2xl drop-shadow-2xl bg-black">
+                <img
+                  ref={streamImgRef}
+                  src={streamUrl}
+                  alt="Aperçu caméra en direct"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  style={{ transform: "scaleX(-1)" }}
+                  loading="eager"
+                />
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-background">
+            <p className="font-display text-2xl text-muted-foreground">Caméra désactivée</p>
           </div>
-        </div>
+        )}
       </div>
 
       {flash && <div className="absolute inset-0 z-50 animate-flash bg-primary-foreground" />}
