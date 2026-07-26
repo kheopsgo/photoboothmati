@@ -293,6 +293,40 @@ function AdminPage() {
           </CardContent>
         </Card>
 
+        {/* Clé USB */}
+        <Card className="bg-slate-900 border-slate-800 text-slate-100">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-slate-100">
+              <Usb className="h-5 w-5" /> Sauvegarde clé USB
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <StatusDot ok={usb?.connected === true} />
+              <span className="font-medium">
+                {usb?.connected ? "Clé USB détectée" : "Aucune clé USB détectée"}
+              </span>
+              {usb?.connected && (
+                <Badge variant="secondary" className="bg-slate-800 text-slate-100 border border-slate-700">
+                  {usb.photoCount ?? 0} photos sauvegardées
+                </Badge>
+              )}
+            </div>
+            {usb?.connected ? (
+              <p className="text-sm text-slate-400">
+                Espace libre : <span className="text-slate-200 font-medium">{usb.freeGb ?? "?"} Go</span>
+                {usb.totalGb ? <> / {usb.totalGb} Go</> : null}. Les photos sont copiées automatiquement dans <code className="text-slate-200">/media/usb/photobooth</code>.
+              </p>
+            ) : (
+              <p className="text-sm text-slate-400">
+                Branchez une clé USB au Raspberry Pi. La configuration se fait une seule fois — voir le fichier <code className="text-slate-200">BACKEND_USB_BACKUP.md</code> du dépôt pour les instructions.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+
+
         {/* Actions rapides */}
         <Card className="bg-slate-900 border-slate-800 text-slate-100">
           <CardHeader>
