@@ -8,6 +8,7 @@ export type Screen =
   | "preview"
   | "countdown"
   | "capturing"
+  | "review"
   | "result"
   | "share"
   | "thanks";
