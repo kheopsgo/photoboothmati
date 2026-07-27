@@ -94,7 +94,7 @@ export async function takePhoto(
   mode: PhotoMode,
   filter: PhotoFilter
 ): Promise<TakePhotoResponse> {
-  const res = await fetch(`${API_BASE}/take-photo`, {
+  const res = await fetchWithTimeout(`${API_BASE}/take-photo`, undefined, 15000), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ mode, filter }),
@@ -126,7 +126,7 @@ export async function takeSinglePhoto(
 ): Promise<TakeSinglePhotoResponse> {
   const applyFrame = options?.applyFrame ?? true;
   const partOfGrid = options?.partOfGrid ?? false;
-  const res = await fetch(`${API_BASE}/take-photo`, {
+  const res = await fetchWithTimeout(`${API_BASE}/take-photo`, undefined, 15000), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -165,7 +165,7 @@ export async function createGrid(
   const normalized = photos.map((p) =>
     p.startsWith(API_BASE) ? p.slice(API_BASE.length) : p
   );
-  const res = await fetch(`${API_BASE}/create-grid`, {
+  const res = await fetchWithTimeout(`${API_BASE}/create-grid`, undefined, 30000), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ photos: normalized, filter, sessionId: sessionId ?? undefined }),
@@ -183,7 +183,7 @@ export async function createGrid(
 export async function getLatestPhoto(
   sessionId: string
 ): Promise<LatestPhotoResponse> {
-  const res = await fetch(`${API_BASE}/latest-photo?sessionId=${sessionId}`);
+  const res = await fetchWithTimeout(`${API_BASE}/latest-photo?sessionId=${sessionId}`);
   if (!res.ok) throw new Error("Erreur lors de la récupération");
   const data = await res.json();
   return {
@@ -210,7 +210,7 @@ export interface WifiNetworksResponse {
 }
 
 export async function getWifiNetworks(): Promise<WifiNetworksResponse> {
-  const res = await fetch(`${API_BASE}/wifi-networks`);
+  const res = await fetchWithTimeout(`${API_BASE}/wifi-networks`, undefined, 45000));
   if (!res.ok) {
     let backendMessage = "";
     try {
@@ -232,7 +232,7 @@ export async function configureWifi(
   ssid: string,
   password: string
 ): Promise<WifiConfigResponse> {
-  const res = await fetch(`${API_BASE}/wifi-config`, {
+  const res = await fetchWithTimeout(`${API_BASE}/wifi-config`, undefined, 45000), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ssid, password }),
@@ -258,7 +258,7 @@ export async function sendEmail(
   email: string,
   image: string
 ): Promise<SendEmailResponse> {
-  const res = await fetch(`${API_BASE}/send-email`, {
+  const res = await fetchWithTimeout(`${API_BASE}/send-email`, undefined, 10000), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, image }),
@@ -291,7 +291,7 @@ export interface FrameUploadResponse {
 }
 
 export async function uploadFrame(imageDataUrl: string): Promise<FrameUploadResponse> {
-  const res = await fetch(`${API_BASE}/frame-upload`, {
+  const res = await fetchWithTimeout(`${API_BASE}/frame-upload`, undefined, 30000), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ image: imageDataUrl }),
@@ -314,7 +314,7 @@ export async function uploadFrame(imageDataUrl: string): Promise<FrameUploadResp
 }
 
 export async function printPhoto(image: string): Promise<PrintPhotoResponse> {
-  const res = await fetch(`${API_BASE}/print-photo`, {
+  const res = await fetchWithTimeout(`${API_BASE}/print-photo`, undefined, 10000), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ image }),
@@ -347,7 +347,7 @@ export interface TrashPhotosResponse {
 }
 
 export async function trashPhotos(): Promise<TrashPhotosResponse> {
-  const res = await fetch(`${API_BASE}/trash-photos`, {
+  const res = await fetchWithTimeout(`${API_BASE}/trash-photos`, undefined, 10000), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
   });
@@ -369,7 +369,7 @@ export async function trashPhotos(): Promise<TrashPhotosResponse> {
 }
 
 export async function updateFrontend(): Promise<UpdateFrontendResponse> {
-  const res = await fetch(`${API_BASE}/update-frontend`, {
+  const res = await fetchWithTimeout(`${API_BASE}/update-frontend`, undefined, 30000), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
   });
@@ -396,13 +396,13 @@ export interface AppConfig {
 }
 
 export async function getConfig(): Promise<AppConfig> {
-  const res = await fetch(`${API_BASE}/config`);
+  const res = await fetchWithTimeout(`${API_BASE}/config`, undefined, 10000));
   if (!res.ok) throw new Error("Erreur lors du chargement de la configuration");
   return res.json();
 }
 
 export async function saveConfig(config: Partial<AppConfig>): Promise<AppConfig> {
-  const res = await fetch(`${API_BASE}/config`, {
+  const res = await fetchWithTimeout(`${API_BASE}/config`, undefined, 10000), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(config),
