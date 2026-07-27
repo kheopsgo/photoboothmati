@@ -43,7 +43,7 @@ function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onCom
 function Confetti() {
   const pieces = useMemo(
     () =>
-      Array.from({ length: 70 }).map((_, i) => ({
+      Array.from({ length: 30 }).map((_, i) => ({
         left: Math.random() * 100,
         delay: Math.random() * 1.5,
         duration: 2.5 + Math.random() * 2.5,
