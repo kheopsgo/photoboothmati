@@ -462,9 +462,16 @@ function AdminPage() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-slate-500 pt-4">
-          API : <code>{API_BASE}</code>
-        </p>
+        <div className="text-center text-xs text-slate-500 pt-4 space-y-1">
+          <p>
+            API : <code>{API_BASE}</code>
+          </p>
+          {buildTime && (
+            <p>
+              Build : <code>{new Date(buildTime).toISOString()}</code>
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
