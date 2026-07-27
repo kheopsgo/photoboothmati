@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
-
+import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { sendEmail, printPhoto } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { hapticSuccess, hapticLight } from "@/lib/haptics";
 import { Button } from "@/components/ui/button";
 import { Mail, QrCode, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera, Share2 } from "lucide-react";
 import VirtualKeyboard from "./VirtualKeyboard";
-
+import RotatedPortraitImage from "./RotatedPortraitImage";
 import QRCode from "qrcode";
 
 type Panel = "none" | "qr" | "email" | "printed" | "share";
@@ -43,7 +43,7 @@ function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onCom
 function Confetti() {
   const pieces = useMemo(
     () =>
-      Array.from({ length: 30 }).map((_, i) => ({
+      Array.from({ length: 70 }).map((_, i) => ({
         left: Math.random() * 100,
         delay: Math.random() * 1.5,
         duration: 2.5 + Math.random() * 2.5,
@@ -80,6 +80,7 @@ function Confetti() {
 export default function ResultScreen() {
   const { mode, photos, finalImage, qrUrl, setScreen } = usePhotobooth();
   const { settings } = useSettings();
+  const { online } = useBackendHealth();
   const { playSuccess } = useSound({ enabled: settings.soundsEnabled });
   const [fallbackQr, setFallbackQr] = useState<string | null>(null);
   const effectiveQr = qrUrl || fallbackQr;
@@ -178,16 +179,28 @@ export default function ResultScreen() {
 
   const photoContent = resultImageSrc ? (
     <div className="relative h-full w-full flex items-center justify-center">
-      <img
+      <RotatedPortraitImage
         src={resultImageSrc}
         alt="Votre photo"
-        className="h-full max-h-full w-auto object-contain rounded-xl animate-polaroid-reveal shadow-glow"
+        className="h-full max-h-full w-auto aspect-[3/4] rounded-xl animate-polaroid-reveal"
       />
       {watermark && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-md border border-primary/20">
           <p className="font-body text-xs text-foreground/80 whitespace-nowrap">{watermark}</p>
         </div>
       )}
+    </div>
+  ) : mode === "four" ? (
+    <div className="grid h-full max-h-full max-w-full aspect-square grid-cols-2 grid-rows-2 gap-2">
+      {photos.map((photo, i) => (
+        <div key={i} className="flex min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-lg bg-muted/40">
+          <RotatedPortraitImage
+            src={photo}
+            alt={`Photo ${i + 1}`}
+            className="h-full max-h-full w-auto aspect-[3/4] rounded-lg"
+          />
+        </div>
+      ))}
     </div>
   ) : null;
 
@@ -334,7 +347,7 @@ export default function ResultScreen() {
           Partager
         </Button>
 
-        <Button variant="elegant" size="lg" onClick={() => setPanel("email")}>
+        <Button variant="elegant" size="lg" onClick={() => setPanel("email")} disabled={!online}>
           <Mail />
           Email
         </Button>
@@ -343,7 +356,7 @@ export default function ResultScreen() {
           variant="elegant"
           size="lg"
           onClick={handlePrint}
-          disabled={printStatus === "printing"}
+          disabled={printStatus === "printing" || !online}
         >
           <Printer />
           {printStatus === "printing" ? "Impression..." : "Imprimer"}

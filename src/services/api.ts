@@ -283,33 +283,6 @@ export async function uploadFrame(imageDataUrl: string): Promise<FrameUploadResp
   return res.json();
 }
 
-export interface SaveFinalResponse {
-  success: boolean;
-  url: string;
-  qrUrl?: string;
-}
-
-/**
- * Upload the final composed image (data URL) to the backend so it can be
- * served over HTTP (needed for QR codes, printing, e-mail and USB backup).
- * Backend must expose POST /save-final and return { success, url, qrUrl? }.
- */
-export async function saveFinal(imageDataUrl: string, sessionId?: string | null): Promise<SaveFinalResponse> {
-  const res = await fetch(`${API_BASE}/save-final`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image: imageDataUrl, sessionId: sessionId ?? undefined }),
-  });
-  if (!res.ok) throw new Error("Erreur lors de l'enregistrement du rendu final");
-  const data = await res.json();
-  if (!data?.url) throw new Error("Réponse /save-final invalide");
-  return {
-    success: !!data.success,
-    url: buildImageUrl(data.url),
-    qrUrl: data.qrUrl ? buildImageUrl(data.qrUrl) : undefined,
-  };
-}
-
 export async function printPhoto(image: string): Promise<PrintPhotoResponse> {
   const res = await fetch(`${API_BASE}/print-photo`, {
     method: "POST",

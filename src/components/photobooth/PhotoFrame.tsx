@@ -9,17 +9,17 @@ interface PhotoFrameProps {
 
 function CornerOrnament({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 40 40" className={`w-10 h-10 text-primary/45 ${className}`} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+    <svg viewBox="0 0 40 40" className={`w-8 h-8 text-primary/30 ${className}`} fill="none" stroke="currentColor" strokeWidth="1">
       <path d="M2 38 C2 20 20 2 38 2" />
-      <path d="M7 38 C7 24 24 7 38 7" />
-      <circle cx="38" cy="2" r="2" fill="currentColor" />
+      <path d="M6 38 C6 24 24 6 38 6" />
+      <circle cx="38" cy="2" r="1.5" fill="currentColor" />
     </svg>
   );
 }
 
 function BotanicalAccent({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 60 20" className={`w-20 h-6 text-primary/40 ${className}`} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+    <svg viewBox="0 0 60 20" className={`w-16 h-5 text-primary/25 ${className}`} fill="none" stroke="currentColor" strokeWidth="0.8">
       <path d="M30 18 C25 14 15 10 5 12 C15 8 25 4 30 2 C35 4 45 8 55 12 C45 10 35 14 30 18Z" />
       <path d="M30 14 C28 12 22 10 16 11" />
       <path d="M30 14 C32 12 38 10 44 11" />
