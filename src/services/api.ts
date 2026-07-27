@@ -32,7 +32,10 @@ export async function fetchWithTimeout(
   timeoutMs = 10000
 ): Promise<Response> {
   const ctrl = new AbortController();
-  const id = window.setTimeout(() => ctrl.abort(), timeoutMs);
+  const id = window.setTimeout(
+    () => ctrl.abort(new DOMException(`Timeout après ${Math.round(timeoutMs / 1000)}s`, "TimeoutError")),
+    timeoutMs
+  );
   try {
     const res = await fetch(input, { ...init, signal: ctrl.signal });
     return res;
@@ -322,6 +325,7 @@ export async function printPhoto(image: string): Promise<PrintPhotoResponse> {
 export interface UpdateFrontendResponse {
   success: boolean;
   message?: string;
+  reloadDelayMs?: number;
 }
 
 export interface TrashPhotosResponse {
@@ -345,26 +349,53 @@ export async function trashPhotos(): Promise<TrashPhotosResponse> {
   return res.json();
 }
 
+function isAbortLikeError(err: unknown): boolean {
+  if (err instanceof DOMException && (err.name === "AbortError" || err.name === "TimeoutError")) return true;
+  const message = err instanceof Error ? err.message : String(err);
+  const normalized = message.toLowerCase();
+  return normalized.includes("abort") || normalized.includes("aborted") || normalized.includes("signal is aborted");
+}
+
+function updateStartedFallback(): UpdateFrontendResponse {
+  return {
+    success: true,
+    message:
+      "Mise à jour lancée. La connexion peut se couper pendant le pull/build/redémarrage — rechargez dans quelques minutes si la page ne revient pas seule.",
+    reloadDelayMs: 90000,
+  };
+}
+
 export async function updateFrontend(): Promise<UpdateFrontendResponse> {
-  try {
-    const res = await fetchWithTimeout(
-      `${API_BASE}/update-frontend`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      },
-      300000 // 5 min : git pull + npm install + build peut être long sur Raspberry Pi
-    );
+  const request = fetch(`${API_BASE}/update-frontend`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+    keepalive: true,
+  }).then(async (res) => {
     if (!res.ok) {
       const backendMessage = await extractBackendMessage(res);
       throw new Error(backendMessage || "Erreur lors de la mise à jour depuis GitHub");
     }
-    return res.json();
+
+    const text = await res.text();
+    if (!text) return { success: true, message: "Mise à jour lancée.", reloadDelayMs: 3000 };
+
+    try {
+      return { reloadDelayMs: 3000, ...JSON.parse(text) } as UpdateFrontendResponse;
+    } catch {
+      return { success: true, message: text, reloadDelayMs: 3000 };
+    }
+  });
+
+  const optimisticStart = new Promise<UpdateFrontendResponse>((resolve) => {
+    window.setTimeout(() => resolve(updateStartedFallback()), 15000);
+  });
+
+  try {
+    return await Promise.race([request, optimisticStart]);
   } catch (err) {
-    if (err instanceof DOMException && err.name === "AbortError") {
-      throw new Error(
-        "La mise à jour prend trop de temps (>5 min). Elle est peut-être toujours en cours sur le Raspberry — rechargez la page dans quelques minutes."
-      );
+    if (isAbortLikeError(err)) {
+      return updateStartedFallback();
     }
     throw err;
   }
