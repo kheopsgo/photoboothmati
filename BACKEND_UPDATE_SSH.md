@@ -2,35 +2,22 @@
 
 Si le bouton web affiche encore `signal is aborted`, le plus fiable est de lancer la mise à jour directement en SSH sur le Raspberry. Cette erreur arrive souvent parce que le serveur redémarre pendant la requête HTTP : la mise à jour peut être lancée, mais le navigateur croit que l'appel a échoué.
 
+Sur ce Raspberry, le frontend se trouve dans `~/photobooth-frontend` et les services systemd sont :
+
+- `photobooth-frontend.service` (sert le build Vite)
+- `photobooth-backend.service` (Flask / backend Python)
+
 ## 1. Se connecter au Raspberry
 
-Depuis un ordinateur sur le même Wi-Fi / hotspot :
-
 ```bash
-ssh pi@10.42.0.1
+ssh kheopsgo@10.42.0.1
 ```
 
-Si l'IP est différente, depuis la page admin récupérez l'IP affichée, puis :
+## 2. Aller dans le dossier du frontend
 
 ```bash
-ssh pi@IP_DU_RASPBERRY
+cd ~/photobooth-frontend
 ```
-
-## 2. Aller dans le dossier du photobooth
-
-Essayez d'abord :
-
-```bash
-cd ~/photobooth
-```
-
-Si le dossier n'existe pas :
-
-```bash
-ls ~
-```
-
-puis entrez dans le dossier du projet.
 
 ## 3. Sauvegarder les changements locaux éventuels
 
@@ -38,7 +25,7 @@ puis entrez dans le dossier du projet.
 git status
 ```
 
-Si `git status` affiche des fichiers modifiés que vous voulez garder :
+Si des fichiers sont modifiés et que vous voulez les garder :
 
 ```bash
 git stash push -m "sauvegarde avant mise a jour"
@@ -57,79 +44,67 @@ git reset --hard
 git pull
 ```
 
-## 5. Installer les dépendances et reconstruire
+## 5. Corriger les permissions si besoin
 
-Selon ce qui est utilisé sur le Raspberry :
+Si un précédent build a été lancé avec `sudo`, le dossier `dist/` peut appartenir à `root` et empêcher le nouveau build :
+
+```bash
+sudo rm -rf ~/photobooth-frontend/dist
+sudo chown -R kheopsgo:kheopsgo ~/photobooth-frontend
+```
+
+## 6. Installer les dépendances et reconstruire
 
 ```bash
 npm install
 npm run build
 ```
 
-ou :
+## 7. Redémarrer le service frontend
 
 ```bash
-bun install
-bun run build
+sudo systemctl restart photobooth-frontend.service
 ```
 
-## 6. Redémarrer le service
-
-Cherchez le nom du service :
+Si vous avez aussi modifié le backend Python, redémarrez aussi :
 
 ```bash
-systemctl --user list-units | grep -i photo
-systemctl list-units | grep -i photo
+sudo systemctl restart photobooth-backend.service
 ```
 
-Puis redémarrez le service trouvé, par exemple :
-
-```bash
-sudo systemctl restart photobooth
-```
-
-ou, si le service utilisateur est utilisé :
-
-```bash
-systemctl --user restart photobooth
-```
-
-## 7. Vérifier
+## 8. Vérifier
 
 ```bash
 curl http://localhost:5000/health
 ```
 
-Puis ouvrez :
+Puis ouvrez sur la tablette :
 
 ```text
 http://10.42.0.1:5000/
 ```
 
-## Variante rapide en une commande
-
-À adapter avec le bon dossier et le bon service :
+## Commande complète en une ligne
 
 ```bash
-cd ~/photobooth && git pull && npm install && npm run build && sudo systemctl restart photobooth
+cd ~/photobooth-frontend && git pull && npm install && npm run build && sudo systemctl restart photobooth-frontend.service
 ```
 
 ## Endpoint backend recommandé
 
-Pour éviter définitivement l'erreur côté bouton web, la route `/update-frontend` du backend Flask doit répondre immédiatement, puis lancer la mise à jour en arrière-plan. Exemple :
+Pour éviter définitivement l'erreur côté bouton web, la route `/update-frontend` du backend Flask doit répondre immédiatement, puis lancer la mise à jour en arrière-plan :
 
 ```python
 import subprocess
 import threading
 from flask import jsonify
 
-PROJECT_DIR = "/home/pi/photobooth"
-SERVICE_NAME = "photobooth"
+PROJECT_DIR = "/home/kheopsgo/photobooth-frontend"
+FRONTEND_SERVICE = "photobooth-frontend.service"
 
 def run_update():
     subprocess.run(
-        "git pull && npm install && npm run build && sudo systemctl restart " + SERVICE_NAME,
-        cwd=PROJECT_DIR,
+        f"cd {PROJECT_DIR} && git pull && npm install && npm run build && sudo systemctl restart {FRONTEND_SERVICE}",
         shell=True,
         check=False,
     )
