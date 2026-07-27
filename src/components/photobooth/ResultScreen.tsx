@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useBackendHealth } from "@/contexts/BackendHealthContext";
@@ -11,6 +11,7 @@ import VirtualKeyboard from "./VirtualKeyboard";
 import RotatedPortraitImage from "./RotatedPortraitImage";
 import PhotoFrame from "./PhotoFrame";
 import QRCode from "qrcode";
+import { toPng } from "html-to-image";
 
 type Panel = "none" | "qr" | "email" | "printed" | "share";
 
@@ -84,16 +85,54 @@ export default function ResultScreen() {
   const { online } = useBackendHealth();
   const { playSuccess } = useSound({ enabled: settings.soundsEnabled });
   const [fallbackQr, setFallbackQr] = useState<string | null>(null);
+  const [deliverableImage, setDeliverableImage] = useState<string | null>(null);
+  const deliverableRef = useRef<HTMLDivElement>(null);
   const effectiveQr = qrUrl || fallbackQr;
 
+  const resultImageSrc = finalImage || photos[0];
+
+  // Composite the decorated frame with the photo(s) into a single PNG that
+  // will be used for print / email / QR fallback. Rendering is done in an
+  // offscreen absolutely-positioned node.
   useEffect(() => {
-    if (qrUrl || !finalImage) return;
+    if (!deliverableRef.current) return;
+    if (!resultImageSrc && !(mode === "four" && photos.length === 4)) return;
     let cancelled = false;
-    QRCode.toDataURL(finalImage, { width: 512, margin: 1 })
+    const node = deliverableRef.current;
+    // Wait a tick so images inside are attached
+    const t = setTimeout(async () => {
+      try {
+        // Ensure all inner images are decoded before capture
+        const imgs = Array.from(node.querySelectorAll("img"));
+        await Promise.all(
+          imgs.map((img) =>
+            img.complete && img.naturalWidth > 0
+              ? Promise.resolve()
+              : new Promise<void>((res) => {
+                  img.addEventListener("load", () => res(), { once: true });
+                  img.addEventListener("error", () => res(), { once: true });
+                })
+          )
+        );
+        const dataUrl = await toPng(node, { cacheBust: true, pixelRatio: 2, backgroundColor: "#ffffff" });
+        if (!cancelled) setDeliverableImage(dataUrl);
+      } catch {
+        // Silent fail: we'll fall back to the raw image
+      }
+    }, 250);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [resultImageSrc, photos, mode, settings.eventConfig]);
+
+  useEffect(() => {
+    if (qrUrl) return;
+    const src = deliverableImage || finalImage;
+    if (!src) return;
+    let cancelled = false;
+    QRCode.toDataURL(src, { width: 512, margin: 1 })
       .then((url) => { if (!cancelled) setFallbackQr(url); })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [qrUrl, finalImage]);
+  }, [qrUrl, finalImage, deliverableImage]);
 
   const [panel, setPanel] = useState<Panel>("none");
   const [email, setEmail] = useState("");
@@ -115,7 +154,7 @@ export default function ResultScreen() {
   };
 
   const handlePrint = async () => {
-    const imageToPrint = finalImage || photos[0];
+    const imageToPrint = deliverableImage || finalImage || photos[0];
     if (!imageToPrint || printStatus === "printing") return;
     setPrintStatus("printing");
     setPrintMessage("Impression en cours...");
@@ -141,7 +180,7 @@ export default function ResultScreen() {
     setSendErrorMessage("");
     setEmailStatus("sending");
     try {
-      const imageToSend = finalImage || photos[0];
+      const imageToSend = deliverableImage || finalImage || photos[0];
       if (!imageToSend) throw new Error("Aucune image à envoyer");
       await sendEmail(email, imageToSend);
       setEmailStatus("sent");
@@ -155,7 +194,7 @@ export default function ResultScreen() {
   };
 
   const handleNativeShare = async () => {
-    const imageToShare = finalImage || photos[0];
+    const imageToShare = deliverableImage || finalImage || photos[0];
     if (!imageToShare) return;
     hapticLight();
     try {
@@ -173,7 +212,6 @@ export default function ResultScreen() {
     }
   };
 
-  const resultImageSrc = finalImage || photos[0];
   const watermark = settings.showEventWatermark
     ? `${settings.eventConfig.title}${settings.eventConfig.subtitle ? ` — ${settings.eventConfig.subtitle}` : ""}`
     : "";
@@ -379,6 +417,38 @@ export default function ResultScreen() {
         )}
 
         <AutoRedirectCountdown seconds={HOME_TIMEOUT_S} onComplete={handleRestart} />
+      </div>
+
+      {/* Offscreen deliverable: framed composite baked into a PNG for print/email/QR */}
+      <div
+        aria-hidden
+        style={{ position: "fixed", left: "-10000px", top: 0, width: 1200, pointerEvents: "none", opacity: 1 }}
+      >
+        <div ref={deliverableRef} style={{ width: 1200, background: "#ffffff", padding: 24 }}>
+          {resultImageSrc ? (
+            <PhotoFrame variant="single">
+              <RotatedPortraitImage
+                src={resultImageSrc}
+                alt=""
+                className="w-full aspect-[3/4] rounded-xl"
+              />
+            </PhotoFrame>
+          ) : mode === "four" && photos.length === 4 ? (
+            <PhotoFrame variant="strip">
+              <div className="grid aspect-square grid-cols-2 grid-rows-2 gap-2">
+                {photos.map((photo, i) => (
+                  <div key={i} className="overflow-hidden rounded-lg">
+                    <RotatedPortraitImage
+                      src={photo}
+                      alt=""
+                      className="h-full w-full aspect-[3/4] rounded-lg"
+                    />
+                  </div>
+                ))}
+              </div>
+            </PhotoFrame>
+          ) : null}
+        </div>
       </div>
     </div>
   );
