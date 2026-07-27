@@ -101,14 +101,16 @@ export default function ShareScreen() {
           <div className="w-10 h-px bg-primary/40 mx-auto" />
 
           <div className="w-56 h-56 rounded-2xl border-2 border-border bg-card flex items-center justify-center shadow-md">
-            {qrUrl ? (
+            {effectiveQr ? (
               <img
-                src={qrUrl}
+                src={effectiveQr}
                 alt="QR Code"
                 className="w-48 h-48 rounded-lg"
               />
+            ) : qrGenError ? (
+              <div className="text-muted-foreground/40 text-sm text-center px-4">QR code indisponible</div>
             ) : (
-              <div className="text-muted-foreground/40 text-sm">QR code indisponible</div>
+              <Loader2 className="animate-spin text-muted-foreground/60" size={32} />
             )}
           </div>
 
