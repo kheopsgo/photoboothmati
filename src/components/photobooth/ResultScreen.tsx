@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
-import { useBackendHealth } from "@/contexts/BackendHealthContext";
+
 import { sendEmail, printPhoto } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { hapticSuccess, hapticLight } from "@/lib/haptics";
@@ -43,7 +43,7 @@ function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onCom
 function Confetti() {
   const pieces = useMemo(
     () =>
-      Array.from({ length: 70 }).map((_, i) => ({
+      Array.from({ length: 30 }).map((_, i) => ({
         left: Math.random() * 100,
         delay: Math.random() * 1.5,
         duration: 2.5 + Math.random() * 2.5,
@@ -80,7 +80,6 @@ function Confetti() {
 export default function ResultScreen() {
   const { mode, photos, finalImage, qrUrl, setScreen } = usePhotobooth();
   const { settings } = useSettings();
-  const { online } = useBackendHealth();
   const { playSuccess } = useSound({ enabled: settings.soundsEnabled });
   const [fallbackQr, setFallbackQr] = useState<string | null>(null);
   const effectiveQr = qrUrl || fallbackQr;
@@ -335,7 +334,7 @@ export default function ResultScreen() {
           Partager
         </Button>
 
-        <Button variant="elegant" size="lg" onClick={() => setPanel("email")} disabled={!online}>
+        <Button variant="elegant" size="lg" onClick={() => setPanel("email")}>
           <Mail />
           Email
         </Button>
@@ -344,7 +343,7 @@ export default function ResultScreen() {
           variant="elegant"
           size="lg"
           onClick={handlePrint}
-          disabled={printStatus === "printing" || !online}
+          disabled={printStatus === "printing"}
         >
           <Printer />
           {printStatus === "printing" ? "Impression..." : "Imprimer"}

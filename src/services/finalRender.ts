@@ -38,7 +38,7 @@ export async function composeFinalImage(opts: ComposeOptions): Promise<string> {
   if (!frameEl) {
     const holeRect = fitPortraitInside(targetWidth, targetHeight);
     drawPhotos(ctx, loaded, holeRect, mirrored, opts.gridGapPx);
-    return finalCanvas.toDataURL("image/png");
+    return finalCanvas.toDataURL("image/jpeg", 0.9);
   }
 
   // With frame: render the frame to a canvas, find the hole rect, draw photos there,
@@ -96,7 +96,7 @@ export async function composeFinalImage(opts: ComposeOptions): Promise<string> {
   );
   ctx.drawImage(overlayCanvas, fx, fy, fw, fh);
 
-  return finalCanvas.toDataURL("image/png");
+  return finalCanvas.toDataURL("image/jpeg", 0.9);
 }
 
 // --- helpers ------------------------------------------------------------
