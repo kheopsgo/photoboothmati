@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
-import { useBackendHealth } from "@/contexts/BackendHealthContext";
+
 import { sendEmail, printPhoto } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { hapticSuccess, hapticLight } from "@/lib/haptics";
