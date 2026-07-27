@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import {
   API_BASE,
   trashPhotos,
@@ -22,6 +23,8 @@ import {
   Network,
   Loader2,
   Usb,
+  Link2,
+  Clock,
 } from "lucide-react";
 
 interface UsbStatus {
