@@ -154,7 +154,7 @@ export default function ResultScreen() {
   };
 
   const handlePrint = async () => {
-    const imageToPrint = finalImage || photos[0];
+    const imageToPrint = deliverableImage || finalImage || photos[0];
     if (!imageToPrint || printStatus === "printing") return;
     setPrintStatus("printing");
     setPrintMessage("Impression en cours...");
@@ -180,7 +180,7 @@ export default function ResultScreen() {
     setSendErrorMessage("");
     setEmailStatus("sending");
     try {
-      const imageToSend = finalImage || photos[0];
+      const imageToSend = deliverableImage || finalImage || photos[0];
       if (!imageToSend) throw new Error("Aucune image à envoyer");
       await sendEmail(email, imageToSend);
       setEmailStatus("sent");
@@ -194,7 +194,7 @@ export default function ResultScreen() {
   };
 
   const handleNativeShare = async () => {
-    const imageToShare = finalImage || photos[0];
+    const imageToShare = deliverableImage || finalImage || photos[0];
     if (!imageToShare) return;
     hapticLight();
     try {
