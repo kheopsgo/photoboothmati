@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { API_BASE } from "@/services/api";
@@ -11,10 +12,16 @@ const filters: { id: PhotoFilter; label: string; cssFilter: string }[] = [
   { id: "sepia", label: "Sépia", cssFilter: "sepia(1)" },
 ];
 
+function cacheBust(url: string, nonce: number): string {
+  return url.includes("?") ? `${url}&t=${nonce}` : `${url}?t=${nonce}`;
+}
+
 export default function PreviewScreen() {
   const { mode, filter, setFilter, setScreen, captureProgress } = usePhotobooth();
   const { settings } = useSettings();
-  const streamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
+  const [streamNonce] = useState(() => Date.now());
+  const rawStreamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
+  const streamUrl = cacheBust(rawStreamUrl, streamNonce);
   const currentCss = filters.find((f) => f.id === filter)?.cssFilter ?? "none";
 
   const totalShots = mode === "four" ? 4 : 1;
