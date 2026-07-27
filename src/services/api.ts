@@ -265,8 +265,9 @@ export async function sendEmail(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, image }),
     },
-    10000
+    45000
   );
+
   if (!res.ok) {
     const backendMessage = await extractBackendMessage(res);
     throw new Error(backendMessage || "Erreur lors de l'envoi de l'e-mail");
@@ -309,7 +310,7 @@ export async function printPhoto(image: string): Promise<PrintPhotoResponse> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image }),
     },
-    10000
+    60000
   );
   if (!res.ok) {
     const backendMessage = await extractBackendMessage(res);
