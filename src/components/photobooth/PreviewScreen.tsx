@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { API_BASE } from "@/services/api";
 import { ArrowLeft, Camera } from "lucide-react";
 import type { PhotoFilter } from "@/services/api";
