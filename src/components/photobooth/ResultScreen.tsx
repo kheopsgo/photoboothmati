@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, QrCode, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera, Share2 } from "lucide-react";
 import VirtualKeyboard from "./VirtualKeyboard";
 import RotatedPortraitImage from "./RotatedPortraitImage";
+import PhotoFrame from "./PhotoFrame";
 import QRCode from "qrcode";
 
 type Panel = "none" | "qr" | "email" | "printed" | "share";
