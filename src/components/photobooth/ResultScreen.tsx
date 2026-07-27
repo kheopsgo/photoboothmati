@@ -85,16 +85,54 @@ export default function ResultScreen() {
   const { online } = useBackendHealth();
   const { playSuccess } = useSound({ enabled: settings.soundsEnabled });
   const [fallbackQr, setFallbackQr] = useState<string | null>(null);
+  const [deliverableImage, setDeliverableImage] = useState<string | null>(null);
+  const deliverableRef = useRef<HTMLDivElement>(null);
   const effectiveQr = qrUrl || fallbackQr;
 
+  const resultImageSrc = finalImage || photos[0];
+
+  // Composite the decorated frame with the photo(s) into a single PNG that
+  // will be used for print / email / QR fallback. Rendering is done in an
+  // offscreen absolutely-positioned node.
   useEffect(() => {
-    if (qrUrl || !finalImage) return;
+    if (!deliverableRef.current) return;
+    if (!resultImageSrc && !(mode === "four" && photos.length === 4)) return;
     let cancelled = false;
-    QRCode.toDataURL(finalImage, { width: 512, margin: 1 })
+    const node = deliverableRef.current;
+    // Wait a tick so images inside are attached
+    const t = setTimeout(async () => {
+      try {
+        // Ensure all inner images are decoded before capture
+        const imgs = Array.from(node.querySelectorAll("img"));
+        await Promise.all(
+          imgs.map((img) =>
+            img.complete && img.naturalWidth > 0
+              ? Promise.resolve()
+              : new Promise<void>((res) => {
+                  img.addEventListener("load", () => res(), { once: true });
+                  img.addEventListener("error", () => res(), { once: true });
+                })
+          )
+        );
+        const dataUrl = await toPng(node, { cacheBust: true, pixelRatio: 2, backgroundColor: "#ffffff" });
+        if (!cancelled) setDeliverableImage(dataUrl);
+      } catch {
+        // Silent fail: we'll fall back to the raw image
+      }
+    }, 250);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [resultImageSrc, photos, mode, settings.eventConfig]);
+
+  useEffect(() => {
+    if (qrUrl) return;
+    const src = deliverableImage || finalImage;
+    if (!src) return;
+    let cancelled = false;
+    QRCode.toDataURL(src, { width: 512, margin: 1 })
       .then((url) => { if (!cancelled) setFallbackQr(url); })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [qrUrl, finalImage]);
+  }, [qrUrl, finalImage, deliverableImage]);
 
   const [panel, setPanel] = useState<Panel>("none");
   const [email, setEmail] = useState("");
