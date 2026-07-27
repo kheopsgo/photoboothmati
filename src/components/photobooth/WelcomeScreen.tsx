@@ -186,7 +186,7 @@ export default function WelcomeScreen() {
         <div className="flex flex-col items-center gap-6 flex-1 max-w-md">
           <button
             onClick={handleStart}
-            disabled={!online}
+            disabled={online === false}
             className="group relative animate-glow-pulse rounded-full bg-primary text-primary-foreground px-20 h-[140px] font-display text-5xl font-semibold tracking-wide active:scale-95 transition-transform duration-200 flex items-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed disabled:animate-none"
           >
             <Camera size={44} />
