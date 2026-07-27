@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { API_BASE } from "@/services/api";
 import { ArrowLeft, Camera } from "lucide-react";
 import type { PhotoFilter } from "@/services/api";
@@ -11,10 +13,17 @@ const filters: { id: PhotoFilter; label: string; cssFilter: string }[] = [
   { id: "sepia", label: "Sépia", cssFilter: "sepia(1)" },
 ];
 
+function cacheBust(url: string, nonce: number): string {
+  return url.includes("?") ? `${url}&t=${nonce}` : `${url}?t=${nonce}`;
+}
+
 export default function PreviewScreen() {
   const { mode, filter, setFilter, setScreen, captureProgress } = usePhotobooth();
   const { settings } = useSettings();
-  const streamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
+  const { online } = useBackendHealth();
+  const [streamNonce] = useState(() => Date.now());
+  const rawStreamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
+  const streamUrl = cacheBust(rawStreamUrl, streamNonce);
   const currentCss = filters.find((f) => f.id === filter)?.cssFilter ?? "none";
 
   const totalShots = mode === "four" ? 4 : 1;
@@ -104,10 +113,11 @@ export default function PreviewScreen() {
 
         <button
           onClick={() => setScreen("countdown")}
-          className="group relative animate-glow-pulse rounded-3xl bg-primary text-primary-foreground w-full h-[120px] font-display text-2xl font-semibold tracking-wide active:scale-95 transition-transform flex flex-col items-center justify-center gap-1"
+          disabled={online === false}
+          className="group relative animate-glow-pulse rounded-3xl bg-primary text-primary-foreground w-full h-[120px] font-display text-2xl font-semibold tracking-wide active:scale-95 transition-transform flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:animate-none"
         >
           <Camera size={32} />
-          {inSequence ? `Photo ${currentShot}/${totalShots}` : "Prendre la photo"}
+          {online === false ? "Hors ligne" : inSequence ? `Photo ${currentShot}/${totalShots}` : "Prendre la photo"}
         </button>
       </div>
     </div>

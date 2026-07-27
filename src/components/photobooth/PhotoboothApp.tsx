@@ -9,6 +9,7 @@ import CountdownScreen from "./CountdownScreen";
 import CaptureFlow from "./CaptureFlow";
 import ResultScreen from "./ResultScreen";
 import ThanksScreen from "./ThanksScreen";
+import ErrorBoundary from "./ErrorBoundary";
 
 function ScreenRouter() {
   const { screen } = usePhotobooth();
@@ -36,13 +37,22 @@ function ScreenRouter() {
   }
 }
 
+function AppWithErrorBoundary() {
+  const { restart } = usePhotobooth();
+  return (
+    <ErrorBoundary onReset={restart}>
+      <ScreenRouter />
+    </ErrorBoundary>
+  );
+}
+
 export default function PhotoboothApp() {
   return (
     <SettingsProvider>
       <BackendHealthProvider>
         <PhotoboothProvider>
           <div className="mx-auto h-screen w-full bg-background relative overflow-hidden select-none touch-manipulation landscape-app">
-            <ScreenRouter />
+            <AppWithErrorBoundary />
           </div>
         </PhotoboothProvider>
       </BackendHealthProvider>

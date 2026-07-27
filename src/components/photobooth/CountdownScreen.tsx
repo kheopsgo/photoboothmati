@@ -10,6 +10,10 @@ import RotatedPortraitImage from "./RotatedPortraitImage";
 const COUNTDOWN_START = 5;
 const TICK_MS = 1000;
 
+function cacheBust(url: string, nonce: number): string {
+  return url.includes("?") ? `${url}&t=${nonce}` : `${url}?t=${nonce}`;
+}
+
 export default function CountdownScreen() {
   const { mode, filter, setScreen, captureProgress } = usePhotobooth();
   const { settings } = useSettings();
@@ -24,7 +28,9 @@ export default function CountdownScreen() {
 
   const totalShots = mode === "four" ? 4 : 1;
   const currentShot = captureProgress + 1;
-  const streamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
+  const [streamNonce] = useState(() => Date.now());
+  const rawStreamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
+  const streamUrl = cacheBust(rawStreamUrl, streamNonce);
 
   const CAPTURE_AT_COUNT = 1;
 

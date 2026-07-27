@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import {
   API_BASE,
   trashPhotos,
@@ -22,6 +23,8 @@ import {
   Network,
   Loader2,
   Usb,
+  Link2,
+  Clock,
 } from "lucide-react";
 
 interface UsbStatus {
@@ -95,11 +98,14 @@ function safeFetch(url: string, init?: RequestInit) {
 
 function AdminPage() {
   const { toast } = useToast();
+  const { online } = useBackendHealth();
   const [status, setStatus] = useState<AdminStatus | null>(null);
   const [healthOk, setHealthOk] = useState<boolean | null>(null);
   const [usb, setUsb] = useState<UsbStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+
+  const buildTime = import.meta.env.VITE_BUILD_TIME;
 
   const fetchStatus = useCallback(async () => {
     setLoading(true);
@@ -258,9 +264,19 @@ function AdminPage() {
                     <StatusDot ok={healthOk === true || status?.backend === "ok"} />
                     {status?.backend === "ok" || healthOk === true
                       ? "En ligne"
-                      : healthOk === false
+                      : healthOk === false || online === false
                       ? "Hors ligne"
                       : "—"}
+                  </span>
+                }
+              />
+              <StatBox
+                icon={<Link2 className="h-5 w-5" />}
+                label="Connexion frontend"
+                value={
+                  <span className="flex items-center gap-2">
+                    <StatusDot ok={online === true || online === null} />
+                    {online === true ? "En ligne" : online === false ? "Hors ligne" : "Inconnue"}
                   </span>
                 }
               />
@@ -288,6 +304,18 @@ function AdminPage() {
                 icon={<ImageIcon className="h-5 w-5" />}
                 label="Nombre de photos"
                 value={status?.photosCount != null ? String(status.photosCount) : "—"}
+              />
+              <StatBox
+                icon={<Clock className="h-5 w-5" />}
+                label="Build frontend"
+                value={
+                  buildTime
+                    ? new Date(buildTime).toLocaleString("fr-FR", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })
+                    : "—"
+                }
               />
             </div>
           </CardContent>
@@ -434,9 +462,16 @@ function AdminPage() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-slate-500 pt-4">
-          API : <code>{API_BASE}</code>
-        </p>
+        <div className="text-center text-xs text-slate-500 pt-4 space-y-1">
+          <p>
+            API : <code>{API_BASE}</code>
+          </p>
+          {buildTime && (
+            <p>
+              Build : <code>{new Date(buildTime).toISOString()}</code>
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
