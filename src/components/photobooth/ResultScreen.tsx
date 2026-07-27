@@ -41,12 +41,13 @@ function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onCom
 }
 
 function Confetti() {
+  const [visible, setVisible] = useState(true);
   const pieces = useMemo(
     () =>
-      Array.from({ length: 70 }).map((_, i) => ({
+      Array.from({ length: 30 }).map((_, i) => ({
         left: Math.random() * 100,
-        delay: Math.random() * 1.5,
-        duration: 2.5 + Math.random() * 2.5,
+        delay: Math.random() * 1.2,
+        duration: 2.5 + Math.random() * 2,
         size: 6 + Math.random() * 10,
         rotate: Math.random() * 360,
         hue: Math.random() > 0.5 ? "hsl(48 100% 60%)" : "hsl(45 30% 96%)",
@@ -54,6 +55,11 @@ function Confetti() {
       })),
     []
   );
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(false), 6000);
+    return () => clearTimeout(t);
+  }, []);
+  if (!visible) return null;
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-40">
       {pieces.map((p) => (
@@ -69,7 +75,6 @@ function Confetti() {
             animationDelay: `${p.delay}s`,
             animationDuration: `${p.duration}s`,
             borderRadius: 2,
-            boxShadow: `0 0 8px ${p.hue}`,
           }}
         />
       ))}

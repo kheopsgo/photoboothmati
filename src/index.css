@@ -252,7 +252,7 @@
   10% { opacity: 1; }
   100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
 }
-.animate-confetti { animation: confetti-fall linear infinite; }
+.animate-confetti { animation: confetti-fall linear forwards 1; }
 
 @keyframes countdown-pulse {
   0% { transform: scale(0.2); opacity: 0; }
