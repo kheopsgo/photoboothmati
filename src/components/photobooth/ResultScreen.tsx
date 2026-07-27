@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, QrCode, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera, Share2 } from "lucide-react";
 import VirtualKeyboard from "./VirtualKeyboard";
 import RotatedPortraitImage from "./RotatedPortraitImage";
+import PhotoFrame from "./PhotoFrame";
 import QRCode from "qrcode";
 
 type Panel = "none" | "qr" | "email" | "printed" | "share";
@@ -179,11 +180,15 @@ export default function ResultScreen() {
 
   const photoContent = resultImageSrc ? (
     <div className="relative h-full w-full flex items-center justify-center">
-      <RotatedPortraitImage
-        src={resultImageSrc}
-        alt="Votre photo"
-        className="h-full max-h-full w-auto aspect-[3/4] rounded-xl animate-polaroid-reveal"
-      />
+      <div className="h-full max-h-full aspect-[3/4] flex items-center justify-center">
+        <PhotoFrame variant="single">
+          <RotatedPortraitImage
+            src={resultImageSrc}
+            alt="Votre photo"
+            className="w-full aspect-[3/4] rounded-xl animate-polaroid-reveal"
+          />
+        </PhotoFrame>
+      </div>
       {watermark && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-md border border-primary/20">
           <p className="font-body text-xs text-foreground/80 whitespace-nowrap">{watermark}</p>
@@ -191,16 +196,20 @@ export default function ResultScreen() {
       )}
     </div>
   ) : mode === "four" ? (
-    <div className="grid h-full max-h-full max-w-full aspect-square grid-cols-2 grid-rows-2 gap-2">
-      {photos.map((photo, i) => (
-        <div key={i} className="flex min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-lg bg-muted/40">
-          <RotatedPortraitImage
-            src={photo}
-            alt={`Photo ${i + 1}`}
-            className="h-full max-h-full w-auto aspect-[3/4] rounded-lg"
-          />
+    <div className="h-full max-h-full aspect-square flex items-center justify-center">
+      <PhotoFrame variant="strip">
+        <div className="grid aspect-square grid-cols-2 grid-rows-2 gap-2">
+          {photos.map((photo, i) => (
+            <div key={i} className="flex min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-lg bg-muted/40">
+              <RotatedPortraitImage
+                src={photo}
+                alt={`Photo ${i + 1}`}
+                className="h-full w-auto aspect-[3/4] rounded-lg"
+              />
+            </div>
+          ))}
         </div>
-      ))}
+      </PhotoFrame>
     </div>
   ) : null;
 
