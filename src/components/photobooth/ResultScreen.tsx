@@ -335,7 +335,7 @@ export default function ResultScreen() {
           Partager
         </Button>
 
-        <Button variant="elegant" size="lg" onClick={() => setPanel("email")} disabled={!online}>
+        <Button variant="elegant" size="lg" onClick={() => setPanel("email")}>
           <Mail />
           Email
         </Button>
@@ -344,7 +344,7 @@ export default function ResultScreen() {
           variant="elegant"
           size="lg"
           onClick={handlePrint}
-          disabled={printStatus === "printing" || !online}
+          disabled={printStatus === "printing"}
         >
           <Printer />
           {printStatus === "printing" ? "Impression..." : "Imprimer"}
