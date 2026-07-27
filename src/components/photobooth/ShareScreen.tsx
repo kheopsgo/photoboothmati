@@ -47,11 +47,24 @@ function SuccessAutoRedirect({ restart, message, detail }: { restart: () => void
 }
 
 export default function ShareScreen() {
-  const { sessionId, qrUrl, emailStatus, setEmailStatus, setScreen, restart } = usePhotobooth();
+  const { sessionId, qrUrl, finalImage, emailStatus, setEmailStatus, setScreen, restart } = usePhotobooth();
   const { playSuccess } = useSound();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [showQr, setShowQr] = useState(false);
+  const [fallbackQr, setFallbackQr] = useState<string | null>(null);
+  const [qrGenError, setQrGenError] = useState(false);
+
+  const effectiveQr = qrUrl || fallbackQr;
+
+  useEffect(() => {
+    if (qrUrl || !finalImage) return;
+    let cancelled = false;
+    QRCode.toDataURL(finalImage, { width: 512, margin: 1 })
+      .then((url) => { if (!cancelled) setFallbackQr(url); })
+      .catch(() => { if (!cancelled) setQrGenError(true); });
+    return () => { cancelled = true; };
+  }, [qrUrl, finalImage]);
 
   const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
