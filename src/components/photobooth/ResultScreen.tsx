@@ -82,6 +82,17 @@ export default function ResultScreen() {
   const { settings } = useSettings();
   const { online } = useBackendHealth();
   const { playSuccess } = useSound({ enabled: settings.soundsEnabled });
+  const [fallbackQr, setFallbackQr] = useState<string | null>(null);
+  const effectiveQr = qrUrl || fallbackQr;
+
+  useEffect(() => {
+    if (qrUrl || !finalImage) return;
+    let cancelled = false;
+    QRCode.toDataURL(finalImage, { width: 512, margin: 1 })
+      .then((url) => { if (!cancelled) setFallbackQr(url); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [qrUrl, finalImage]);
 
   const [panel, setPanel] = useState<Panel>("none");
   const [email, setEmail] = useState("");
