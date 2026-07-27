@@ -96,7 +96,7 @@ export async function composeFinalImage(opts: ComposeOptions): Promise<string> {
   );
   ctx.drawImage(overlayCanvas, fx, fy, fw, fh);
 
-  return finalCanvas.toDataURL("image/png");
+  return finalCanvas.toDataURL("image/jpeg", 0.9);
 }
 
 // --- helpers ------------------------------------------------------------
