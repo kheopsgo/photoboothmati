@@ -346,19 +346,28 @@ export async function trashPhotos(): Promise<TrashPhotosResponse> {
 }
 
 export async function updateFrontend(): Promise<UpdateFrontendResponse> {
-  const res = await fetchWithTimeout(
-    `${API_BASE}/update-frontend`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    },
-    30000
-  );
-  if (!res.ok) {
-    const backendMessage = await extractBackendMessage(res);
-    throw new Error(backendMessage || "Erreur lors de la mise à jour depuis GitHub");
+  try {
+    const res = await fetchWithTimeout(
+      `${API_BASE}/update-frontend`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      },
+      300000 // 5 min : git pull + npm install + build peut être long sur Raspberry Pi
+    );
+    if (!res.ok) {
+      const backendMessage = await extractBackendMessage(res);
+      throw new Error(backendMessage || "Erreur lors de la mise à jour depuis GitHub");
+    }
+    return res.json();
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error(
+        "La mise à jour prend trop de temps (>5 min). Elle est peut-être toujours en cours sur le Raspberry — rechargez la page dans quelques minutes."
+      );
+    }
+    throw err;
   }
-  return res.json();
 }
 
 export interface AppConfig {
