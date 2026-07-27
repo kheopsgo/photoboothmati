@@ -212,7 +212,6 @@ export default function ResultScreen() {
     }
   };
 
-  const resultImageSrc = finalImage || photos[0];
   const watermark = settings.showEventWatermark
     ? `${settings.eventConfig.title}${settings.eventConfig.subtitle ? ` — ${settings.eventConfig.subtitle}` : ""}`
     : "";
