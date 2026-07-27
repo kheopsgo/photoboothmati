@@ -98,11 +98,14 @@ function safeFetch(url: string, init?: RequestInit) {
 
 function AdminPage() {
   const { toast } = useToast();
+  const { online } = useBackendHealth();
   const [status, setStatus] = useState<AdminStatus | null>(null);
   const [healthOk, setHealthOk] = useState<boolean | null>(null);
   const [usb, setUsb] = useState<UsbStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+
+  const buildTime = import.meta.env.VITE_BUILD_TIME;
 
   const fetchStatus = useCallback(async () => {
     setLoading(true);
