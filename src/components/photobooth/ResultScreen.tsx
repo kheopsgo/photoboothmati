@@ -418,6 +418,38 @@ export default function ResultScreen() {
 
         <AutoRedirectCountdown seconds={HOME_TIMEOUT_S} onComplete={handleRestart} />
       </div>
+
+      {/* Offscreen deliverable: framed composite baked into a PNG for print/email/QR */}
+      <div
+        aria-hidden
+        style={{ position: "fixed", left: "-10000px", top: 0, width: 1200, pointerEvents: "none", opacity: 1 }}
+      >
+        <div ref={deliverableRef} style={{ width: 1200, background: "#ffffff", padding: 24 }}>
+          {resultImageSrc ? (
+            <PhotoFrame variant="single">
+              <RotatedPortraitImage
+                src={resultImageSrc}
+                alt=""
+                className="w-full aspect-[3/4] rounded-xl"
+              />
+            </PhotoFrame>
+          ) : mode === "four" && photos.length === 4 ? (
+            <PhotoFrame variant="strip">
+              <div className="grid aspect-square grid-cols-2 grid-rows-2 gap-2">
+                {photos.map((photo, i) => (
+                  <div key={i} className="overflow-hidden rounded-lg">
+                    <RotatedPortraitImage
+                      src={photo}
+                      alt=""
+                      className="h-full w-full aspect-[3/4] rounded-lg"
+                    />
+                  </div>
+                ))}
+              </div>
+            </PhotoFrame>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }
