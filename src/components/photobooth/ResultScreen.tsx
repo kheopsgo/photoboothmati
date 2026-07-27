@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useBackendHealth } from "@/contexts/BackendHealthContext";
@@ -11,6 +11,7 @@ import VirtualKeyboard from "./VirtualKeyboard";
 import RotatedPortraitImage from "./RotatedPortraitImage";
 import PhotoFrame from "./PhotoFrame";
 import QRCode from "qrcode";
+import { toPng } from "html-to-image";
 
 type Panel = "none" | "qr" | "email" | "printed" | "share";
 
