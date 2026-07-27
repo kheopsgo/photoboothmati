@@ -3,7 +3,8 @@ import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { sendEmail } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle, AlertCircle, RotateCcw, QrCode } from "lucide-react";
+import { ArrowLeft, CheckCircle, AlertCircle, RotateCcw, QrCode, Loader2 } from "lucide-react";
+import QRCode from "qrcode";
 import VirtualKeyboard from "./VirtualKeyboard";
 
 function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onComplete: () => void }) {
