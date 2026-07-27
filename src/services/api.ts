@@ -356,6 +356,19 @@ function isAbortLikeError(err: unknown): boolean {
   return normalized.includes("abort") || normalized.includes("aborted") || normalized.includes("signal is aborted");
 }
 
+function isNetworkInterruption(err: unknown): boolean {
+  if (isAbortLikeError(err)) return true;
+  const message = err instanceof Error ? err.message : String(err);
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("failed to fetch") ||
+    normalized.includes("networkerror") ||
+    normalized.includes("load failed") ||
+    normalized.includes("connection") ||
+    normalized.includes("econnreset")
+  );
+}
+
 function updateStartedFallback(): UpdateFrontendResponse {
   return {
     success: true,
@@ -394,7 +407,7 @@ export async function updateFrontend(): Promise<UpdateFrontendResponse> {
   try {
     return await Promise.race([request, optimisticStart]);
   } catch (err) {
-    if (isAbortLikeError(err)) {
+    if (isNetworkInterruption(err)) {
       return updateStartedFallback();
     }
     throw err;
