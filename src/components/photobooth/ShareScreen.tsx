@@ -54,11 +54,17 @@ export default function ShareScreen() {
   const [showQr, setShowQr] = useState(false);
   const [fallbackQr, setFallbackQr] = useState<string | null>(null);
   const [qrGenError, setQrGenError] = useState(false);
+  const [sendErrorMessage, setSendErrorMessage] = useState("");
 
   const effectiveQr = qrUrl || fallbackQr;
 
   useEffect(() => {
     if (qrUrl || !finalImage) return;
+    // QR codes cannot encode very long data URLs; only encode http(s) URLs.
+    if (!/^https?:\/\//i.test(finalImage)) {
+      setQrGenError(true);
+      return;
+    }
     let cancelled = false;
     QRCode.toDataURL(finalImage, { width: 512, margin: 1 })
       .then((url) => { if (!cancelled) setFallbackQr(url); })
@@ -73,14 +79,22 @@ export default function ShareScreen() {
       setEmailError("Veuillez entrer une adresse e-mail valide");
       return;
     }
+    if (!finalImage) {
+      setEmailError("Aucune image à envoyer");
+      return;
+    }
     setEmailError("");
+    setSendErrorMessage("");
     setEmailStatus("sending");
 
     try {
-      await sendEmail(sessionId!, email);
+      await sendEmail(email, finalImage);
       setEmailStatus("sent");
       playSuccess();
-    } catch {
+    } catch (err) {
+      setSendErrorMessage(
+        err instanceof Error && err.message ? err.message : "Erreur lors de l'envoi de l'e-mail"
+      );
       setEmailStatus("error");
     }
   };
