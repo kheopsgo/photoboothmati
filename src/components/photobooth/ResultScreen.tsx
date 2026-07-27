@@ -335,9 +335,9 @@ export default function ResultScreen() {
           Nouvelle photo
         </Button>
 
-        {qrUrl && (
+        {effectiveQr && (
           <div className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white border border-primary/20 shadow-glow">
-            <img src={qrUrl} alt="QR Code" className="w-32 h-32 object-contain" />
+            <img src={effectiveQr} alt="QR Code" className="w-32 h-32 object-contain" />
             <p className="text-xs text-muted-foreground font-body">Scannez pour télécharger</p>
           </div>
         )}
