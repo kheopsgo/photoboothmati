@@ -20,6 +20,7 @@ function cacheBust(url: string, nonce: number): string {
 export default function PreviewScreen() {
   const { mode, filter, setFilter, setScreen, captureProgress } = usePhotobooth();
   const { settings } = useSettings();
+  const { online } = useBackendHealth();
   const [streamNonce] = useState(() => Date.now());
   const rawStreamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
   const streamUrl = cacheBust(rawStreamUrl, streamNonce);
