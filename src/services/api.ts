@@ -266,6 +266,7 @@ export async function sendEmail(
       body: JSON.stringify({ email, image }),
     },
     45000
+  );
 
   if (!res.ok) {
     const backendMessage = await extractBackendMessage(res);
