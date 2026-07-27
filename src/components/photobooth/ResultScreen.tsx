@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, QrCode, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera, Share2 } from "lucide-react";
 import VirtualKeyboard from "./VirtualKeyboard";
 import RotatedPortraitImage from "./RotatedPortraitImage";
+import QRCode from "qrcode";
 
 type Panel = "none" | "qr" | "email" | "printed" | "share";
 
@@ -81,6 +82,17 @@ export default function ResultScreen() {
   const { settings } = useSettings();
   const { online } = useBackendHealth();
   const { playSuccess } = useSound({ enabled: settings.soundsEnabled });
+  const [fallbackQr, setFallbackQr] = useState<string | null>(null);
+  const effectiveQr = qrUrl || fallbackQr;
+
+  useEffect(() => {
+    if (qrUrl || !finalImage) return;
+    let cancelled = false;
+    QRCode.toDataURL(finalImage, { width: 512, margin: 1 })
+      .then((url) => { if (!cancelled) setFallbackQr(url); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [qrUrl, finalImage]);
 
   const [panel, setPanel] = useState<Panel>("none");
   const [email, setEmail] = useState("");
@@ -204,10 +216,10 @@ export default function ResultScreen() {
         </button>
 
         <div className="w-[420px] h-[420px] max-w-[60vh] max-h-[60vh] rounded-3xl border-2 border-primary/40 bg-white flex items-center justify-center shadow-glow p-4">
-          {qrUrl ? (
-            <img src={qrUrl} alt="QR Code" className="w-full h-full rounded-lg object-contain" />
+          {effectiveQr ? (
+            <img src={effectiveQr} alt="QR Code" className="w-full h-full rounded-lg object-contain" />
           ) : (
-            <div className="text-muted-foreground/40 text-base">QR code indisponible</div>
+            <div className="text-muted-foreground/40 text-base">Génération du QR code…</div>
           )}
         </div>
 
@@ -323,9 +335,9 @@ export default function ResultScreen() {
           Nouvelle photo
         </Button>
 
-        {qrUrl && (
+        {effectiveQr && (
           <div className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white border border-primary/20 shadow-glow">
-            <img src={qrUrl} alt="QR Code" className="w-32 h-32 object-contain" />
+            <img src={effectiveQr} alt="QR Code" className="w-32 h-32 object-contain" />
             <p className="text-xs text-muted-foreground font-body">Scannez pour télécharger</p>
           </div>
         )}

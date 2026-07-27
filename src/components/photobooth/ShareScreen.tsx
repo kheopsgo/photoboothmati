@@ -3,7 +3,8 @@ import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { sendEmail } from "@/services/api";
 import { useSound } from "@/hooks/useSound";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle, AlertCircle, RotateCcw, QrCode } from "lucide-react";
+import { ArrowLeft, CheckCircle, AlertCircle, RotateCcw, QrCode, Loader2 } from "lucide-react";
+import QRCode from "qrcode";
 import VirtualKeyboard from "./VirtualKeyboard";
 
 function AutoRedirectCountdown({ seconds, onComplete }: { seconds: number; onComplete: () => void }) {
@@ -46,11 +47,24 @@ function SuccessAutoRedirect({ restart, message, detail }: { restart: () => void
 }
 
 export default function ShareScreen() {
-  const { sessionId, qrUrl, emailStatus, setEmailStatus, setScreen, restart } = usePhotobooth();
+  const { sessionId, qrUrl, finalImage, emailStatus, setEmailStatus, setScreen, restart } = usePhotobooth();
   const { playSuccess } = useSound();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [showQr, setShowQr] = useState(false);
+  const [fallbackQr, setFallbackQr] = useState<string | null>(null);
+  const [qrGenError, setQrGenError] = useState(false);
+
+  const effectiveQr = qrUrl || fallbackQr;
+
+  useEffect(() => {
+    if (qrUrl || !finalImage) return;
+    let cancelled = false;
+    QRCode.toDataURL(finalImage, { width: 512, margin: 1 })
+      .then((url) => { if (!cancelled) setFallbackQr(url); })
+      .catch(() => { if (!cancelled) setQrGenError(true); });
+    return () => { cancelled = true; };
+  }, [qrUrl, finalImage]);
 
   const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
@@ -87,14 +101,16 @@ export default function ShareScreen() {
           <div className="w-10 h-px bg-primary/40 mx-auto" />
 
           <div className="w-56 h-56 rounded-2xl border-2 border-border bg-card flex items-center justify-center shadow-md">
-            {qrUrl ? (
+            {effectiveQr ? (
               <img
-                src={qrUrl}
+                src={effectiveQr}
                 alt="QR Code"
                 className="w-48 h-48 rounded-lg"
               />
+            ) : qrGenError ? (
+              <div className="text-muted-foreground/40 text-sm text-center px-4">QR code indisponible</div>
             ) : (
-              <div className="text-muted-foreground/40 text-sm">QR code indisponible</div>
+              <Loader2 className="animate-spin text-muted-foreground/60" size={32} />
             )}
           </div>
 
