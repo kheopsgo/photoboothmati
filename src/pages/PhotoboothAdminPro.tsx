@@ -264,9 +264,19 @@ function AdminPage() {
                     <StatusDot ok={healthOk === true || status?.backend === "ok"} />
                     {status?.backend === "ok" || healthOk === true
                       ? "En ligne"
-                      : healthOk === false
+                      : healthOk === false || online === false
                       ? "Hors ligne"
                       : "—"}
+                  </span>
+                }
+              />
+              <StatBox
+                icon={<Link2 className="h-5 w-5" />}
+                label="Connexion frontend"
+                value={
+                  <span className="flex items-center gap-2">
+                    <StatusDot ok={online === true || online === null} />
+                    {online === true ? "En ligne" : online === false ? "Hors ligne" : "Inconnue"}
                   </span>
                 }
               />
@@ -294,6 +304,18 @@ function AdminPage() {
                 icon={<ImageIcon className="h-5 w-5" />}
                 label="Nombre de photos"
                 value={status?.photosCount != null ? String(status.photosCount) : "—"}
+              />
+              <StatBox
+                icon={<Clock className="h-5 w-5" />}
+                label="Build frontend"
+                value={
+                  buildTime
+                    ? new Date(buildTime).toLocaleString("fr-FR", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })
+                    : "—"
+                }
               />
             </div>
           </CardContent>
