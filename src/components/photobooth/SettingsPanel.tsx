@@ -333,7 +333,7 @@ function UpdateFromGithub() {
       setStatus("success");
       setTimeout(() => {
         window.location.reload();
-      }, 2000);
+      }, res.reloadDelayMs ?? 2000);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Erreur lors de la mise à jour");
       setStatus("error");
