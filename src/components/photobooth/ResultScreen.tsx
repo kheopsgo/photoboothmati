@@ -83,7 +83,7 @@ function Confetti() {
 }
 
 export default function ResultScreen() {
-  const { mode, photos, finalImage, qrUrl, setScreen } = usePhotobooth();
+  const { mode, sessionId, photos, finalImage, qrUrl, setScreen } = usePhotobooth();
   const { settings } = useSettings();
   const { online } = useBackendHealth();
   const { playSuccess } = useSound({ enabled: settings.soundsEnabled });
@@ -147,7 +147,7 @@ export default function ResultScreen() {
     try {
       const imageToSend = finalImage || photos[0];
       if (!imageToSend) throw new Error("Aucune image à envoyer");
-      await sendEmail(email, imageToSend);
+      await sendEmail(email, imageToSend, sessionId);
       setEmailStatus("sent");
       playSuccess();
     } catch (err) {
