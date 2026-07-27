@@ -88,7 +88,7 @@ export default function ShareScreen() {
     setEmailStatus("sending");
 
     try {
-      await sendEmail(email, finalImage);
+      await sendEmail(email, finalImage, sessionId);
       setEmailStatus("sent");
       playSuccess();
     } catch (err) {
