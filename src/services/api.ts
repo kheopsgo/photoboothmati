@@ -25,6 +25,36 @@ export function resolveApiBases(): string[] {
   return [...new Set(bases.map((base) => base.replace(/\/$/, "")))];
 }
 
+/** fetch avec timeout pour éviter les requêtes qui traînent indéfiniment. */
+export async function fetchWithTimeout(
+  input: RequestInfo,
+  init?: RequestInit,
+  timeoutMs = 10000
+): Promise<Response> {
+  const ctrl = new AbortController();
+  const id = window.setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(input, { ...init, signal: ctrl.signal });
+    return res;
+  } finally {
+    window.clearTimeout(id);
+  }
+}
+
+/** Extrait un message d'erreur lisible depuis une réponse non-OK. */
+async function extractBackendMessage(res: Response): Promise<string> {
+  try {
+    const data = await res.json();
+    return data?.message || data?.error || "";
+  } catch {
+    try {
+      return await res.text();
+    } catch {
+      return "";
+    }
+  }
+}
+
 // Backend Flask du Raspberry Pi, résolu dynamiquement depuis la page courante.
 export const API_BASE = resolveApiBase();
 
