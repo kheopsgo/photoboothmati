@@ -113,10 +113,11 @@ export default function PreviewScreen() {
 
         <button
           onClick={() => setScreen("countdown")}
-          className="group relative animate-glow-pulse rounded-3xl bg-primary text-primary-foreground w-full h-[120px] font-display text-2xl font-semibold tracking-wide active:scale-95 transition-transform flex flex-col items-center justify-center gap-1"
+          disabled={online === false}
+          className="group relative animate-glow-pulse rounded-3xl bg-primary text-primary-foreground w-full h-[120px] font-display text-2xl font-semibold tracking-wide active:scale-95 transition-transform flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:animate-none"
         >
           <Camera size={32} />
-          {inSequence ? `Photo ${currentShot}/${totalShots}` : "Prendre la photo"}
+          {online === false ? "Hors ligne" : inSequence ? `Photo ${currentShot}/${totalShots}` : "Prendre la photo"}
         </button>
       </div>
     </div>
