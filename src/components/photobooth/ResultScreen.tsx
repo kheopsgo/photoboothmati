@@ -216,10 +216,10 @@ export default function ResultScreen() {
         </button>
 
         <div className="w-[420px] h-[420px] max-w-[60vh] max-h-[60vh] rounded-3xl border-2 border-primary/40 bg-white flex items-center justify-center shadow-glow p-4">
-          {qrUrl ? (
-            <img src={qrUrl} alt="QR Code" className="w-full h-full rounded-lg object-contain" />
+          {effectiveQr ? (
+            <img src={effectiveQr} alt="QR Code" className="w-full h-full rounded-lg object-contain" />
           ) : (
-            <div className="text-muted-foreground/40 text-base">QR code indisponible</div>
+            <div className="text-muted-foreground/40 text-base">Génération du QR code…</div>
           )}
         </div>
 
