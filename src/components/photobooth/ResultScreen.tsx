@@ -80,7 +80,6 @@ function Confetti() {
 export default function ResultScreen() {
   const { mode, photos, finalImage, qrUrl, setScreen } = usePhotobooth();
   const { settings } = useSettings();
-  const { online } = useBackendHealth();
   const { playSuccess } = useSound({ enabled: settings.soundsEnabled });
   const [fallbackQr, setFallbackQr] = useState<string | null>(null);
   const effectiveQr = qrUrl || fallbackQr;
