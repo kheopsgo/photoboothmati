@@ -94,11 +94,15 @@ export async function takePhoto(
   mode: PhotoMode,
   filter: PhotoFilter
 ): Promise<TakePhotoResponse> {
-  const res = await fetchWithTimeout(`${API_BASE}/take-photo`, undefined, 15000), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ mode, filter }),
-  });
+  const res = await fetchWithTimeout(
+    `${API_BASE}/take-photo`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode, filter }),
+    },
+    15000
+  );
   if (!res.ok) throw new Error("Erreur lors de la prise de photo");
   const data = await res.json();
   return {
@@ -126,21 +130,25 @@ export async function takeSinglePhoto(
 ): Promise<TakeSinglePhotoResponse> {
   const applyFrame = options?.applyFrame ?? true;
   const partOfGrid = options?.partOfGrid ?? false;
-  const res = await fetchWithTimeout(`${API_BASE}/take-photo`, undefined, 15000), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      mode: "single",
-      filter,
-      sessionId: sessionId ?? undefined,
-      // Hints for the backend: when this shot is part of a 4-photo grid,
-      // we want the raw (unframed) photo so the frame is applied only once
-      // on the final 2x2 composition by /create-grid.
-      applyFrame,
-      partOfGrid,
-      raw: !applyFrame,
-    }),
-  });
+  const res = await fetchWithTimeout(
+    `${API_BASE}/take-photo`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "single",
+        filter,
+        sessionId: sessionId ?? undefined,
+        // Hints for the backend: when this shot is part of a 4-photo grid,
+        // we want the raw (unframed) photo so the frame is applied only once
+        // on the final 2x2 composition by /create-grid.
+        applyFrame,
+        partOfGrid,
+        raw: !applyFrame,
+      }),
+    },
+    15000
+  );
   if (!res.ok) throw new Error("Erreur lors de la prise de photo");
   const data = await res.json();
   // Backend may return { photo } or { photos: [..], finalImage }
@@ -165,11 +173,15 @@ export async function createGrid(
   const normalized = photos.map((p) =>
     p.startsWith(API_BASE) ? p.slice(API_BASE.length) : p
   );
-  const res = await fetchWithTimeout(`${API_BASE}/create-grid`, undefined, 30000), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ photos: normalized, filter, sessionId: sessionId ?? undefined }),
-  });
+  const res = await fetchWithTimeout(
+    `${API_BASE}/create-grid`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ photos: normalized, filter, sessionId: sessionId ?? undefined }),
+    },
+    30000
+  );
   if (!res.ok) throw new Error("Erreur lors de la création du montage");
   const data = await res.json();
   return {
@@ -183,7 +195,11 @@ export async function createGrid(
 export async function getLatestPhoto(
   sessionId: string
 ): Promise<LatestPhotoResponse> {
-  const res = await fetchWithTimeout(`${API_BASE}/latest-photo?sessionId=${sessionId}`);
+  const res = await fetchWithTimeout(
+    `${API_BASE}/latest-photo?sessionId=${sessionId}`,
+    undefined,
+    10000
+  );
   if (!res.ok) throw new Error("Erreur lors de la récupération");
   const data = await res.json();
   return {
@@ -210,19 +226,9 @@ export interface WifiNetworksResponse {
 }
 
 export async function getWifiNetworks(): Promise<WifiNetworksResponse> {
-  const res = await fetchWithTimeout(`${API_BASE}/wifi-networks`, undefined, 45000));
+  const res = await fetchWithTimeout(`${API_BASE}/wifi-networks`, undefined, 45000);
   if (!res.ok) {
-    let backendMessage = "";
-    try {
-      const data = await res.json();
-      backendMessage = data?.message || data?.error || "";
-    } catch {
-      try {
-        backendMessage = await res.text();
-      } catch {
-        // ignore
-      }
-    }
+    const backendMessage = await extractBackendMessage(res);
     throw new Error(backendMessage || "Erreur lors du chargement des réseaux Wi-Fi");
   }
   return res.json();
@@ -232,23 +238,17 @@ export async function configureWifi(
   ssid: string,
   password: string
 ): Promise<WifiConfigResponse> {
-  const res = await fetchWithTimeout(`${API_BASE}/wifi-config`, undefined, 45000), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ssid, password }),
-  });
+  const res = await fetchWithTimeout(
+    `${API_BASE}/wifi-config`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ssid, password }),
+    },
+    45000
+  );
   if (!res.ok) {
-    let backendMessage = "";
-    try {
-      const data = await res.json();
-      backendMessage = data?.message || data?.error || "";
-    } catch {
-      try {
-        backendMessage = await res.text();
-      } catch {
-        // ignore
-      }
-    }
+    const backendMessage = await extractBackendMessage(res);
     throw new Error(backendMessage || "Erreur lors de la connexion Wi-Fi");
   }
   return res.json();
@@ -258,23 +258,17 @@ export async function sendEmail(
   email: string,
   image: string
 ): Promise<SendEmailResponse> {
-  const res = await fetchWithTimeout(`${API_BASE}/send-email`, undefined, 10000), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, image }),
-  });
+  const res = await fetchWithTimeout(
+    `${API_BASE}/send-email`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, image }),
+    },
+    10000
+  );
   if (!res.ok) {
-    let backendMessage = "";
-    try {
-      const data = await res.json();
-      backendMessage = data?.message || data?.error || "";
-    } catch {
-      try {
-        backendMessage = await res.text();
-      } catch {
-        // ignore
-      }
-    }
+    const backendMessage = await extractBackendMessage(res);
     throw new Error(backendMessage || "Erreur lors de l'envoi de l'e-mail");
   }
   return res.json();
@@ -291,46 +285,34 @@ export interface FrameUploadResponse {
 }
 
 export async function uploadFrame(imageDataUrl: string): Promise<FrameUploadResponse> {
-  const res = await fetchWithTimeout(`${API_BASE}/frame-upload`, undefined, 30000), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image: imageDataUrl }),
-  });
+  const res = await fetchWithTimeout(
+    `${API_BASE}/frame-upload`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: imageDataUrl }),
+    },
+    30000
+  );
   if (!res.ok) {
-    let backendMessage = "";
-    try {
-      const data = await res.json();
-      backendMessage = data?.message || data?.error || "";
-    } catch {
-      try {
-        backendMessage = await res.text();
-      } catch {
-        // ignore
-      }
-    }
+    const backendMessage = await extractBackendMessage(res);
     throw new Error(backendMessage || "Erreur lors de l'enregistrement du cadre");
   }
   return res.json();
 }
 
 export async function printPhoto(image: string): Promise<PrintPhotoResponse> {
-  const res = await fetchWithTimeout(`${API_BASE}/print-photo`, undefined, 10000), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ image }),
-  });
+  const res = await fetchWithTimeout(
+    `${API_BASE}/print-photo`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image }),
+    },
+    10000
+  );
   if (!res.ok) {
-    let backendMessage = "";
-    try {
-      const data = await res.json();
-      backendMessage = data?.message || data?.error || "";
-    } catch {
-      try {
-        backendMessage = await res.text();
-      } catch {
-        // ignore
-      }
-    }
+    const backendMessage = await extractBackendMessage(res);
     throw new Error(backendMessage || "Erreur lors de l'impression");
   }
   return res.json();
@@ -347,44 +329,32 @@ export interface TrashPhotosResponse {
 }
 
 export async function trashPhotos(): Promise<TrashPhotosResponse> {
-  const res = await fetchWithTimeout(`${API_BASE}/trash-photos`, undefined, 10000), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  });
+  const res = await fetchWithTimeout(
+    `${API_BASE}/trash-photos`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    },
+    10000
+  );
   if (!res.ok) {
-    let backendMessage = "";
-    try {
-      const data = await res.json();
-      backendMessage = data?.message || data?.error || "";
-    } catch {
-      try {
-        backendMessage = await res.text();
-      } catch {
-        // ignore
-      }
-    }
+    const backendMessage = await extractBackendMessage(res);
     throw new Error(backendMessage || "Erreur lors de la mise à la corbeille");
   }
   return res.json();
 }
 
 export async function updateFrontend(): Promise<UpdateFrontendResponse> {
-  const res = await fetchWithTimeout(`${API_BASE}/update-frontend`, undefined, 30000), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  });
+  const res = await fetchWithTimeout(
+    `${API_BASE}/update-frontend`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    },
+    30000
+  );
   if (!res.ok) {
-    let backendMessage = "";
-    try {
-      const data = await res.json();
-      backendMessage = data?.message || data?.error || "";
-    } catch {
-      try {
-        backendMessage = await res.text();
-      } catch {
-        // ignore
-      }
-    }
+    const backendMessage = await extractBackendMessage(res);
     throw new Error(backendMessage || "Erreur lors de la mise à jour depuis GitHub");
   }
   return res.json();
@@ -396,23 +366,23 @@ export interface AppConfig {
 }
 
 export async function getConfig(): Promise<AppConfig> {
-  const res = await fetchWithTimeout(`${API_BASE}/config`, undefined, 10000));
+  const res = await fetchWithTimeout(`${API_BASE}/config`, undefined, 10000);
   if (!res.ok) throw new Error("Erreur lors du chargement de la configuration");
   return res.json();
 }
 
 export async function saveConfig(config: Partial<AppConfig>): Promise<AppConfig> {
-  const res = await fetchWithTimeout(`${API_BASE}/config`, undefined, 10000), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(config),
-  });
+  const res = await fetchWithTimeout(
+    `${API_BASE}/config`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(config),
+    },
+    10000
+  );
   if (!res.ok) {
-    let backendMessage = "";
-    try {
-      const data = await res.json();
-      backendMessage = data?.message || data?.error || "";
-    } catch { /* ignore */ }
+    const backendMessage = await extractBackendMessage(res);
     throw new Error(backendMessage || "Erreur lors de la sauvegarde de la configuration");
   }
   return res.json();
