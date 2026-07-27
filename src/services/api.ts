@@ -256,23 +256,55 @@ export async function configureWifi(
 
 export async function sendEmail(
   email: string,
-  image: string
+  image: string,
+  sessionId?: string | null
 ): Promise<SendEmailResponse> {
-  const res = await fetchWithTimeout(
-    `${API_BASE}/send-email`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, image }),
-    },
-    45000
-  );
+  const payloads: Record<string, string>[] = [
+    { email, image },
+  ];
 
-  if (!res.ok) {
-    const backendMessage = await extractBackendMessage(res);
-    throw new Error(backendMessage || "Erreur lors de l'envoi de l'e-mail");
+  if (sessionId) {
+    payloads.push(
+      { email, image, sessionId },
+      { email, image, session_id: sessionId },
+      // Compatibilité avec l'ancien backend Raspberry qui envoyait depuis l'ID de session.
+      { email, sessionId },
+      { email, session_id: sessionId },
+      // Compatibilité avec l'ancien appel frontend avant correction des arguments.
+      { email: sessionId, image: email }
+    );
   }
-  return res.json();
+
+  let lastMessage = "";
+
+  for (const payload of payloads) {
+    try {
+      const res = await fetchWithTimeout(
+        `${API_BASE}/send-email`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+        45000
+      );
+
+      if (!res.ok) {
+        lastMessage = await extractBackendMessage(res);
+        continue;
+      }
+
+      try {
+        return await res.json();
+      } catch {
+        return { success: true, message: "E-mail envoyé" };
+      }
+    } catch (err) {
+      lastMessage = err instanceof Error && err.message ? err.message : lastMessage;
+    }
+  }
+
+  throw new Error(lastMessage || "Erreur lors de l'envoi de l'e-mail");
 }
 
 export interface PrintPhotoResponse {
