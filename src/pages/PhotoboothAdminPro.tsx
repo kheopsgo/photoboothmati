@@ -201,8 +201,14 @@ function AdminPage() {
   const handleUpdate = async () => {
     setBusy("update");
     try {
-      await updateFrontend();
-      toast({ title: "Mise à jour lancée", description: "Le frontend est en cours de mise à jour." });
+      const res = await updateFrontend();
+      toast({
+        title: "Mise à jour lancée",
+        description: res.message || "Le frontend est en cours de mise à jour.",
+      });
+      window.setTimeout(() => {
+        window.location.reload();
+      }, res.reloadDelayMs ?? 3000);
     } catch (e) {
       toast({ title: "Échec", description: e instanceof Error ? e.message : "Erreur", variant: "destructive" });
     } finally {
