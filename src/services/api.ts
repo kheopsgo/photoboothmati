@@ -310,7 +310,7 @@ export async function printPhoto(image: string): Promise<PrintPhotoResponse> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image }),
     },
-    10000
+    60000
   );
   if (!res.ok) {
     const backendMessage = await extractBackendMessage(res);
