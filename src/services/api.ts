@@ -378,14 +378,26 @@ export async function trashPhotos(): Promise<TrashPhotosResponse> {
 }
 
 export async function updateFrontend(): Promise<UpdateFrontendResponse> {
-  const res = await fetchWithTimeout(
-    `${API_BASE}/update-frontend`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    },
-    30000
-  );
+  let res: Response;
+  try {
+    res = await fetchWithTimeout(
+      `${API_BASE}/update-frontend`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      },
+      // Un git pull + npm build sur Raspberry peut prendre plusieurs minutes.
+      300000
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/abort/i.test(msg)) {
+      throw new Error(
+        "La mise à jour prend plus de temps que prévu. Elle continue peut-être en arrière-plan sur le Raspberry — patientez 1-2 min puis rechargez la page."
+      );
+    }
+    throw new Error(msg || "Erreur lors de la mise à jour depuis GitHub");
+  }
   if (!res.ok) {
     const backendMessage = await extractBackendMessage(res);
     throw new Error(backendMessage || "Erreur lors de la mise à jour depuis GitHub");
