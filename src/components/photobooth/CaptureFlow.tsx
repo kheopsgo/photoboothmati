@@ -18,7 +18,6 @@ export default function CaptureFlow() {
     setQrUrl,
   } = usePhotobooth();
   const [error, setError] = useState<string | null>(null);
-  const [assembling, setAssembling] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,32 +40,31 @@ export default function CaptureFlow() {
             return;
           }
 
-          setAssembling(true);
+          // Affichage optimiste : on montre immédiatement un collage local,
+          // puis on met à jour en arrière-plan avec le rendu backend (cadre + QR).
           const allPhotos = photos.concat(shot.photo);
-          let finalImage = "";
-          let resultSessionId = shot.sessionId;
-          let resultPhotos = allPhotos;
-          let resultQr: string | undefined;
+          let localCollage = "";
           try {
-            const result = await createGrid(allPhotos, filter, shot.sessionId);
-            resultSessionId = result.sessionId;
-            resultPhotos = result.photos && result.photos.length ? result.photos : allPhotos;
-            finalImage = result.finalImage || "";
-            resultQr = result.qrUrl;
-          } catch (e) {
-            // Backend indisponible : on continue avec le collage local
-          }
-          if (!finalImage) {
-            try {
-              finalImage = await buildCollage2x2(allPhotos);
-            } catch {
-              finalImage = allPhotos[0] || "";
-            }
+            localCollage = await buildCollage2x2(allPhotos);
+          } catch {
+            localCollage = allPhotos[0] || "";
           }
           if (cancelled) return;
-          if (resultQr) setQrUrl(resultQr);
-          setCaptureResult(resultSessionId, resultPhotos, finalImage);
+          setCaptureResult(shot.sessionId, allPhotos, localCollage);
           setScreen("result");
+
+          // Backend en tâche de fond — met à jour l'image finale et le QR quand prêt
+          createGrid(allPhotos, filter, shot.sessionId)
+            .then((result) => {
+              if (cancelled) return;
+              const finalImg = result.finalImage || localCollage;
+              const finalPhotos = result.photos && result.photos.length ? result.photos : allPhotos;
+              setCaptureResult(result.sessionId || shot.sessionId, finalPhotos, finalImg);
+              if (result.qrUrl) setQrUrl(result.qrUrl);
+            })
+            .catch(() => {
+              // On garde le collage local si le backend échoue
+            });
         } else {
           setCaptureResult(shot.sessionId, [shot.photo], shot.photo);
           setScreen("result");
