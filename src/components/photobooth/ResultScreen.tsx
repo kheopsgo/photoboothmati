@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, QrCode, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera, Share2 } from "lucide-react";
 import VirtualKeyboard from "./VirtualKeyboard";
 import RotatedPortraitImage from "./RotatedPortraitImage";
+import SmartOrientedImage from "./SmartOrientedImage";
 import QRCode from "qrcode";
 
 type Panel = "none" | "qr" | "email" | "printed" | "share";
@@ -184,10 +185,10 @@ export default function ResultScreen() {
 
   const photoContent = resultImageSrc ? (
     <div className="relative h-full w-full flex items-center justify-center">
-      <img
+      <SmartOrientedImage
         src={resultImageSrc}
         alt="Votre photo"
-        className="h-full max-h-full w-auto max-w-full object-contain rounded-xl animate-polaroid-reveal"
+        className="max-h-full max-w-full rounded-xl animate-polaroid-reveal"
       />
       {watermark && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-md border border-primary/20">
@@ -208,6 +209,7 @@ export default function ResultScreen() {
       ))}
     </div>
   ) : null;
+
 
 
   if (panel === "qr") {
