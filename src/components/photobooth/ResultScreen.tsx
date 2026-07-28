@@ -184,10 +184,10 @@ export default function ResultScreen() {
 
   const photoContent = resultImageSrc ? (
     <div className="relative h-full w-full flex items-center justify-center">
-      <RotatedPortraitImage
+      <img
         src={resultImageSrc}
         alt="Votre photo"
-        className="h-full max-h-full w-auto aspect-[3/4] rounded-xl animate-polaroid-reveal"
+        className="h-full max-h-full w-auto max-w-full object-contain rounded-xl animate-polaroid-reveal"
       />
       {watermark && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-md border border-primary/20">
@@ -208,6 +208,7 @@ export default function ResultScreen() {
       ))}
     </div>
   ) : null;
+
 
   if (panel === "qr") {
     return (
