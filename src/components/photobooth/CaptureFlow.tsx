@@ -102,9 +102,7 @@ export default function CaptureFlow() {
     <div className="flex flex-col items-center justify-center min-h-screen gap-6 animate-float-in">
       <Loader2 size={48} className="text-primary animate-spin" />
       <p className="font-display text-2xl text-muted-foreground text-center px-6">
-        {assembling
-          ? "Création du montage final…"
-          : mode === "four"
+        {mode === "four"
           ? `Capture de la photo ${currentShot}/${totalShots}…`
           : "Préparation de votre photo…"}
       </p>
