@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { createGrid, takeSinglePhoto } from "@/services/api";
 import { consumePendingCapture } from "@/services/captureQueue";
+import { buildCollage2x2 } from "@/services/collage";
 import { Loader2 } from "lucide-react";
 
 export default function CaptureFlow() {
@@ -41,10 +42,30 @@ export default function CaptureFlow() {
           }
 
           setAssembling(true);
-          const result = await createGrid(photos.concat(shot.photo), filter, shot.sessionId);
+          const allPhotos = photos.concat(shot.photo);
+          let finalImage = "";
+          let resultSessionId = shot.sessionId;
+          let resultPhotos = allPhotos;
+          let resultQr: string | undefined;
+          try {
+            const result = await createGrid(allPhotos, filter, shot.sessionId);
+            resultSessionId = result.sessionId;
+            resultPhotos = result.photos && result.photos.length ? result.photos : allPhotos;
+            finalImage = result.finalImage || "";
+            resultQr = result.qrUrl;
+          } catch (e) {
+            // Backend indisponible : on continue avec le collage local
+          }
+          if (!finalImage) {
+            try {
+              finalImage = await buildCollage2x2(allPhotos);
+            } catch {
+              finalImage = allPhotos[0] || "";
+            }
+          }
           if (cancelled) return;
-          if (result.qrUrl) setQrUrl(result.qrUrl);
-          setCaptureResult(result.sessionId, result.photos, result.finalImage);
+          if (resultQr) setQrUrl(resultQr);
+          setCaptureResult(resultSessionId, resultPhotos, finalImage);
           setScreen("result");
         } else {
           setCaptureResult(shot.sessionId, [shot.photo], shot.photo);
