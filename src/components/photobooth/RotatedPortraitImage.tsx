@@ -1,13 +1,6 @@
 import { useState } from "react";
 import { Camera } from "lucide-react";
 
-/**
- * Affiche une image paysage en la pivotant de 90° vers la gauche
- * et en la rognant pour remplir un cadre portrait (3:4).
- *
- * Utilisation :
- *   <RotatedPortraitImage src={streamUrl} alt="..." mirrored className="aspect-[3/4] rounded-2xl" />
- */
 interface RotatedPortraitImageProps {
   src: string;
   alt: string;
@@ -17,6 +10,10 @@ interface RotatedPortraitImageProps {
   onError?: React.ReactEventHandler<HTMLImageElement>;
 }
 
+/**
+ * Pivote l'image de -90° et la rogne pour remplir un cadre portrait.
+ * Le parent doit avoir une taille définie (width + height explicites via aspect-ratio + hauteur).
+ */
 export default function RotatedPortraitImage({
   src,
   alt,
@@ -45,16 +42,19 @@ export default function RotatedPortraitImage({
   }
 
   return (
-    <div className={`relative overflow-hidden ${className}`} style={style}>
-      <div className="absolute top-1/2 left-1/2 h-full w-auto -translate-x-1/2 -translate-y-1/2 -rotate-90">
-        <img
-          src={src}
-          alt={alt}
-          className="block h-full w-auto max-w-none max-h-none object-cover"
-          style={{ transform: mirrored ? "scaleX(-1)" : undefined }}
-          onError={handleError}
-        />
-      </div>
+    <div className={`relative overflow-hidden bg-black ${className}`} style={style}>
+      <img
+        src={src}
+        alt={alt}
+        onError={handleError}
+        className="absolute top-1/2 left-1/2 block max-w-none"
+        style={{
+          height: "100%",
+          width: "auto",
+          transform: `translate(-50%, -50%) rotate(-90deg)${mirrored ? " scaleX(-1)" : ""}`,
+          transformOrigin: "center center",
+        }}
+      />
     </div>
   );
 }

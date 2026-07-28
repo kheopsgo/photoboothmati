@@ -185,13 +185,16 @@ export default function ResultScreen() {
 
   const photoContent = mode === "four" && photos.length >= 4 ? (
     <div className="relative flex h-full max-h-full w-full max-w-full items-center justify-center">
-      <div className="grid h-full max-h-full w-auto aspect-[3/4] grid-cols-2 grid-rows-2 gap-2 overflow-hidden rounded-xl animate-polaroid-reveal">
+      <div
+        className="grid grid-cols-2 grid-rows-2 gap-2 overflow-hidden rounded-xl animate-polaroid-reveal"
+        style={{ height: "100%", aspectRatio: "3 / 4" }}
+      >
         {photos.slice(0, 4).map((photo, i) => (
-          <div key={`${photo}-${i}`} className="flex min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-lg bg-muted/40">
+          <div key={`${photo}-${i}`} className="relative min-h-0 min-w-0 overflow-hidden rounded-lg bg-muted/40">
             <RotatedPortraitImage
               src={photo}
               alt={`Photo ${i + 1}`}
-              className="h-full w-full rounded-lg"
+              className="absolute inset-0 h-full w-full rounded-lg"
             />
           </div>
         ))}
@@ -207,7 +210,8 @@ export default function ResultScreen() {
       <RotatedPortraitImage
         src={singlePreviewSrc}
         alt="Votre photo"
-        className="h-full max-h-full w-auto aspect-[3/4] rounded-xl animate-polaroid-reveal"
+        className="rounded-xl animate-polaroid-reveal"
+        style={{ height: "100%", aspectRatio: "3 / 4" }}
       />
       {watermark && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-md border border-primary/20">
@@ -216,6 +220,7 @@ export default function ResultScreen() {
       )}
     </div>
   ) : null;
+
 
 
 
