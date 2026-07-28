@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Mail, QrCode, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera, Share2 } from "lucide-react";
 import VirtualKeyboard from "./VirtualKeyboard";
 import RotatedPortraitImage from "./RotatedPortraitImage";
-import SmartOrientedImage from "./SmartOrientedImage";
 import QRCode from "qrcode";
 
 type Panel = "none" | "qr" | "email" | "printed" | "share";
@@ -179,34 +178,42 @@ export default function ResultScreen() {
   };
 
   const resultImageSrc = finalImage || photos[0];
+  const singlePreviewSrc = photos[0] || finalImage;
   const watermark = settings.showEventWatermark
     ? `${settings.eventConfig.title}${settings.eventConfig.subtitle ? ` — ${settings.eventConfig.subtitle}` : ""}`
     : "";
 
-  const photoContent = resultImageSrc ? (
-    <div className="relative h-full w-full flex items-center justify-center">
-      <SmartOrientedImage
-        src={resultImageSrc}
-        alt="Votre photo"
-        className="max-h-full max-w-full rounded-xl animate-polaroid-reveal"
-      />
+  const photoContent = mode === "four" && photos.length >= 4 ? (
+    <div className="relative flex h-full max-h-full w-full max-w-full items-center justify-center">
+      <div className="grid h-full max-h-full w-auto aspect-[3/4] grid-cols-2 grid-rows-2 gap-2 overflow-hidden rounded-xl animate-polaroid-reveal">
+        {photos.slice(0, 4).map((photo, i) => (
+          <div key={`${photo}-${i}`} className="flex min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-lg bg-muted/40">
+            <RotatedPortraitImage
+              src={photo}
+              alt={`Photo ${i + 1}`}
+              className="h-full w-full rounded-lg"
+            />
+          </div>
+        ))}
+      </div>
       {watermark && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-md border border-primary/20">
           <p className="font-body text-xs text-foreground/80 whitespace-nowrap">{watermark}</p>
         </div>
       )}
     </div>
-  ) : mode === "four" ? (
-    <div className="grid h-full max-h-full max-w-full aspect-square grid-cols-2 grid-rows-2 gap-2">
-      {photos.map((photo, i) => (
-        <div key={i} className="flex min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-lg bg-muted/40">
-          <RotatedPortraitImage
-            src={photo}
-            alt={`Photo ${i + 1}`}
-            className="h-full max-h-full w-auto aspect-[3/4] rounded-lg"
-          />
+  ) : singlePreviewSrc ? (
+    <div className="relative flex h-full max-h-full w-full max-w-full items-center justify-center">
+      <RotatedPortraitImage
+        src={singlePreviewSrc}
+        alt="Votre photo"
+        className="h-full max-h-full w-auto aspect-[3/4] rounded-xl animate-polaroid-reveal"
+      />
+      {watermark && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-md border border-primary/20">
+          <p className="font-body text-xs text-foreground/80 whitespace-nowrap">{watermark}</p>
         </div>
-      ))}
+      )}
     </div>
   ) : null;
 
