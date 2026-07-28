@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { createGrid, takeSinglePhoto } from "@/services/api";
 import { consumePendingCapture } from "@/services/captureQueue";
+import { buildCollage2x2 } from "@/services/collage";
 import { Loader2 } from "lucide-react";
 
 export default function CaptureFlow() {
