@@ -1,11 +1,6 @@
 import { useState } from "react";
 import { Camera } from "lucide-react";
 
-/**
- * Affiche une image (paysage) pivotée de 90° vers la gauche
- * et rognée pour remplir le cadre du parent (typiquement portrait 3:4).
- * Le parent doit avoir une taille définie (width + height).
- */
 interface RotatedPortraitImageProps {
   src: string;
   alt: string;
@@ -15,6 +10,10 @@ interface RotatedPortraitImageProps {
   onError?: React.ReactEventHandler<HTMLImageElement>;
 }
 
+/**
+ * Pivote l'image de -90° et la rogne pour remplir un cadre portrait.
+ * Le parent doit avoir une taille définie (width + height explicites via aspect-ratio + hauteur).
+ */
 export default function RotatedPortraitImage({
   src,
   alt,
@@ -42,14 +41,8 @@ export default function RotatedPortraitImage({
     );
   }
 
-  // On pivote l'image de -90°. Pour qu'elle recouvre entièrement un cadre portrait,
-  // on la dimensionne pour que sa hauteur (avant rotation) == largeur du cadre,
-  // et que sa largeur (avant rotation) == hauteur du cadre. object-cover fait le crop.
   return (
-    <div
-      className={`relative overflow-hidden bg-black ${className}`}
-      style={style}
-    >
+    <div className={`relative overflow-hidden bg-black ${className}`} style={style}>
       <img
         src={src}
         alt={alt}
@@ -57,8 +50,7 @@ export default function RotatedPortraitImage({
         className="absolute top-1/2 left-1/2 block max-w-none"
         style={{
           height: "100%",
-          width: "100%",
-          objectFit: "cover",
+          width: "auto",
           transform: `translate(-50%, -50%) rotate(-90deg)${mirrored ? " scaleX(-1)" : ""}`,
           transformOrigin: "center center",
         }}
