@@ -183,11 +183,14 @@ export default function ResultScreen() {
     : "";
 
   // Le backend est l'unique source de vérité : on affiche directement finalImage.
+  // Rotation de 90° dans le sens contraire des aiguilles d'une montre pour orienter
+  // correctement le rendu final issu de la caméra paysage.
   const photoContent = resultImageSrc ? (
     <div className="relative flex h-full max-h-full w-full max-w-full items-center justify-center">
       <FinalImage
         src={resultImageSrc}
         alt="Votre photo"
+        forceRotate
         className="animate-polaroid-reveal rounded-xl"
         style={{ height: "100%", maxHeight: "100%", maxWidth: "100%" }}
       />
