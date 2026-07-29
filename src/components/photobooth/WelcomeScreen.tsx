@@ -4,7 +4,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { useSound } from "@/hooks/useSound";
 import { hapticMedium } from "@/lib/haptics";
-import { Settings, Camera, Sparkles } from "lucide-react";
+import { Settings, Camera, Sparkles, RefreshCw } from "lucide-react";
 import SettingsPanel from "./SettingsPanel";
 import PinPrompt from "./PinPrompt";
 import { enterFullscreen } from "@/lib/fullscreen";
