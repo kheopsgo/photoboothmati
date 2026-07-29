@@ -4,7 +4,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { useSound } from "@/hooks/useSound";
 import { hapticMedium } from "@/lib/haptics";
-import { Settings, Camera, Sparkles } from "lucide-react";
+import { Settings, Camera, Sparkles, RefreshCw } from "lucide-react";
 import SettingsPanel from "./SettingsPanel";
 import PinPrompt from "./PinPrompt";
 import { enterFullscreen } from "@/lib/fullscreen";
@@ -127,6 +127,15 @@ export default function WelcomeScreen() {
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full bg-primary/10 blur-3xl" />
       </div>
+
+      <button
+        onClick={() => window.location.reload()}
+        className="absolute top-5 left-5 z-20 w-12 h-12 rounded-full bg-card/60 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground/60 hover:text-primary hover:border-primary/50 transition-all"
+        aria-label="Rafraîchir la page"
+      >
+        <RefreshCw size={20} />
+      </button>
+
 
       {!settings.lockedMode && (
         <button
