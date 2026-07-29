@@ -1,9 +1,10 @@
+import { useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { getStreamUrl } from "@/services/cameraStream";
-import { ArrowLeft, Camera } from "lucide-react";
-import type { PhotoFilter } from "@/services/api";
+import { ArrowLeft, Camera, Focus } from "lucide-react";
+import { triggerAutofocus, type PhotoFilter } from "@/services/api";
 import RotatedPortraitImage from "./RotatedPortraitImage";
 
 const filters: { id: PhotoFilter; label: string; cssFilter: string }[] = [
