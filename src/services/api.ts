@@ -432,3 +432,36 @@ export async function saveConfig(config: Partial<AppConfig>): Promise<AppConfig>
   }
   return res.json();
 }
+
+export interface StorageInfoResponse {
+  localPath: string;
+  photoCount?: number;
+  freeGb?: number;
+  totalGb?: number;
+}
+
+export interface UsbStatusResponse {
+  connected: boolean;
+  freeGb?: number;
+  totalGb?: number;
+  photoCount?: number;
+  error?: string;
+}
+
+export async function getStorageInfo(): Promise<StorageInfoResponse> {
+  const res = await fetchWithTimeout(`${API_BASE}/storage-info`, undefined, 10000);
+  if (!res.ok) {
+    const backendMessage = await extractBackendMessage(res);
+    throw new Error(backendMessage || "Erreur lors du chargement des informations de stockage");
+  }
+  return res.json();
+}
+
+export async function getUsbStatus(): Promise<UsbStatusResponse> {
+  const res = await fetchWithTimeout(`${API_BASE}/usb-status`, undefined, 10000);
+  if (!res.ok) {
+    const backendMessage = await extractBackendMessage(res);
+    throw new Error(backendMessage || "Erreur lors du chargement du statut USB");
+  }
+  return res.json();
+}
