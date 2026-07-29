@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { createGrid, takeSinglePhoto } from "@/services/api";
 import { consumePendingCapture } from "@/services/captureQueue";
-import { buildCollage2x2 } from "@/services/collage";
 import { Loader2 } from "lucide-react";
 
 export default function CaptureFlow() {
@@ -18,8 +17,13 @@ export default function CaptureFlow() {
     setQrUrl,
   } = usePhotobooth();
   const [error, setError] = useState<string | null>(null);
+  const [assembling, setAssembling] = useState(false);
+  // Garde anti double-montage (StrictMode / remount Chromium)
+  const startedRef = useRef(false);
 
   useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
     let cancelled = false;
 
     async function run() {
@@ -40,37 +44,24 @@ export default function CaptureFlow() {
             return;
           }
 
-          // Affichage optimiste : on montre immédiatement un collage local,
-          // puis on met à jour en arrière-plan avec le rendu backend (cadre + QR).
+          // Le backend est l'unique source de vérité pour le montage 2x2.
+          setAssembling(true);
           const allPhotos = photos.concat(shot.photo);
-          let localCollage = "";
-          try {
-            localCollage = await buildCollage2x2(allPhotos);
-          } catch {
-            localCollage = allPhotos[0] || "";
-          }
+          const result = await createGrid(allPhotos, filter, shot.sessionId);
           if (cancelled) return;
-          setCaptureResult(shot.sessionId, allPhotos, localCollage);
-          setScreen("result");
 
-          // Backend en tâche de fond — met à jour l'image finale et le QR quand prêt
-          createGrid(allPhotos, filter, shot.sessionId)
-            .then((result) => {
-              if (cancelled) return;
-              const finalImg = result.finalImage || localCollage;
-              const finalPhotos = result.photos && result.photos.length ? result.photos : allPhotos;
-              setCaptureResult(result.sessionId || shot.sessionId, finalPhotos, finalImg);
-              if (result.qrUrl) setQrUrl(result.qrUrl);
-            })
-            .catch(() => {
-              // On garde le collage local si le backend échoue
-            });
+          const finalImg = result.finalImage || allPhotos[0];
+          const finalPhotos = result.photos && result.photos.length ? result.photos : allPhotos;
+          setCaptureResult(result.sessionId || shot.sessionId, finalPhotos, finalImg);
+          if (result.qrUrl) setQrUrl(result.qrUrl);
+          setScreen("result");
         } else {
           setCaptureResult(shot.sessionId, [shot.photo], shot.photo);
           setScreen("result");
         }
       } catch (err) {
         if (!cancelled) {
+          setAssembling(false);
           setError("Erreur lors de la prise de photo. Veuillez réessayer.");
         }
       }
@@ -80,6 +71,7 @@ export default function CaptureFlow() {
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   if (error) {
     return (
@@ -102,10 +94,13 @@ export default function CaptureFlow() {
     <div className="flex flex-col items-center justify-center min-h-screen gap-6 animate-float-in">
       <Loader2 size={48} className="text-primary animate-spin" />
       <p className="font-display text-2xl text-muted-foreground text-center px-6">
-        {mode === "four"
-          ? `Capture de la photo ${currentShot}/${totalShots}…`
-          : "Préparation de votre photo…"}
+        {assembling
+          ? "Création de votre montage…"
+          : mode === "four"
+            ? `Capture de la photo ${currentShot}/${totalShots}…`
+            : "Préparation de votre photo…"}
       </p>
+
     </div>
   );
 }
