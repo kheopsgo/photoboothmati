@@ -76,6 +76,7 @@ export default function FinalImage({
           return;
         }
         setLandscape(img.naturalWidth > img.naturalHeight);
+        setDims({ w: img.naturalWidth, h: img.naturalHeight });
         setResolvedSrc(candidate);
         setStatus("ready");
       };
