@@ -8,7 +8,7 @@ import { hapticSuccess, hapticLight } from "@/lib/haptics";
 import { Button } from "@/components/ui/button";
 import { Mail, QrCode, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera, Share2 } from "lucide-react";
 import VirtualKeyboard from "./VirtualKeyboard";
-import RotatedPortraitImage from "./RotatedPortraitImage";
+import FinalImage from "./FinalImage";
 import QRCode from "qrcode";
 
 type Panel = "none" | "qr" | "email" | "printed" | "share";
@@ -178,40 +178,18 @@ export default function ResultScreen() {
   };
 
   const resultImageSrc = finalImage || photos[0];
-  const singlePreviewSrc = photos[0] || finalImage;
   const watermark = settings.showEventWatermark
     ? `${settings.eventConfig.title}${settings.eventConfig.subtitle ? ` — ${settings.eventConfig.subtitle}` : ""}`
     : "";
 
-  const photoContent = mode === "four" && photos.length >= 4 ? (
+  // Le backend est l'unique source de vérité : on affiche directement finalImage.
+  const photoContent = resultImageSrc ? (
     <div className="relative flex h-full max-h-full w-full max-w-full items-center justify-center">
-      <div
-        className="grid grid-cols-2 grid-rows-2 gap-2 overflow-hidden rounded-xl animate-polaroid-reveal"
-        style={{ height: "100%", aspectRatio: "3 / 4" }}
-      >
-        {photos.slice(0, 4).map((photo, i) => (
-          <div key={`${photo}-${i}`} className="relative min-h-0 min-w-0 overflow-hidden rounded-lg bg-muted/40">
-            <RotatedPortraitImage
-              src={photo}
-              alt={`Photo ${i + 1}`}
-              className="absolute inset-0 h-full w-full rounded-lg"
-            />
-          </div>
-        ))}
-      </div>
-      {watermark && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-md border border-primary/20">
-          <p className="font-body text-xs text-foreground/80 whitespace-nowrap">{watermark}</p>
-        </div>
-      )}
-    </div>
-  ) : singlePreviewSrc ? (
-    <div className="relative flex h-full max-h-full w-full max-w-full items-center justify-center">
-      <RotatedPortraitImage
-        src={singlePreviewSrc}
+      <FinalImage
+        src={resultImageSrc}
         alt="Votre photo"
-        className="rounded-xl animate-polaroid-reveal"
-        style={{ height: "100%", aspectRatio: "3 / 4" }}
+        className="animate-polaroid-reveal rounded-xl"
+        style={{ height: "100%", maxHeight: "100%", maxWidth: "100%" }}
       />
       {watermark && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-md border border-primary/20">
@@ -220,6 +198,7 @@ export default function ResultScreen() {
       )}
     </div>
   ) : null;
+
 
 
 
