@@ -467,3 +467,15 @@ export async function getUsbStatus(): Promise<UsbStatusResponse> {
   }
   return res.json();
 }
+
+/** Déclenche un cycle d'autofocus côté backend (Pi Camera Module 3). */
+export async function triggerAutofocus(): Promise<boolean> {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE}/autofocus`, { method: "POST" }, 8000);
+    if (!res.ok) return false;
+    const data = await res.json().catch(() => ({ success: true }));
+    return data?.success !== false;
+  } catch {
+    return false;
+  }
+}

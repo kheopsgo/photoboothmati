@@ -1,9 +1,10 @@
+import { useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useBackendHealth } from "@/contexts/BackendHealthContext";
 import { getStreamUrl } from "@/services/cameraStream";
-import { ArrowLeft, Camera } from "lucide-react";
-import type { PhotoFilter } from "@/services/api";
+import { ArrowLeft, Camera, Focus } from "lucide-react";
+import { triggerAutofocus, type PhotoFilter } from "@/services/api";
 import RotatedPortraitImage from "./RotatedPortraitImage";
 
 const filters: { id: PhotoFilter; label: string; cssFilter: string }[] = [
@@ -16,9 +17,18 @@ export default function PreviewScreen() {
   const { mode, filter, setFilter, setScreen, captureProgress } = usePhotobooth();
   const { settings } = useSettings();
   const { online } = useBackendHealth();
+  const [focusing, setFocusing] = useState(false);
   // Un seul et unique flux MJPEG partagé par toute l'application
   const streamUrl = getStreamUrl();
   const currentCss = filters.find((f) => f.id === filter)?.cssFilter ?? "none";
+
+  const handleFocus = async () => {
+    if (focusing) return;
+    setFocusing(true);
+    await triggerAutofocus();
+    setTimeout(() => setFocusing(false), 600);
+  };
+
 
   const totalShots = mode === "four" ? 4 : 1;
   const currentShot = Math.min(captureProgress + 1, totalShots);
@@ -65,8 +75,21 @@ export default function PreviewScreen() {
                 Caméra désactivée
               </p>
             )}
+
+            {settings.cameraEnabled && (
+              <button
+                onClick={handleFocus}
+                aria-label="Faire la mise au point"
+                className={`absolute bottom-4 right-4 z-20 h-14 w-14 rounded-full bg-background/60 backdrop-blur-md border-2 border-primary/50 text-primary flex items-center justify-center active:scale-95 transition-all ${
+                  focusing ? "animate-pulse border-primary" : ""
+                }`}
+              >
+                <Focus size={24} />
+              </button>
+            )}
           </div>
         </div>
+
       </div>
 
       {/* Right: controls (30%) */}
