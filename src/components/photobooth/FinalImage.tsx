@@ -37,6 +37,7 @@ export default function FinalImage({
   const [status, setStatus] = useState<Status>("loading");
   const [resolvedSrc, setResolvedSrc] = useState<string>("");
   const [landscape, setLandscape] = useState(false);
+  const [dims, setDims] = useState<{ w: number; h: number } | null>(null);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
