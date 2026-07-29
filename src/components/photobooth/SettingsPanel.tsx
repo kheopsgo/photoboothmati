@@ -822,6 +822,106 @@ function SaveFrameButton() {
   );
 }
 
+function StorageInfoSection() {
+  const [info, setInfo] = useState<StorageInfoResponse | null>(null);
+  const [usb, setUsb] = useState<UsbStatusResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [storage, usbStatus] = await Promise.all([
+          getStorageInfo().catch(() => null),
+          getUsbStatus().catch(() => null),
+        ]);
+        if (cancelled) return;
+        setInfo(storage);
+        setUsb(usbStatus);
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Erreur");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="p-4 rounded-lg bg-muted/50 border border-border flex items-center gap-3">
+        <Loader2 size={18} className="animate-spin text-muted-foreground" />
+        <p className="font-body text-sm text-muted-foreground">Chargement du stockage…</p>
+      </div>
+    );
+  }
+
+  if (error || (!info && !usb)) {
+    return (
+      <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive font-body text-sm">
+        {error || "Impossible de récupérer les informations de stockage."}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {info && (
+        <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
+          <div className="flex items-center gap-2">
+            <HardDrive size={16} className="text-primary" />
+            <p className="font-body text-sm font-medium text-foreground">Stockage local</p>
+          </div>
+          <p className="font-body text-xs text-muted-foreground break-all">
+            <span className="font-medium text-foreground">Chemin :</span> {info.localPath}
+          </p>
+          {typeof info.photoCount === "number" && (
+            <p className="font-body text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Photos :</span> {info.photoCount}
+            </p>
+          )}
+          {typeof info.freeGb === "number" && typeof info.totalGb === "number" && (
+            <p className="font-body text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Espace :</span> {info.freeGb.toFixed(2)} Go libres / {info.totalGb.toFixed(2)} Go total
+            </p>
+          )}
+        </div>
+      )}
+
+      {usb && (
+        <div className={`p-4 rounded-lg border space-y-2 ${usb.connected ? "bg-primary/5 border-primary/20" : "bg-muted/50 border-border"}`}>
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${usb.connected ? "bg-primary" : "bg-muted-foreground"}`} />
+            <p className="font-body text-sm font-medium text-foreground">Sauvegarde USB</p>
+          </div>
+          {usb.connected ? (
+            <>
+              <p className="font-body text-xs text-muted-foreground">
+                Clé USB connectée et sauvegarde active.
+              </p>
+              {typeof usb.photoCount === "number" && (
+                <p className="font-body text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">Photos sur USB :</span> {usb.photoCount}
+                </p>
+              )}
+              {typeof usb.freeGb === "number" && typeof usb.totalGb === "number" && (
+                <p className="font-body text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">Espace USB :</span> {usb.freeGb.toFixed(2)} Go libres / {usb.totalGb.toFixed(2)} Go total
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="font-body text-xs text-muted-foreground">
+              Aucune clé USB détectée. Les photos ne sont pas copiées automatiquement.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function GoogleDriveSection() {
   const [driveUrl, setDriveUrl] = useState<string>("");
   const [inputUrl, setInputUrl] = useState<string>("");
