@@ -17,9 +17,18 @@ export default function PreviewScreen() {
   const { mode, filter, setFilter, setScreen, captureProgress } = usePhotobooth();
   const { settings } = useSettings();
   const { online } = useBackendHealth();
+  const [focusing, setFocusing] = useState(false);
   // Un seul et unique flux MJPEG partagé par toute l'application
   const streamUrl = getStreamUrl();
   const currentCss = filters.find((f) => f.id === filter)?.cssFilter ?? "none";
+
+  const handleFocus = async () => {
+    if (focusing) return;
+    setFocusing(true);
+    await triggerAutofocus();
+    setTimeout(() => setFocusing(false), 600);
+  };
+
 
   const totalShots = mode === "four" ? 4 : 1;
   const currentShot = Math.min(captureProgress + 1, totalShots);
