@@ -3,8 +3,9 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, Lock, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2, Trash2, Cloud, ExternalLink, Sparkles, HardDrive } from "lucide-react";
 import { enterFullscreen, exitFullscreen, isFullscreen } from "@/lib/fullscreen";
 import type { EventConfig } from "@/config/eventConfig";
-import { trashPhotos, updateFrontend, uploadFrame, API_BASE, getStorageInfo, getUsbStatus } from "@/services/api";
+import { trashPhotos, updateFrontend, uploadFrame, API_BASE, getStorageInfo, getUsbStatus, getConfig, saveConfig } from "@/services/api";
 import type { StorageInfoResponse, UsbStatusResponse } from "@/services/api";
+import { Switch } from "@/components/ui/switch";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
 import PhotoFrame from "./PhotoFrame";
 import RotatedPortraitImage from "./RotatedPortraitImage";
@@ -827,18 +828,27 @@ function StorageInfoSection() {
   const [usb, setUsb] = useState<UsbStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [localEnabled, setLocalEnabled] = useState(true);
+  const [usbEnabled, setUsbEnabled] = useState(true);
+  const [savingKey, setSavingKey] = useState<"local" | "usb" | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [storage, usbStatus] = await Promise.all([
+        const [storage, usbStatus, cfg] = await Promise.all([
           getStorageInfo().catch(() => null),
           getUsbStatus().catch(() => null),
+          getConfig().catch(() => null),
         ]);
         if (cancelled) return;
         setInfo(storage);
         setUsb(usbStatus);
+        if (cfg) {
+          if (typeof cfg.localStorageEnabled === "boolean") setLocalEnabled(cfg.localStorageEnabled);
+          if (typeof cfg.usbBackupEnabled === "boolean") setUsbEnabled(cfg.usbBackupEnabled);
+        }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Erreur");
       } finally {
@@ -847,6 +857,25 @@ function StorageInfoSection() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  const persist = async (key: "local" | "usb", value: boolean) => {
+    const prevLocal = localEnabled;
+    const prevUsb = usbEnabled;
+    if (key === "local") setLocalEnabled(value); else setUsbEnabled(value);
+    setSavingKey(key);
+    setSaveError(null);
+    try {
+      await saveConfig(
+        key === "local" ? { localStorageEnabled: value } : { usbBackupEnabled: value }
+      );
+    } catch (err) {
+      setLocalEnabled(prevLocal);
+      setUsbEnabled(prevUsb);
+      setSaveError(err instanceof Error ? err.message : "Enregistrement impossible");
+    } finally {
+      setSavingKey(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -869,9 +898,19 @@ function StorageInfoSection() {
     <div className="space-y-3">
       {info && (
         <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
-          <div className="flex items-center gap-2">
-            <HardDrive size={16} className="text-primary" />
-            <p className="font-body text-sm font-medium text-foreground">Stockage local</p>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <HardDrive size={16} className="text-primary" />
+              <p className="font-body text-sm font-medium text-foreground">Stockage local</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {savingKey === "local" && <Loader2 size={14} className="animate-spin text-muted-foreground" />}
+              <Switch
+                checked={localEnabled}
+                onCheckedChange={(v) => persist("local", v)}
+                aria-label="Activer le stockage interne"
+              />
+            </div>
           </div>
           <p className="font-body text-xs text-muted-foreground break-all">
             <span className="font-medium text-foreground">Chemin :</span> {info.localPath}
@@ -886,16 +925,35 @@ function StorageInfoSection() {
               <span className="font-medium text-foreground">Espace :</span> {info.freeGb.toFixed(2)} Go libres / {info.totalGb.toFixed(2)} Go total
             </p>
           )}
+          {!localEnabled && (
+            <p className="font-body text-xs text-destructive">
+              Enregistrement interne désactivé : les photos ne sont pas conservées sur le Raspberry Pi.
+            </p>
+          )}
         </div>
       )}
 
       {usb && (
-        <div className={`p-4 rounded-lg border space-y-2 ${usb.connected ? "bg-primary/5 border-primary/20" : "bg-muted/50 border-border"}`}>
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${usb.connected ? "bg-primary" : "bg-muted-foreground"}`} />
-            <p className="font-body text-sm font-medium text-foreground">Sauvegarde USB</p>
+        <div className={`p-4 rounded-lg border space-y-2 ${usb.connected && usbEnabled ? "bg-primary/5 border-primary/20" : "bg-muted/50 border-border"}`}>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${usb.connected && usbEnabled ? "bg-primary" : "bg-muted-foreground"}`} />
+              <p className="font-body text-sm font-medium text-foreground">Sauvegarde USB</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {savingKey === "usb" && <Loader2 size={14} className="animate-spin text-muted-foreground" />}
+              <Switch
+                checked={usbEnabled}
+                onCheckedChange={(v) => persist("usb", v)}
+                aria-label="Activer la sauvegarde sur clé USB"
+              />
+            </div>
           </div>
-          {usb.connected ? (
+          {!usbEnabled ? (
+            <p className="font-body text-xs text-muted-foreground">
+              Copie sur clé USB désactivée.
+            </p>
+          ) : usb.connected ? (
             <>
               <p className="font-body text-xs text-muted-foreground">
                 Clé USB connectée et sauvegarde active.
@@ -917,6 +975,16 @@ function StorageInfoSection() {
             </p>
           )}
         </div>
+      )}
+
+      {saveError && (
+        <p className="font-body text-xs text-destructive">{saveError}</p>
+      )}
+
+      {!localEnabled && !usbEnabled && (
+        <p className="font-body text-xs text-destructive">
+          Attention : aucun stockage actif, les photos seront perdues après la session.
+        </p>
       )}
     </div>
   );
