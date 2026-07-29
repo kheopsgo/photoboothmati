@@ -75,8 +75,21 @@ export default function PreviewScreen() {
                 Caméra désactivée
               </p>
             )}
+
+            {settings.cameraEnabled && (
+              <button
+                onClick={handleFocus}
+                aria-label="Faire la mise au point"
+                className={`absolute bottom-4 right-4 z-20 h-14 w-14 rounded-full bg-background/60 backdrop-blur-md border-2 border-primary/50 text-primary flex items-center justify-center active:scale-95 transition-all ${
+                  focusing ? "animate-pulse border-primary" : ""
+                }`}
+              >
+                <Focus size={24} />
+              </button>
+            )}
           </div>
         </div>
+
       </div>
 
       {/* Right: controls (30%) */}
