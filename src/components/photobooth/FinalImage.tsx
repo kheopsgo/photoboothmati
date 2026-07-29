@@ -88,6 +88,7 @@ export default function FinalImage({
         plain.onload = () => {
           if (cancelled) return;
           setLandscape(plain.naturalWidth > plain.naturalHeight);
+          setDims({ w: plain.naturalWidth, h: plain.naturalHeight });
           setResolvedSrc(candidate);
           setStatus("ready");
         };
