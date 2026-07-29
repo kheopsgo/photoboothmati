@@ -140,16 +140,24 @@ export default function FinalImage({
     );
   }
 
+  // Rotation -90° : le conteneur prend le ratio de l'image pivotée (h/w),
+  // sinon sa largeur vaut 0px sur Chromium/Android (écran noir).
+  const w = dims?.w || 4;
+  const h = dims?.h || 3;
+
   return (
-    <div className={`relative overflow-hidden bg-black ${className}`} style={style}>
+    <div
+      className={`relative overflow-hidden bg-black ${className}`}
+      style={{ ...style, aspectRatio: `${h} / ${w}` }}
+    >
       <img
         key={resolvedSrc}
         src={resolvedSrc}
         alt={alt}
         className="absolute left-1/2 top-1/2 block max-w-none"
         style={{
-          height: "100%",
-          width: "auto",
+          width: `${(w / h) * 100}%`,
+          height: `${(h / w) * 100}%`,
           transform: "translate(-50%, -50%) rotate(-90deg)",
           transformOrigin: "center center",
         }}
