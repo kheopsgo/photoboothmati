@@ -2,17 +2,13 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useSound } from "@/hooks/useSound";
-import { API_BASE } from "@/services/api";
+import { getStreamUrl } from "@/services/cameraStream";
 import { startEarlyCapture, clearPendingCapture } from "@/services/captureQueue";
 import { hapticCapture, hapticMedium } from "@/lib/haptics";
 import RotatedPortraitImage from "./RotatedPortraitImage";
 
 const COUNTDOWN_START = 5;
 const TICK_MS = 1000;
-
-function cacheBust(url: string, nonce: number): string {
-  return url.includes("?") ? `${url}&t=${nonce}` : `${url}?t=${nonce}`;
-}
 
 export default function CountdownScreen() {
   const { mode, filter, setScreen, captureProgress } = usePhotobooth();
@@ -28,9 +24,9 @@ export default function CountdownScreen() {
 
   const totalShots = mode === "four" ? 4 : 1;
   const currentShot = captureProgress + 1;
-  const [streamNonce] = useState(() => Date.now());
-  const rawStreamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
-  const streamUrl = cacheBust(rawStreamUrl, streamNonce);
+  // Flux MJPEG unique partagé (identique à l'écran d'aperçu)
+  const streamUrl = getStreamUrl();
+
 
   const CAPTURE_AT_COUNT = 1;
 
@@ -94,15 +90,7 @@ export default function CountdownScreen() {
       >
         {settings.cameraEnabled ? (
           <>
-            <img
-              src={streamUrl}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl brightness-75"
-              style={{ transform: "scaleX(-1) scale(1.1)" }}
-              loading="eager"
-            />
-            <div className="absolute inset-0 bg-background/30" />
+            <div className="absolute inset-0 bg-gradient-to-br from-background via-card to-background" />
 
             <div className="absolute inset-0 flex items-center justify-center">
               <RotatedPortraitImage
@@ -113,6 +101,7 @@ export default function CountdownScreen() {
               />
             </div>
           </>
+
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-background">
             <p className="font-display text-2xl text-muted-foreground">Caméra désactivée</p>
