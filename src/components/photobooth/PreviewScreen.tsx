@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useBackendHealth } from "@/contexts/BackendHealthContext";
-import { API_BASE } from "@/services/api";
+import { getStreamUrl } from "@/services/cameraStream";
 import { ArrowLeft, Camera } from "lucide-react";
 import type { PhotoFilter } from "@/services/api";
 import RotatedPortraitImage from "./RotatedPortraitImage";
@@ -13,17 +12,12 @@ const filters: { id: PhotoFilter; label: string; cssFilter: string }[] = [
   { id: "sepia", label: "Sépia", cssFilter: "sepia(1)" },
 ];
 
-function cacheBust(url: string, nonce: number): string {
-  return url.includes("?") ? `${url}&t=${nonce}` : `${url}?t=${nonce}`;
-}
-
 export default function PreviewScreen() {
   const { mode, filter, setFilter, setScreen, captureProgress } = usePhotobooth();
   const { settings } = useSettings();
   const { online } = useBackendHealth();
-  const [streamNonce] = useState(() => Date.now());
-  const rawStreamUrl = import.meta.env.VITE_STREAM_URL || `${API_BASE}/stream.mjpg`;
-  const streamUrl = cacheBust(rawStreamUrl, streamNonce);
+  // Un seul et unique flux MJPEG partagé par toute l'application
+  const streamUrl = getStreamUrl();
   const currentCss = filters.find((f) => f.id === filter)?.cssFilter ?? "none";
 
   const totalShots = mode === "four" ? 4 : 1;
@@ -32,20 +26,9 @@ export default function PreviewScreen() {
 
   return (
     <div className="relative flex h-screen w-full overflow-hidden bg-background">
-      {/* Blurred fullscreen background */}
-      <div className="absolute inset-0 z-0">
-        {settings.cameraEnabled && (
-          <img
-            src={streamUrl}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl brightness-50"
-            style={{ transform: "scaleX(-1) scale(1.1)" }}
-            loading="eager"
-          />
-        )}
-        <div className="absolute inset-0 bg-background/60" />
-      </div>
+      {/* Fond décoratif (aucun second flux vidéo : économie CPU/connexions) */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-background via-card to-background" />
+
 
       {/* Left: camera (70%) */}
       <div className="relative z-10 flex-[7] flex flex-col p-6 min-w-0">
