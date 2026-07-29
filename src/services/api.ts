@@ -407,6 +407,8 @@ export async function updateFrontend(): Promise<UpdateFrontendResponse> {
 
 export interface AppConfig {
   googleDriveUrl?: string;
+  localStorageEnabled?: boolean;
+  usbBackupEnabled?: boolean;
   [key: string]: unknown;
 }
 
