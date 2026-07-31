@@ -717,9 +717,12 @@ function SaveFrameButton() {
       await new Promise((r) => requestAnimationFrame(() => r(null)));
       await new Promise((r) => requestAnimationFrame(() => r(null)));
       // 1200x1800 = taille exacte des photos finales du backend (pas de déformation)
-      const { dataUrl, hole } = await captureElementAsTransparentPng(el, 1200, 1800);
+      const { dataUrl, hole, bgColor } = await captureElementAsTransparentPng(el, 1200, 1800);
       setPreviewUrl(dataUrl);
-      try { localStorage.setItem(FRAME_HOLE_STORAGE_KEY, JSON.stringify(hole)); } catch { /* ignore */ }
+      try {
+        localStorage.setItem(FRAME_HOLE_STORAGE_KEY, JSON.stringify(hole));
+        localStorage.setItem(FRAME_BG_STORAGE_KEY, bgColor);
+      } catch { /* ignore */ }
       await uploadFrame(dataUrl, hole);
       setStatus("success");
       setMessage("Cadre enregistré pour l'impression");
