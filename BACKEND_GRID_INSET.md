@@ -57,9 +57,22 @@ from PIL import Image
 FINAL_SIZE = (1200, 1800)
 GAP = 16
 
-def build_grid(photo_paths):
+def validate_hole(value):
+    try:
+        h = {k: float(value[k]) for k in ("x", "y", "w", "h")}
+        if h["x"] < 0 or h["y"] < 0 or h["w"] <= 0 or h["h"] <= 0:
+            raise ValueError
+        if h["x"] + h["w"] > 1.001 or h["y"] + h["h"] > 1.001:
+            raise ValueError
+        return h
+    except (TypeError, KeyError, ValueError):
+        return DEFAULT_HOLE
+
+def build_grid(photo_paths, requested_hole=None):
     W, H = FINAL_SIZE
-    hole = load_hole()
+    # Priorité aux coordonnées envoyées avec CE montage. Cela évite définitivement
+    # les anciens fichiers frame_hole.json, les mauvais chemins et les cadres changés.
+    hole = validate_hole(requested_hole) if requested_hole else validate_hole(load_hole())
     ax, ay = int(hole["x"] * W), int(hole["y"] * H)
     aw, ah = int(hole["w"] * W), int(hole["h"] * H)
 
@@ -71,15 +84,13 @@ def build_grid(photo_paths):
 
     for path, (x, y) in zip(photo_paths[:4], positions):
         img = Image.open(path).convert("RGB")
-        # crop "cover" centré
-        sr, dr = img.width / img.height, tw / th
-        if sr > dr:
-            nw = int(img.height * dr)
-            img = img.crop(((img.width - nw) // 2, 0, (img.width + nw) // 2, img.height))
-        else:
-            nh = int(img.width / dr)
-            img = img.crop((0, (img.height - nh) // 2, img.width, (img.height + nh) // 2))
-        canvas.paste(img.resize((tw, th), Image.LANCZOS), (x, y))
+        # "contain" : chaque photo reste entièrement visible, sans visage coupé.
+        scale = min(tw / img.width, th / img.height)
+        nw, nh = max(1, int(img.width * scale)), max(1, int(img.height * scale))
+        img = img.resize((nw, nh), Image.LANCZOS)
+        tile = Image.new("RGB", (tw, th), "white")
+        tile.paste(img, ((tw - nw) // 2, (th - nh) // 2))
+        canvas.paste(tile, (x, y))
 
     return canvas
 ```
@@ -91,6 +102,14 @@ Puis appliquer le cadre :
     out = canvas.convert("RGBA")
     out.alpha_composite(frame)
     out.convert("RGB").save(final_path, "JPEG", quality=92, optimize=True)
+```
+
+Dans la route `/create-grid`, récupérez impérativement le `hole` de la requête
+et transmettez-le à la fonction (ne laissez pas `build_grid(photo_paths)` seul) :
+
+```python
+data = request.get_json(silent=True) or {}
+canvas = build_grid(photo_paths, data.get("hole"))
 ```
 
 ### 3. Redéployer
