@@ -79,18 +79,12 @@ export async function buildCollage2x2(
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvasW, canvasH);
 
-  const drawCover = (img: HTMLImageElement, dx: number, dy: number, dw: number, dh: number) => {
-    const srcRatio = img.width / img.height;
-    const dstRatio = dw / dh;
-    let sx = 0, sy = 0, sw = img.width, sh = img.height;
-    if (srcRatio > dstRatio) {
-      sw = img.height * dstRatio;
-      sx = (img.width - sw) / 2;
-    } else {
-      sh = img.width / dstRatio;
-      sy = (img.height - sh) / 2;
-    }
-    ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+  // Photo entière visible, réduite pour tenir dans sa case (aucun rognage)
+  const drawContain = (img: HTMLImageElement, dx: number, dy: number, dw: number, dh: number) => {
+    const scale = Math.min(dw / img.width, dh / img.height);
+    const w = img.width * scale;
+    const h = img.height * scale;
+    ctx.drawImage(img, dx + (dw - w) / 2, dy + (dh - h) / 2, w, h);
   };
 
   const positions = [
@@ -102,7 +96,7 @@ export async function buildCollage2x2(
 
   images.forEach((img, i) => {
     const [x, y] = positions[i];
-    drawCover(img, x, y, tileW, tileH);
+    drawContain(img, x, y, tileW, tileH);
   });
 
   return canvas.toDataURL("image/jpeg", 0.92);
