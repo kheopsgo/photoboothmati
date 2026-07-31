@@ -11,6 +11,8 @@ export interface FrameHole {
 export interface FrameExport {
   dataUrl: string;
   hole: FrameHole;
+  /** Couleur dominante du cadre autour de la zone photo (ex: "#1b2a4a") */
+  bgColor: string;
 }
 
 /**
