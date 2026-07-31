@@ -715,9 +715,10 @@ function SaveFrameButton() {
       // Wait two frames so the offscreen render is fully laid out and styles applied
       await new Promise((r) => requestAnimationFrame(() => r(null)));
       await new Promise((r) => requestAnimationFrame(() => r(null)));
-      const dataUrl = await captureElementAsTransparentPng(el, 1200, 1600);
+      // 1200x1800 = taille exacte des photos finales du backend (pas de déformation)
+      const { dataUrl, hole } = await captureElementAsTransparentPng(el, 1200, 1800);
       setPreviewUrl(dataUrl);
-      await uploadFrame(dataUrl);
+      await uploadFrame(dataUrl, hole);
       setStatus("success");
       setMessage("Cadre enregistré pour l'impression");
     } catch (err) {
