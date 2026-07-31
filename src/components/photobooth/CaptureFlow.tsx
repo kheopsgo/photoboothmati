@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePhotobooth } from "@/contexts/PhotoboothContext";
 import { createGrid, takeSinglePhoto } from "@/services/api";
 import { consumePendingCapture } from "@/services/captureQueue";
-import { getSavedFrameHole } from "@/services/collage";
+import { getSavedFrameBgColor, getSavedFrameHole } from "@/services/collage";
 import { Loader2 } from "lucide-react";
 
 export default function CaptureFlow() {
@@ -48,7 +48,13 @@ export default function CaptureFlow() {
           // Le backend est l'unique source de vérité pour le montage 2x2.
           setAssembling(true);
           const allPhotos = photos.concat(shot.photo);
-          const result = await createGrid(allPhotos, filter, shot.sessionId, getSavedFrameHole());
+          const result = await createGrid(
+            allPhotos,
+            filter,
+            shot.sessionId,
+            getSavedFrameHole(),
+            getSavedFrameBgColor()
+          );
           if (cancelled) return;
 
           const finalImg = result.finalImage || allPhotos[0];

@@ -723,7 +723,7 @@ function SaveFrameButton() {
         localStorage.setItem(FRAME_HOLE_STORAGE_KEY, JSON.stringify(hole));
         localStorage.setItem(FRAME_BG_STORAGE_KEY, bgColor);
       } catch { /* ignore */ }
-      await uploadFrame(dataUrl, hole);
+      await uploadFrame(dataUrl, hole, bgColor);
       setStatus("success");
       setMessage("Cadre enregistré pour l'impression");
     } catch (err) {
