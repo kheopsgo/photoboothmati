@@ -317,16 +317,22 @@ export interface FrameUploadResponse {
   message?: string;
 }
 
-export async function uploadFrame(imageDataUrl: string): Promise<FrameUploadResponse> {
+export async function uploadFrame(
+  imageDataUrl: string,
+  hole?: { x: number; y: number; w: number; h: number }
+): Promise<FrameUploadResponse> {
   const res = await fetchWithTimeout(
     `${API_BASE}/frame-upload`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: imageDataUrl }),
+      // `hole` = zone transparente du cadre (0..1). Le backend doit y insérer
+      // la photo / le montage 2x2 pour qu'aucune photo ne soit masquée.
+      body: JSON.stringify({ image: imageDataUrl, hole }),
     },
     30000
   );
+
   if (!res.ok) {
     const backendMessage = await extractBackendMessage(res);
     throw new Error(backendMessage || "Erreur lors de l'enregistrement du cadre");
