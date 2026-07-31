@@ -7,6 +7,7 @@ import { trashPhotos, updateFrontend, uploadFrame, API_BASE, getStorageInfo, get
 import type { StorageInfoResponse, UsbStatusResponse } from "@/services/api";
 import { Switch } from "@/components/ui/switch";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
+import { FRAME_HOLE_STORAGE_KEY } from "@/services/collage";
 import PhotoFrame from "./PhotoFrame";
 import RotatedPortraitImage from "./RotatedPortraitImage";
 import QRCode from "qrcode";
