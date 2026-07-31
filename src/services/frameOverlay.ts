@@ -50,6 +50,7 @@ export async function captureElementAsTransparentPng(
 
   // Punch a transparent hole over the photo placeholder area
   let hole: FrameHole = { x: 0, y: 0, w: 1, h: 1 };
+  let bgColor = "#ffffff";
   const holeEl = el.querySelector<HTMLElement>("[data-frame-photo-hole]");
   if (holeEl) {
     const holeRect = holeEl.getBoundingClientRect();
@@ -61,6 +62,17 @@ export async function captureElementAsTransparentPng(
     const hh = holeRect.height * scaleY;
     const ctx = canvas.getContext("2d");
     if (ctx) {
+      // Échantillonne la couleur du cadre juste à gauche de la zone photo
+      try {
+        const sx = Math.max(0, Math.min(canvas.width - 1, Math.round(hx - Math.max(3, hx * 0.4))));
+        const sy = Math.max(0, Math.min(canvas.height - 1, Math.round(hy + hh / 2)));
+        const [r, g, b, a] = ctx.getImageData(sx, sy, 1, 1).data;
+        if (a > 200) {
+          bgColor = `#${[r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+        }
+      } catch {
+        /* ignore */
+      }
       ctx.clearRect(hx, hy, hw, hh);
     }
     hole = {
@@ -71,5 +83,5 @@ export async function captureElementAsTransparentPng(
     };
   }
 
-  return { dataUrl: canvas.toDataURL("image/png"), hole };
+  return { dataUrl: canvas.toDataURL("image/png"), hole, bgColor };
 }
