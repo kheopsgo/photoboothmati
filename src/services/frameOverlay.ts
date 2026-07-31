@@ -1,5 +1,18 @@
 import { toCanvas } from "html-to-image";
 
+export interface FrameHole {
+  /** Position/size of the transparent photo area, normalized 0..1 */
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface FrameExport {
+  dataUrl: string;
+  hole: FrameHole;
+}
+
 /**
  * Renders a given DOM element (the PhotoFrame containing a marked photo
  * placeholder) as a PNG matching the backend's final photo ratio.
@@ -10,15 +23,14 @@ import { toCanvas } from "html-to-image";
  *   2. Locate the child marked with [data-frame-photo-hole] and CLEAR that
  *      rectangle on the canvas, producing a fully transparent photo area
  *      so the backend can composite the real photo underneath.
- *   3. Export as PNG.
- *
- * Returns a base64 data URL: "data:image/png;base64,..."
+ *   3. Export as PNG + the normalized geometry of that hole, so the backend
+ *      can place the photo (or the 2x2 grid) exactly inside the visible area.
  */
 export async function captureElementAsTransparentPng(
   el: HTMLElement,
   targetWidth = 1200,
-  targetHeight = 1600
-): Promise<string> {
+  targetHeight = 1800
+): Promise<FrameExport> {
   const rect = el.getBoundingClientRect();
   const pixelRatio = Math.max(targetWidth / rect.width, targetHeight / rect.height);
 
@@ -35,9 +47,10 @@ export async function captureElementAsTransparentPng(
   });
 
   // Punch a transparent hole over the photo placeholder area
-  const hole = el.querySelector<HTMLElement>("[data-frame-photo-hole]");
-  if (hole) {
-    const holeRect = hole.getBoundingClientRect();
+  let hole: FrameHole = { x: 0, y: 0, w: 1, h: 1 };
+  const holeEl = el.querySelector<HTMLElement>("[data-frame-photo-hole]");
+  if (holeEl) {
+    const holeRect = holeEl.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     const hx = (holeRect.left - rect.left) * scaleX;
@@ -48,7 +61,13 @@ export async function captureElementAsTransparentPng(
     if (ctx) {
       ctx.clearRect(hx, hy, hw, hh);
     }
+    hole = {
+      x: hx / canvas.width,
+      y: hy / canvas.height,
+      w: hw / canvas.width,
+      h: hh / canvas.height,
+    };
   }
 
-  return canvas.toDataURL("image/png");
+  return { dataUrl: canvas.toDataURL("image/png"), hole };
 }
