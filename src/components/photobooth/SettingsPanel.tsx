@@ -718,6 +718,7 @@ function SaveFrameButton() {
       // 1200x1800 = taille exacte des photos finales du backend (pas de déformation)
       const { dataUrl, hole } = await captureElementAsTransparentPng(el, 1200, 1800);
       setPreviewUrl(dataUrl);
+      try { localStorage.setItem(FRAME_HOLE_STORAGE_KEY, JSON.stringify(hole)); } catch { /* ignore */ }
       await uploadFrame(dataUrl, hole);
       setStatus("success");
       setMessage("Cadre enregistré pour l'impression");
