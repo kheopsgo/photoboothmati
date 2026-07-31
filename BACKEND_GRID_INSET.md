@@ -25,7 +25,7 @@ géométrie normalisée de la zone transparente :
 ```python
 import json, os
 
-FRAME_DIR = os.path.expanduser("~/photobooth-backend/static")
+FRAME_DIR = os.path.expanduser("~/photobooth/static")
 FRAME_HOLE_PATH = os.path.join(FRAME_DIR, "frame_hole.json")
 DEFAULT_HOLE = {"x": 0.05, "y": 0.055, "w": 0.90, "h": 0.68}
 
