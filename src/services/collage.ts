@@ -87,8 +87,8 @@ export async function buildCollage2x2(
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas 2D non disponible");
 
-  // Fond blanc (le cadre est composé par-dessus)
-  ctx.fillStyle = "#ffffff";
+  // Fond de la même couleur que le cadre (le cadre est composé par-dessus)
+  ctx.fillStyle = getSavedFrameBgColor();
   ctx.fillRect(0, 0, canvasW, canvasH);
 
   // Photo entière visible, réduite pour tenir dans sa case (aucun rognage)
