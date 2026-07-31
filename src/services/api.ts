@@ -167,7 +167,8 @@ export async function takeSinglePhoto(
 export async function createGrid(
   photos: string[],
   filter: PhotoFilter,
-  sessionId?: string | null
+  sessionId?: string | null,
+  hole?: { x: number; y: number; w: number; h: number }
 ): Promise<TakePhotoResponse> {
   // Send back relative paths if possible (strip API_BASE)
   const normalized = photos.map((p) =>
@@ -178,7 +179,9 @@ export async function createGrid(
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ photos: normalized, filter, sessionId: sessionId ?? undefined }),
+      // La géométrie est envoyée à chaque montage : le résultat ne dépend plus
+      // d'un ancien frame_hole.json ou de son emplacement sur le Raspberry Pi.
+      body: JSON.stringify({ photos: normalized, filter, sessionId: sessionId ?? undefined, hole }),
     },
     30000
   );

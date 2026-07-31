@@ -24,7 +24,11 @@ export function getSavedFrameHole(): CollageHole {
     const raw = localStorage.getItem(FRAME_HOLE_STORAGE_KEY);
     if (!raw) return DEFAULT_HOLE;
     const parsed = JSON.parse(raw) as CollageHole;
-    if ([parsed.x, parsed.y, parsed.w, parsed.h].every((n) => typeof n === "number" && isFinite(n)) && parsed.w > 0 && parsed.h > 0) {
+    if (
+      [parsed.x, parsed.y, parsed.w, parsed.h].every((n) => typeof n === "number" && isFinite(n)) &&
+      parsed.x >= 0 && parsed.y >= 0 && parsed.w > 0 && parsed.h > 0 &&
+      parsed.x + parsed.w <= 1.001 && parsed.y + parsed.h <= 1.001
+    ) {
       return parsed;
     }
   } catch {
