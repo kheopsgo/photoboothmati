@@ -168,7 +168,8 @@ export async function createGrid(
   photos: string[],
   filter: PhotoFilter,
   sessionId?: string | null,
-  hole?: { x: number; y: number; w: number; h: number }
+  hole?: { x: number; y: number; w: number; h: number },
+  bgColor?: string
 ): Promise<TakePhotoResponse> {
   // Send back relative paths if possible (strip API_BASE)
   const normalized = photos.map((p) =>
@@ -181,7 +182,12 @@ export async function createGrid(
       headers: { "Content-Type": "application/json" },
       // La géométrie est envoyée à chaque montage : le résultat ne dépend plus
       // d'un ancien frame_hole.json ou de son emplacement sur le Raspberry Pi.
-      body: JSON.stringify({ photos: normalized, filter, sessionId: sessionId ?? undefined, hole }),
+      body: JSON.stringify({
+        photos: normalized,
+        filter,
+        sessionId: sessionId ?? undefined,
+        hole: hole ? { ...hole, bg: bgColor } : undefined,
+      }),
     },
     30000
   );
@@ -322,7 +328,8 @@ export interface FrameUploadResponse {
 
 export async function uploadFrame(
   imageDataUrl: string,
-  hole?: { x: number; y: number; w: number; h: number }
+  hole?: { x: number; y: number; w: number; h: number },
+  bgColor?: string
 ): Promise<FrameUploadResponse> {
   const res = await fetchWithTimeout(
     `${API_BASE}/frame-upload`,
@@ -331,7 +338,10 @@ export async function uploadFrame(
       headers: { "Content-Type": "application/json" },
       // `hole` = zone transparente du cadre (0..1). Le backend doit y insérer
       // la photo / le montage 2x2 pour qu'aucune photo ne soit masquée.
-      body: JSON.stringify({ image: imageDataUrl, hole }),
+      body: JSON.stringify({
+        image: imageDataUrl,
+        hole: hole ? { ...hole, bg: bgColor } : undefined,
+      }),
     },
     30000
   );
