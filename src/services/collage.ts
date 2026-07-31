@@ -15,6 +15,18 @@ export interface CollageHole {
 }
 
 export const FRAME_HOLE_STORAGE_KEY = "photobooth.frameHole";
+export const FRAME_BG_STORAGE_KEY = "photobooth.frameBgColor";
+
+/** Couleur de fond du montage (celle du cadre), par défaut blanc */
+export function getSavedFrameBgColor(): string {
+  try {
+    const raw = localStorage.getItem(FRAME_BG_STORAGE_KEY);
+    if (raw && /^#[0-9a-fA-F]{6}$/.test(raw)) return raw;
+  } catch {
+    /* ignore */
+  }
+  return "#ffffff";
+}
 
 /** Zone photo par défaut (mesurée sur le cadre "elegant") */
 const DEFAULT_HOLE: CollageHole = { x: 0.05, y: 0.055, w: 0.9, h: 0.68 };
