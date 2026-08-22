@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Wifi, WifiOff, RefreshCw, Globe, Lock, Loader2, CheckCircle2, AlertCircle, Signal, Eye, EyeOff } from "lucide-react";
+import { Wifi, WifiOff, RefreshCw, Globe, Lock, Loader2, CheckCircle2, AlertCircle, Signal, Eye, EyeOff, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { resolveApiBases } from "@/services/api";
+import { FRONTEND_URL } from "@/config/backend";
+
 
 const API_BASES = resolveApiBases();
 
