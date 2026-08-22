@@ -3,7 +3,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, Lock, Timer, Upload, CheckCircle, AlertCircle, Github, Download, Maximize2, Minimize2, Trash2, Cloud, ExternalLink, Sparkles, HardDrive } from "lucide-react";
 import { enterFullscreen, exitFullscreen, isFullscreen } from "@/lib/fullscreen";
 import type { EventConfig } from "@/config/eventConfig";
-import { trashPhotos, updateFrontend, uploadFrame, API_BASE, getStorageInfo, getUsbStatus, getConfig, saveConfig } from "@/services/api";
+import { trashPhotos, updateFrontend, uploadFrame, API_BASE, fetchWithTimeout, getApiBaseOverride, setApiBaseOverride, getStorageInfo, getUsbStatus, getConfig, saveConfig } from "@/services/api";
 import type { StorageInfoResponse, UsbStatusResponse } from "@/services/api";
 import { Switch } from "@/components/ui/switch";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
@@ -234,10 +234,16 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
             <GoogleDriveSection />
           </Section>
 
+          {/* === CONNEXION BACKEND === */}
+          <Section icon={<Wifi size={18} />} title="Connexion au photobooth">
+            <BackendAddressSection />
+          </Section>
+
           {/* === STORAGE === */}
           <Section icon={<HardDrive size={18} />} title="Stockage">
             <StorageInfoSection />
           </Section>
+
 
           {/* === SECURITY === */}
           <Section icon={<Lock size={18} />} title="Sécurité événement">
@@ -1163,6 +1169,78 @@ function CameraPreview({ enabled }: { enabled: boolean }) {
       >
         {live ? "Arrêter l'aperçu" : "Prévisualiser la caméra"}
       </button>
+    </div>
+  );
+}
+
+function BackendAddressSection() {
+  const [value, setValue] = useState(getApiBaseOverride() || "");
+  const [status, setStatus] = useState<"idle" | "testing" | "ok" | "fail">("idle");
+
+  const test = async (base: string) => {
+    setStatus("testing");
+    try {
+      const res = await fetchWithTimeout(`${base}/health`, {}, 6000);
+      setStatus(res.ok ? "ok" : "fail");
+    } catch {
+      setStatus("fail");
+    }
+  };
+
+  const save = async () => {
+    setApiBaseOverride(value || null);
+    const base = getApiBaseOverride() || API_BASE;
+    setValue(base);
+    await test(base);
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Adresse actuelle : <span className="font-mono text-foreground">{API_BASE || "(même hôte)"}</span>
+      </p>
+      <label className="text-sm font-medium text-foreground block">Adresse du Raspberry</label>
+      <input
+        type="text"
+        inputMode="url"
+        autoCapitalize="none"
+        autoCorrect="off"
+        placeholder="http://10.42.0.1:5000"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        className="w-full px-4 py-3 rounded-xl bg-muted text-foreground font-mono text-sm outline-none focus:ring-2 focus:ring-primary"
+      />
+      <div className="flex gap-2">
+        <button
+          onClick={save}
+          className="flex-1 px-4 py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium"
+        >
+          Enregistrer et tester
+        </button>
+        <button
+          onClick={() => {
+            setApiBaseOverride(null);
+            setValue("");
+            setStatus("idle");
+          }}
+          className="px-4 py-3 rounded-xl bg-muted text-muted-foreground text-sm"
+        >
+          Auto
+        </button>
+      </div>
+      {status !== "idle" && (
+        <p className={`text-sm ${status === "ok" ? "text-primary" : "text-destructive"}`}>
+          {status === "testing" && "Test en cours…"}
+          {status === "ok" && "Photobooth joignable ✓ — rechargez l'app pour appliquer."}
+          {status === "fail" && "Injoignable à cette adresse."}
+        </p>
+      )}
+      <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-border">
+        <p className="font-medium text-foreground">Adresses habituelles :</p>
+        <p>• Hotspot du Raspberry : <span className="font-mono">http://10.42.0.1:5000</span></p>
+        <p>• Réseau WiFi maison : <span className="font-mono">http://10.10.10.191:5000</span></p>
+        <p>• Config WiFi du Pi : <span className="font-mono">http://10.42.0.1:5000/setup</span></p>
+      </div>
     </div>
   );
 }

@@ -1,7 +1,42 @@
 const FLASK_PORT = "5000";
 const HOTSPOT_HOST = "10.42.0.1";
 
+/** Clé localStorage permettant de forcer l'adresse du backend (Raspberry). */
+export const API_BASE_OVERRIDE_KEY = "photobooth_api_base";
+
+/** Adresse backend forcée manuellement depuis les Paramètres (ou null). */
+export function getApiBaseOverride(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(API_BASE_OVERRIDE_KEY);
+    return raw ? raw.trim().replace(/\/$/, "") : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Enregistre (ou efface) l'adresse backend forcée. */
+export function setApiBaseOverride(value: string | null) {
+  if (typeof window === "undefined") return;
+  try {
+    let v = (value || "").trim();
+    if (!v) {
+      window.localStorage.removeItem(API_BASE_OVERRIDE_KEY);
+      return;
+    }
+    if (!/^https?:\/\//i.test(v)) v = `http://${v}`;
+    if (!/:\d+$/.test(v.replace(/^https?:\/\//i, "").split("/")[0])) {
+      v = `${v.replace(/\/$/, "")}:${FLASK_PORT}`;
+    }
+    window.localStorage.setItem(API_BASE_OVERRIDE_KEY, v.replace(/\/$/, ""));
+  } catch {
+    /* ignore */
+  }
+}
+
 export function resolveApiBase(): string {
+  const override = getApiBaseOverride();
+  if (override) return override;
   const configured = import.meta.env.VITE_API_BASE;
   if (configured) return configured.replace(/\/$/, "");
   if (typeof window === "undefined") return `http://${HOTSPOT_HOST}:${FLASK_PORT}`;
@@ -24,6 +59,7 @@ export function resolveApiBases(): string[] {
   }
   return [...new Set(bases.map((base) => base.replace(/\/$/, "")))];
 }
+
 
 /** fetch avec timeout pour éviter les requêtes qui traînent indéfiniment. */
 export async function fetchWithTimeout(
