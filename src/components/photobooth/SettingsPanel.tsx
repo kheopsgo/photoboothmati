@@ -234,10 +234,16 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
             <GoogleDriveSection />
           </Section>
 
+          {/* === CONNEXION BACKEND === */}
+          <Section icon={<Wifi size={18} />} title="Connexion au photobooth">
+            <BackendAddressSection />
+          </Section>
+
           {/* === STORAGE === */}
           <Section icon={<HardDrive size={18} />} title="Stockage">
             <StorageInfoSection />
           </Section>
+
 
           {/* === SECURITY === */}
           <Section icon={<Lock size={18} />} title="Sécurité événement">
