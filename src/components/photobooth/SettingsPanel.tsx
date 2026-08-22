@@ -4,6 +4,8 @@ import { X, Camera, Grid2X2, Frame, Palette, Type, Wifi, Loader2, Lock, Timer, U
 import { enterFullscreen, exitFullscreen, isFullscreen } from "@/lib/fullscreen";
 import type { EventConfig } from "@/config/eventConfig";
 import { trashPhotos, updateFrontend, uploadFrame, API_BASE, fetchWithTimeout, getApiBaseOverride, setApiBaseOverride, getStorageInfo, getUsbStatus, getConfig, saveConfig } from "@/services/api";
+import { DEFAULT_API_BASE } from "@/config/backend";
+
 import type { StorageInfoResponse, UsbStatusResponse } from "@/services/api";
 import { Switch } from "@/components/ui/switch";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
