@@ -1,5 +1,8 @@
+import { DEFAULT_API_BASE } from "@/config/backend";
+
 const FLASK_PORT = "5000";
 const HOTSPOT_HOST = "10.42.0.1";
+
 
 /** Clé localStorage permettant de forcer l'adresse du backend (Raspberry). */
 export const API_BASE_OVERRIDE_KEY = "photobooth_api_base";
