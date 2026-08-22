@@ -1,5 +1,8 @@
+import { DEFAULT_API_BASE } from "@/config/backend";
+
 const FLASK_PORT = "5000";
 const HOTSPOT_HOST = "10.42.0.1";
+
 
 /** Clé localStorage permettant de forcer l'adresse du backend (Raspberry). */
 export const API_BASE_OVERRIDE_KEY = "photobooth_api_base";
@@ -37,17 +40,14 @@ export function setApiBaseOverride(value: string | null) {
 export function resolveApiBase(): string {
   const override = getApiBaseOverride();
   if (override) return override;
-  const configured = import.meta.env.VITE_API_BASE;
-  if (configured) return configured.replace(/\/$/, "");
-  if (typeof window === "undefined") return `http://${HOTSPOT_HOST}:${FLASK_PORT}`;
+  const envBase = import.meta.env.VITE_API_BASE;
+  if (envBase) return envBase.replace(/\/$/, "");
 
-  const { hostname, port, protocol } = window.location;
-  if (port === FLASK_PORT) return "";
-
-  const isPreviewHost = hostname.includes("lovable") || hostname === "localhost" || hostname === "127.0.0.1";
-  const backendHost = isPreviewHost ? HOTSPOT_HOST : hostname;
-  return `http://${backendHost}:${FLASK_PORT}`;
+  // Adresse par défaut intégrée (réseau "Photobooth" / hotspot du Raspberry Pi).
+  // Modifiable dans src/config/backend.ts avant une mise à jour/publish.
+  return DEFAULT_API_BASE.replace(/\/$/, "");
 }
+
 
 export function resolveApiBases(): string[] {
   const primary = resolveApiBase();
