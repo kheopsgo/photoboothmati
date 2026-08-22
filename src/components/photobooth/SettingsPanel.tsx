@@ -1176,7 +1176,8 @@ function CameraPreview({ enabled }: { enabled: boolean }) {
 }
 
 function BackendAddressSection() {
-  const [value, setValue] = useState(getApiBaseOverride() || "");
+  const defaultBase = DEFAULT_API_BASE;
+  const [value, setValue] = useState(getApiBaseOverride() || defaultBase);
   const [status, setStatus] = useState<"idle" | "testing" | "ok" | "fail">("idle");
 
   const test = async (base: string) => {
@@ -1196,18 +1197,29 @@ function BackendAddressSection() {
     await test(base);
   };
 
+  const resetToDefault = () => {
+    setApiBaseOverride(null);
+    setValue(defaultBase);
+    setStatus("idle");
+  };
+
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        Adresse actuelle : <span className="font-mono text-foreground">{API_BASE || "(même hôte)"}</span>
+        Adresse par défaut intégrée :{" "}
+        <span className="font-mono text-foreground">{defaultBase}</span>
       </p>
-      <label className="text-sm font-medium text-foreground block">Adresse du Raspberry</label>
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        Cette adresse est embarquée dans l'application. Après une mise à jour / publish,
+        la tablette l'utilise automatiquement sans que les invités aient à la saisir.
+      </p>
+      <label className="text-sm font-medium text-foreground block">Adresse du Raspberry (override)</label>
       <input
         type="text"
         inputMode="url"
         autoCapitalize="none"
         autoCorrect="off"
-        placeholder="http://10.42.0.1:5000"
+        placeholder={defaultBase}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         className="w-full px-4 py-3 rounded-xl bg-muted text-foreground font-mono text-sm outline-none focus:ring-2 focus:ring-primary"
@@ -1220,14 +1232,10 @@ function BackendAddressSection() {
           Enregistrer et tester
         </button>
         <button
-          onClick={() => {
-            setApiBaseOverride(null);
-            setValue("");
-            setStatus("idle");
-          }}
+          onClick={resetToDefault}
           className="px-4 py-3 rounded-xl bg-muted text-muted-foreground text-sm"
         >
-          Auto
+          Par défaut
         </button>
       </div>
       {status !== "idle" && (
@@ -1238,11 +1246,12 @@ function BackendAddressSection() {
         </p>
       )}
       <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-border">
-        <p className="font-medium text-foreground">Adresses habituelles :</p>
-        <p>• Hotspot du Raspberry : <span className="font-mono">http://10.42.0.1:5000</span></p>
-        <p>• Réseau WiFi maison : <span className="font-mono">http://10.10.10.191:5000</span></p>
-        <p>• Config WiFi du Pi : <span className="font-mono">http://10.42.0.1:5000/setup</span></p>
+        <p className="font-medium text-foreground">Pour changer l'adresse définitivement :</p>
+        <p>1. Modifier <span className="font-mono">src/config/backend.ts</span> dans le code.</p>
+        <p>2. Republier l'application. La tablette récupère la nouvelle valeur automatiquement.</p>
+        <p className="pt-1">• Config WiFi du Pi : <span className="font-mono">http://10.42.0.1:5000/setup</span></p>
       </div>
     </div>
   );
 }
+
