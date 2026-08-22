@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Wifi, WifiOff, RefreshCw, Globe, Lock, Loader2, CheckCircle2, AlertCircle, Signal, Eye, EyeOff } from "lucide-react";
+import { Wifi, WifiOff, RefreshCw, Globe, Lock, Loader2, CheckCircle2, AlertCircle, Signal, Eye, EyeOff, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { resolveApiBases } from "@/services/api";
+import { FRONTEND_URL } from "@/config/backend";
+
 
 const API_BASES = resolveApiBases();
 
@@ -375,9 +377,31 @@ export default function WifiSetup() {
           </CardContent>
         </Card>
 
+        {/* Lien vers le photobooth */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Lien vers le photobooth</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Une fois le Wi-Fi configuré, ouvrez cette page sur la tablette pour accéder à l'application photobooth.
+            </p>
+            <a
+              href={FRONTEND_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-primary/40 bg-primary/10 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/20 transition-colors w-full sm:w-auto"
+            >
+              <ExternalLink className="h-4 w-4" />
+              {FRONTEND_URL}
+            </a>
+          </CardContent>
+        </Card>
+
         <footer className="text-center text-xs text-muted-foreground py-4">
           Photobooth • Setup Wi-Fi
         </footer>
+
       </div>
     </div>
   );
