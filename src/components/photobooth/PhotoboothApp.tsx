@@ -1,6 +1,7 @@
 import { PhotoboothProvider, usePhotobooth } from "@/contexts/PhotoboothContext";
-import { SettingsProvider } from "@/contexts/SettingsContext";
+import { SettingsProvider, useSettings } from "@/contexts/SettingsContext";
 import { BackendHealthProvider } from "@/contexts/BackendHealthContext";
+import { useKeepScreenAwake } from "@/lib/wakeLock";
 import WelcomeScreen from "./WelcomeScreen";
 import ModeSelection from "./ModeSelection";
 import FilterSelection from "./FilterSelection";
@@ -37,10 +38,17 @@ function ScreenRouter() {
   }
 }
 
+function KeepScreenAwake() {
+  const { settings } = useSettings();
+  useKeepScreenAwake(settings.keepScreenOn);
+  return null;
+}
+
 function AppWithErrorBoundary() {
   const { restart } = usePhotobooth();
   return (
     <ErrorBoundary onReset={restart}>
+      <KeepScreenAwake />
       <ScreenRouter />
     </ErrorBoundary>
   );
