@@ -40,6 +40,10 @@ export function setApiBaseOverride(value: string | null) {
 export function resolveApiBase(): string {
   const override = getApiBaseOverride();
   if (override) return override;
+  // Si l'app est servie directement par le Raspberry, on utilise la même adresse.
+  if (typeof window !== "undefined" && window.location.port === FLASK_PORT) {
+    return `${window.location.protocol}//${window.location.host}`;
+  }
   const envBase = import.meta.env.VITE_API_BASE;
   if (envBase) return envBase.replace(/\/$/, "");
 
