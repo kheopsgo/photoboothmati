@@ -107,6 +107,12 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
               checked={settings.printingEnabled}
               onChange={(v) => updateSettings({ printingEnabled: v })}
             />
+            <ToggleRow
+              label="Écran toujours allumé"
+              description="Empêcher la tablette de se mettre en veille pendant la soirée"
+              checked={settings.keepScreenOn}
+              onChange={(v) => updateSettings({ keepScreenOn: v })}
+            />
           </Section>
 
           {/* === FRAME === */}

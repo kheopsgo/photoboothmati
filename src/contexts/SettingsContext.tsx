@@ -56,6 +56,7 @@ const defaultSettings: AppSettings = {
   welcomeMessage: "",
   showEventWatermark: true,
   printingEnabled: true,
+  keepScreenOn: true,
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
