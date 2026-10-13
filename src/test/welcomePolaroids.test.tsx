@@ -12,7 +12,7 @@ describe("welcome Polaroids", () => {
   it("changes the front photo at exactly five seconds", () => {
     vi.useFakeTimers();
     const { container, unmount } = render(<WelcomePolaroids photos={["/one.jpg", "/two.jpg"]} />);
-    const front = () => container.querySelector(".welcome-polaroid-0 img")?.getAttribute("src");
+    const front = () => container.querySelector(".welcome-polaroid-0 [aria-hidden='false'] img")?.getAttribute("src");
     expect(front()).toBe("/one.jpg");
     act(() => vi.advanceTimersByTime(4999));
     expect(front()).toBe("/one.jpg");
