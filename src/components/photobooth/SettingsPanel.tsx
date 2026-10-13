@@ -8,6 +8,8 @@ import { DEFAULT_API_BASE } from "@/config/backend";
 
 import type { StorageInfoResponse, UsbStatusResponse } from "@/services/api";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { EVENT_FONT_OPTIONS, getEventFont, eventFontClass, type EventFont, type EventTextField } from "@/lib/eventFonts";
 import { captureElementAsTransparentPng } from "@/services/frameOverlay";
 import { FRAME_HOLE_STORAGE_KEY, FRAME_BG_STORAGE_KEY } from "@/services/collage";
 import PhotoFrame from "./PhotoFrame";
@@ -33,6 +35,10 @@ const EVENT_TYPES: { id: EventConfig["type"]; label: string }[] = [
 export default function SettingsPanel({ onClose }: { onClose: () => void }) {
   const { settings, updateSettings, updateEventConfig } = useSettings();
   const { eventConfig } = settings;
+  const fontProps = (field: EventTextField) => ({
+    font: getEventFont(eventConfig.fonts, field),
+    onFontChange: (font: EventFont) => updateEventConfig({ fonts: { ...eventConfig.fonts, [field]: font } }),
+  });
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -205,18 +211,21 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
 
               <InputField
                 label="Titre"
+                {...fontProps("title")}
                 placeholder="Alice & Baptiste"
                 value={eventConfig.title}
                 onChange={(v) => updateEventConfig({ title: v })}
               />
               <InputField
                 label="Sous-titre / Date"
+                {...fontProps("subtitle")}
                 placeholder="12 Juillet 2026"
                 value={eventConfig.subtitle}
                 onChange={(v) => updateEventConfig({ subtitle: v })}
               />
               <InputField
                 label="Monogramme"
+                {...fontProps("monogram")}
                 placeholder="A & B"
                 value={eventConfig.monogram}
                 onChange={(v) => updateEventConfig({ monogram: v })}
@@ -230,15 +239,17 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
               />
               <InputField
                 label="Texte du pied de page"
+                {...fontProps("footer")}
                 placeholder="Merci d'avoir partagé ce moment..."
                 value={eventConfig.footer || ""}
                 onChange={(v) => updateEventConfig({ footer: v || undefined })}
               />
               <InputField
                 label="Message d'accueil"
+                {...fontProps("welcomeMessage")}
                 placeholder="Immortalisez ce moment"
                 value={settings.welcomeMessage || eventConfig.welcomeMessage || ""}
-                onChange={(v) => updateSettings({ welcomeMessage: v || undefined })}
+                onChange={(v) => updateSettings({ welcomeMessage: v })}
               />
             </div>
           </Section>
@@ -624,12 +635,16 @@ function InputField({
   value,
   onChange,
   maxLength,
+  font,
+  onFontChange,
 }: {
   label: string;
   placeholder: string;
   value: string;
   onChange: (v: string) => void;
   maxLength?: number;
+  font?: EventFont;
+  onFontChange?: (font: EventFont) => void;
 }) {
   return (
     <div className="space-y-1">
@@ -640,8 +655,23 @@ function InputField({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         maxLength={maxLength}
-        className="w-full h-11 rounded-lg border border-border bg-background px-3 text-sm font-body text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none transition-colors"
+        aria-label={label}
+        className={`w-full h-11 rounded-lg border border-border bg-background px-3 text-sm ${font ? eventFontClass({ title: font }, "title") : "font-body"} text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none transition-colors`}
       />
+      {font && onFontChange && (
+        <Select value={font} onValueChange={(value) => onFontChange(value as EventFont)}>
+          <SelectTrigger aria-label={`Police — ${label}`} className="h-11 w-full bg-background">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {EVENT_FONT_OPTIONS.map((option) => (
+              <SelectItem key={option.id} value={option.id}>
+                <span className={`${option.className} text-base`}>{option.label}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
     </div>
   );
 }
