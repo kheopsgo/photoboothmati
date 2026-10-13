@@ -97,11 +97,31 @@ export default function ResultScreen() {
     const src = finalImage || photos[0];
     if (!src) return;
     let cancelled = false;
-    uploadPhotoOnline(src)
-      .then((link) => QRCode.toDataURL(link, { width: 512, margin: 1 }))
-      .then((qr) => { if (!cancelled) setOnlineQr(qr); })
-      .catch((e) => console.warn("Mise en ligne de la photo impossible", e));
-    return () => { cancelled = true; };
+    let busy = false;
+    let done = false;
+    let timer: number | undefined;
+    // Sans internet : on n'attend pas, on réessaie en fond (retour réseau ou toutes les 15 s).
+    const attempt = () => {
+      if (cancelled || busy || done) return;
+      if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+      busy = true;
+      Promise.race([
+        uploadPhotoOnline(src),
+        new Promise<string>((_, rej) => setTimeout(() => rej(new Error("délai dépassé")), 20000)),
+      ])
+        .then((link) => QRCode.toDataURL(link, { width: 512, margin: 1 }))
+        .then((qr) => { done = true; if (!cancelled) setOnlineQr(qr); })
+        .catch((e) => console.warn("Mise en ligne de la photo impossible, nouvel essai bientôt", e))
+        .finally(() => { busy = false; });
+    };
+    attempt();
+    timer = window.setInterval(attempt, 15000);
+    window.addEventListener("online", attempt);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      window.removeEventListener("online", attempt);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finalImage]);
 
