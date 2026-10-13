@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
+import { eventFontClass } from "@/lib/eventFonts";
 import { Heart } from "lucide-react";
 
 interface PhotoFrameProps {
@@ -40,6 +41,8 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
   const { settings } = useSettings();
   const { frameStyle, monogram, title, subtitle, footer, logoUrl } = settings.eventConfig;
 
+  const font = (field: "title" | "subtitle" | "monogram" | "footer") => eventFontClass(settings.eventConfig.fonts, field);
+
   const accentStyle = settings.eventConfig.accentColor
     ? { "--frame-accent": settings.eventConfig.accentColor } as React.CSSProperties
     : {};
@@ -49,8 +52,8 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
       <div className="photo-frame bg-card rounded-sm shadow-xl p-[3%] pb-[22%] relative" style={accentStyle}>
         {children}
         <div className="absolute bottom-[5%] left-0 right-0 text-center px-[4%]">
-          <p className="font-script frame-title text-foreground/80">{title}</p>
-          <p className="font-body frame-subtitle text-muted-foreground mt-[1.5%]">{subtitle}</p>
+          <p className={`${font("title")} frame-title text-foreground/80`}>{title}</p>
+          <p className={`${font("subtitle")} frame-subtitle text-muted-foreground mt-[1.5%]`}>{subtitle}</p>
         </div>
       </div>
     );
@@ -61,8 +64,8 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
       <div className="photo-frame bg-card border border-border rounded-2xl p-[4%] shadow-lg relative" style={accentStyle}>
         {children}
         <div className="text-center mt-[4%] space-y-[1.5%]">
-          <p className="font-script frame-monogram text-primary/60">{monogram}</p>
-          <p className="font-body frame-subtitle text-muted-foreground">{subtitle}</p>
+          <p className={`${font("monogram")} frame-monogram text-primary/60`}>{monogram}</p>
+          <p className={`${font("subtitle")} frame-subtitle text-muted-foreground`}>{subtitle}</p>
         </div>
       </div>
     );
@@ -75,8 +78,8 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
         <div className="relative z-10">
           {children}
           <div className="text-center mt-[5%] space-y-[1.5%]">
-            <p className="font-script frame-title text-foreground">{title}</p>
-            <p className="font-body frame-subtitle text-muted-foreground">{subtitle}</p>
+            <p className={`${font("title")} frame-title text-foreground`}>{title}</p>
+            <p className={`${font("subtitle")} frame-subtitle text-muted-foreground`}>{subtitle}</p>
           </div>
         </div>
       </div>
@@ -96,9 +99,9 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
         {/* Bottom botanical + text */}
         <div className="text-center mt-[3%] space-y-[1.5%]">
           <BotanicalAccent className="mx-auto rotate-180" />
-          <p className="font-script frame-title text-primary/70">{title}</p>
-          <p className="font-body frame-subtitle text-muted-foreground">{subtitle}</p>
-          {footer && <p className="font-body frame-footer text-muted-foreground/60 mt-[2%]">{footer}</p>}
+          <p className={`${font("title")} frame-title text-primary/70`}>{title}</p>
+          <p className={`${font("subtitle")} frame-subtitle text-muted-foreground`}>{subtitle}</p>
+          {footer && <p className={`${font("footer")} frame-footer text-muted-foreground/60 mt-[2%]`}>{footer}</p>}
         </div>
       </div>
     );
@@ -132,9 +135,9 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
           <div className="h-px flex-1 bg-primary/20" />
         </div>
         <div className="text-center mt-[3%] space-y-[1.5%]">
-          <p className="font-script frame-title text-primary/80">{title}</p>
-          <p className="font-body frame-subtitle text-muted-foreground">{subtitle}</p>
-          {footer && <p className="font-body frame-footer text-muted-foreground/50 mt-[2%]">{footer}</p>}
+          <p className={`${font("title")} frame-title text-primary/80`}>{title}</p>
+          <p className={`${font("subtitle")} frame-subtitle text-muted-foreground`}>{subtitle}</p>
+          {footer && <p className={`${font("footer")} frame-footer text-muted-foreground/50 mt-[2%]`}>{footer}</p>}
         </div>
       </div>
 
