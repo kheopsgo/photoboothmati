@@ -38,10 +38,17 @@ function ScreenRouter() {
   }
 }
 
+function KeepScreenAwake() {
+  const { settings } = useSettings();
+  useKeepScreenAwake(settings.keepScreenOn);
+  return null;
+}
+
 function AppWithErrorBoundary() {
   const { restart } = usePhotobooth();
   return (
     <ErrorBoundary onReset={restart}>
+      <KeepScreenAwake />
       <ScreenRouter />
     </ErrorBoundary>
   );
