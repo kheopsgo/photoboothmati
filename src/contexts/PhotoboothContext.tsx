@@ -22,6 +22,7 @@ interface PhotoboothState {
   qrUrl: string | null;
   emailStatus: "idle" | "sending" | "sent" | "error";
   captureProgress: number; // 0-based: how many photos already captured
+  recentPhotos: string[];
 }
 
 interface PhotoboothContextType extends PhotoboothState {
@@ -48,6 +49,7 @@ const initial: PhotoboothState = {
   qrUrl: null,
   emailStatus: "idle",
   captureProgress: 0,
+  recentPhotos: [],
 };
 
 const PhotoboothContext = createContext<PhotoboothContextType | null>(null);
@@ -60,7 +62,12 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
   const setFilter = useCallback((filter: PhotoFilter) => setState((s) => ({ ...s, filter })), []);
   const setCaptureResult = useCallback(
     (sessionId: string, photos: string[], finalImage: string) =>
-      setState((s) => ({ ...s, sessionId, photos, finalImage })),
+      setState((s) => ({
+        ...s, sessionId, photos, finalImage,
+        recentPhotos: finalImage
+          ? [finalImage, ...s.recentPhotos.filter((photo) => photo !== finalImage)].slice(0, 20)
+          : s.recentPhotos,
+      })),
     []
   );
   const addCapturedPhoto = useCallback(
@@ -107,7 +114,7 @@ export function PhotoboothProvider({ children }: { children: ReactNode }) {
       })),
     []
   );
-  const restart = useCallback(() => setState(initial), []);
+  const restart = useCallback(() => setState((s) => ({ ...initial, recentPhotos: s.recentPhotos })), []);
 
   return (
     <PhotoboothContext.Provider
