@@ -28,7 +28,7 @@ describe("PhotoFrame", () => {
     expect(slot).not.toBeNull();
 
     // La zone photo est paysage 3:2
-    expect(slot.style.aspectRatio).toBe("3 / 2");
+    expect(slot.className).toContain("aspect-[3/2]");
 
     // Les infos viennent APRÈS la zone photo dans l'ordre du DOM (sous la photo)
     const title = Array.from(container.querySelectorAll("p")).find(
