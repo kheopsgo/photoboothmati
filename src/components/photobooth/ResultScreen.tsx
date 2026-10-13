@@ -10,6 +10,7 @@ import { Mail, QrCode, ArrowLeft, CheckCircle, AlertCircle, Printer, Camera, Sha
 import VirtualKeyboard from "./VirtualKeyboard";
 import FinalImage from "./FinalImage";
 import QRCode from "qrcode";
+import { uploadPhotoOnline } from "@/services/sharePhoto";
 
 type Panel = "none" | "qr" | "email" | "printed" | "share";
 
@@ -87,11 +88,25 @@ export default function ResultScreen() {
   const { settings } = useSettings();
   const { online } = useBackendHealth();
   const { playSuccess } = useSound({ enabled: settings.soundsEnabled });
+  const [onlineQr, setOnlineQr] = useState<string | null>(null);
   const [fallbackQr, setFallbackQr] = useState<string | null>(null);
-  const effectiveQr = qrUrl || fallbackQr;
+  // Priorité au lien en ligne : il fonctionne depuis n'importe quel réseau (4G, WiFi du client...).
+  const effectiveQr = onlineQr || qrUrl || fallbackQr;
 
   useEffect(() => {
-    if (qrUrl || !finalImage) return;
+    const src = finalImage || photos[0];
+    if (!src) return;
+    let cancelled = false;
+    uploadPhotoOnline(src)
+      .then((link) => QRCode.toDataURL(link, { width: 512, margin: 1 }))
+      .then((qr) => { if (!cancelled) setOnlineQr(qr); })
+      .catch((e) => console.warn("Mise en ligne de la photo impossible", e));
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finalImage]);
+
+  useEffect(() => {
+    if (qrUrl || !finalImage || finalImage.startsWith("data:")) return;
     let cancelled = false;
     QRCode.toDataURL(finalImage, { width: 512, margin: 1 })
       .then((url) => { if (!cancelled) setFallbackQr(url); })
