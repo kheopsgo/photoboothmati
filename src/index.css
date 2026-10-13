@@ -1,4 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import '@fontsource/alex-brush/latin-400.css';
+@import '@fontsource/montserrat/latin-400.css';
+@import '@fontsource/cormorant-garamond/latin-300.css';
+@import '@fontsource/cormorant-garamond/latin-400.css';
+@import '@fontsource/cormorant-garamond/latin-400-italic.css';
+@import '@fontsource/cormorant-garamond/latin-600.css';
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
 
 @tailwind base;
 @tailwind components;
@@ -58,6 +66,9 @@
     --font-script: 'Alex Brush', cursive;
     --font-display: 'Cormorant Garamond', serif;
     --font-body: 'Inter', sans-serif;
+    --font-event-stylized: 'Alex Brush', cursive;
+    --font-event-modern: 'Montserrat', sans-serif;
+    --font-event-normal: Arial, Helvetica, sans-serif;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -103,6 +114,9 @@
   .font-script {
     font-family: var(--font-script);
   }
+  .event-font-stylized { font-family: var(--font-event-stylized); }
+  .event-font-modern { font-family: var(--font-event-modern); }
+  .event-font-normal { font-family: var(--font-event-normal); }
 }
 
 /* Champagne bubble animations */

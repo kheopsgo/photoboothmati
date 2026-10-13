@@ -1,6 +1,8 @@
 // Event configuration — customize this for each event
 // This file centralizes all branding and frame settings
 
+import type { EventFonts } from "@/lib/eventFonts";
+
 export type EventType = "wedding" | "birthday" | "corporate" | "party" | "custom";
 
 export interface EventConfig {
@@ -21,6 +23,8 @@ export interface EventConfig {
   footer?: string;
   /** Optional welcome message shown on home screen */
   welcomeMessage?: string;
+  /** Independent typography choices for each personalized text */
+  fonts?: EventFonts;
 }
 
 // ✏️ EDIT THIS to match your event
