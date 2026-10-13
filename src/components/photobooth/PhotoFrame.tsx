@@ -36,6 +36,13 @@ function GeometricBorder() {
   );
 }
 
+/**
+ * Cadre photo : la zone photo est toujours PAYSAGE (3:2) et les infos de
+ * l'événement (monogramme / titre / date / message) sont placées SOUS la
+ * photo — comme l'exemple d'impression validé. Le conteneur racine doit
+ * avoir un ratio 2:3 (1200x1800 à l'export) : passer h-full + un parent
+ * avec aspect-[2/3].
+ */
 export default function PhotoFrame({ children, variant = "single" }: PhotoFrameProps) {
   const { settings } = useSettings();
   const { frameStyle, monogram, title, subtitle, footer, logoUrl } = settings.eventConfig;
@@ -46,11 +53,16 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
 
   if (frameStyle === "polaroid") {
     return (
-      <div className="photo-frame bg-card rounded-sm shadow-xl p-[3%] pb-[22%] relative" style={accentStyle}>
-        {children}
-        <div className="absolute bottom-[5%] left-0 right-0 text-center px-[4%]">
+      <div
+        className="photo-frame bg-[hsl(var(--polaroid-paper))] rounded-sm shadow-xl p-[3%] pb-[5%] relative flex h-full w-full flex-col"
+        style={accentStyle}
+      >
+        <div data-frame-photo-slot className="w-full aspect-[3/2]">
+          {children}
+        </div>
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
           <p className="font-script frame-title text-foreground/80">{title}</p>
-          <p className="font-body frame-subtitle text-muted-foreground mt-[1.5%]">{subtitle}</p>
+          <p className="font-body frame-subtitle text-muted-foreground mt-[1%]">{subtitle}</p>
         </div>
       </div>
     );
@@ -58,9 +70,14 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
 
   if (frameStyle === "minimal") {
     return (
-      <div className="photo-frame bg-card border border-border rounded-2xl p-[4%] shadow-lg relative" style={accentStyle}>
-        {children}
-        <div className="text-center mt-[4%] space-y-[1.5%]">
+      <div
+        className="photo-frame bg-card border border-border rounded-2xl p-[4%] shadow-lg relative flex h-full w-full flex-col"
+        style={accentStyle}
+      >
+        <div data-frame-photo-slot className="w-full aspect-[3/2]">
+          {children}
+        </div>
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
           <p className="font-script frame-monogram text-primary/60">{monogram}</p>
           <p className="font-body frame-subtitle text-muted-foreground">{subtitle}</p>
         </div>
@@ -70,11 +87,16 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
 
   if (frameStyle === "geometric") {
     return (
-      <div className="photo-frame bg-card rounded-2xl p-[5%] shadow-xl relative" style={accentStyle}>
+      <div
+        className="photo-frame bg-card rounded-2xl p-[4%] shadow-xl relative flex h-full w-full flex-col"
+        style={accentStyle}
+      >
         <GeometricBorder />
-        <div className="relative z-10">
-          {children}
-          <div className="text-center mt-[5%] space-y-[1.5%]">
+        <div className="relative z-10 flex h-full w-full flex-col">
+          <div data-frame-photo-slot className="mx-auto w-[92%] aspect-[3/2]">
+            {children}
+          </div>
+          <div className="flex flex-1 flex-col items-center justify-center text-center">
             <p className="font-script frame-title text-foreground">{title}</p>
             <p className="font-body frame-subtitle text-muted-foreground">{subtitle}</p>
           </div>
@@ -85,61 +107,66 @@ export default function PhotoFrame({ children, variant = "single" }: PhotoFrameP
 
   if (frameStyle === "botanical") {
     return (
-      <div className="photo-frame bg-card border-2 border-border rounded-2xl p-[4%] shadow-xl relative overflow-hidden" style={accentStyle}>
-        {/* Top botanical */}
-        <div className="flex justify-center mb-[2%]">
+      <div
+        className="photo-frame bg-card border-2 border-border rounded-2xl p-[4%] shadow-xl relative overflow-hidden flex h-full w-full flex-col"
+        style={accentStyle}
+      >
+        <div className="flex shrink-0 justify-center">
           <BotanicalAccent />
         </div>
 
-        {children}
+        <div data-frame-photo-slot className="mx-auto mt-[2%] w-[92%] aspect-[3/2]">
+          {children}
+        </div>
 
-        {/* Bottom botanical + text */}
-        <div className="text-center mt-[3%] space-y-[1.5%]">
-          <BotanicalAccent className="mx-auto rotate-180" />
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
+          <BotanicalAccent className="rotate-180" />
           <p className="font-script frame-title text-primary/70">{title}</p>
           <p className="font-body frame-subtitle text-muted-foreground">{subtitle}</p>
-          {footer && <p className="font-body frame-footer text-muted-foreground/60 mt-[2%]">{footer}</p>}
+          {footer && <p className="font-body frame-footer text-muted-foreground/60 mt-[1%]">{footer}</p>}
         </div>
       </div>
     );
   }
 
-  // Default: elegant
+  // Default: elegant — photo paysage en haut, infos en dessous.
   return (
-    <div className="photo-frame bg-card border-2 border-primary/15 rounded-2xl shadow-xl relative overflow-hidden" style={accentStyle}>
-      {/* Top ornaments */}
-      <div className="flex justify-between px-[2%] pt-[2%]">
+    <div
+      className="photo-frame bg-card border-2 border-primary/15 rounded-2xl shadow-xl relative overflow-hidden flex h-full w-full flex-col"
+      style={accentStyle}
+    >
+      {/* Ornaments top */}
+      <div className="flex shrink-0 justify-between px-[2.5%] pt-[2%]">
         <CornerOrnament />
         <CornerOrnament className="scale-x-[-1]" />
       </div>
 
       {/* Logo if provided */}
       {logoUrl && (
-        <div className="flex justify-center -mt-[2%] mb-[1%]">
-          <img src={logoUrl} alt="Logo" className="h-[8cqw] w-auto object-contain opacity-60" />
+        <div className="flex shrink-0 justify-center pt-[1%]">
+          <img src={logoUrl} alt="Logo" className="h-[4.5cqw] w-auto object-contain opacity-60" />
         </div>
       )}
 
-      <div className="px-[4%] pb-[1%]">
+      {/* Photo paysage (3:2), entière visible */}
+      <div data-frame-photo-slot className="mx-auto mt-[1.5%] w-[90%] aspect-[3/2]">
         {children}
       </div>
 
-      {/* Bottom section */}
-      <div className="px-[5%] pb-[4%] pt-[3%]">
-        <div className="flex items-center gap-[3%] justify-center">
+      {/* Infos de l'événement SOUS la photo */}
+      <div className="flex flex-1 flex-col items-center justify-center gap-[2.5cqw] px-[6%] pb-[2%] text-center">
+        <div className="flex w-full items-center justify-center gap-[3%]">
           <div className="h-px flex-1 bg-primary/20" />
-          <Heart className="text-primary/40 w-[3cqw] h-[3cqw]" />
+          <Heart className="text-primary/40 w-[2.5cqw] h-[2.5cqw]" />
           <div className="h-px flex-1 bg-primary/20" />
         </div>
-        <div className="text-center mt-[3%] space-y-[1.5%]">
-          <p className="font-script frame-title text-primary/80">{title}</p>
-          <p className="font-body frame-subtitle text-muted-foreground">{subtitle}</p>
-          {footer && <p className="font-body frame-footer text-muted-foreground/50 mt-[2%]">{footer}</p>}
-        </div>
+        <p className="font-script frame-title text-primary/80">{title}</p>
+        <p className="font-body frame-subtitle text-muted-foreground">{subtitle}</p>
+        {footer && <p className="font-body frame-footer text-muted-foreground/50">{footer}</p>}
       </div>
 
-      {/* Bottom ornaments */}
-      <div className="flex justify-between px-[2%] pb-[2%]">
+      {/* Ornaments bottom */}
+      <div className="flex shrink-0 justify-between px-[2.5%] pb-[2%]">
         <CornerOrnament className="scale-y-[-1]" />
         <CornerOrnament className="scale-[-1]" />
       </div>
