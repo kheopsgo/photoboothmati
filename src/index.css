@@ -47,6 +47,8 @@
     --sage: 48 60% 55%;
     --warm-gray: 230 10% 65%;
     --countdown: 48 100% 60%;
+    --polaroid-paper: 45 30% 96%;
+    --polaroid-shadow: 0 12px 28px hsl(230 25% 3% / 0.5);
 
     /* Effects */
     --glow-primary: 0 0 40px hsl(48 100% 60% / 0.6);
@@ -353,4 +355,33 @@
 .frame-botanical {
   width: 18cqw;
   height: 6cqw;
+}
+
+.welcome-polaroids {
+  position: relative;
+  width: 220px;
+  height: 240px;
+  flex-shrink: 0;
+  margin-top: 8px;
+  pointer-events: none;
+}
+.welcome-polaroid {
+  position: absolute;
+  inset: 8px 22px 16px;
+  padding: 9px 9px 30px;
+  border-radius: 3px;
+  background: hsl(var(--polaroid-paper));
+  box-shadow: var(--polaroid-shadow);
+}
+.welcome-polaroid-2 { transform: translate(16px, 4px) rotate(13deg); }
+.welcome-polaroid-1 { transform: translate(-15px, 1px) rotate(-12deg); }
+.welcome-polaroid-0 { transform: rotate(-3deg); }
+.welcome-polaroid-photo { width: 100%; height: 100%; overflow: hidden; background: hsl(var(--muted)); }
+.welcome-polaroid-0 .welcome-polaroid-photo { animation: welcome-photo-fade 0.5s ease-out; }
+@keyframes welcome-photo-fade { from { opacity: 0.4; } to { opacity: 1; } }
+@media (max-height: 650px) {
+  .welcome-polaroids { width: 175px; height: 170px; margin-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-polaroid-0 .welcome-polaroid-photo { animation: none; }
 }

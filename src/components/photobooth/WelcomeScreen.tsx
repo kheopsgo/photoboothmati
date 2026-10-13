@@ -8,6 +8,7 @@ import { Settings, Camera, Sparkles, RefreshCw } from "lucide-react";
 import SettingsPanel from "./SettingsPanel";
 import PinPrompt from "./PinPrompt";
 import { enterFullscreen } from "@/lib/fullscreen";
+import WelcomePolaroids from "./WelcomePolaroids";
 
 const LONG_PRESS_MS = 5000;
 
@@ -73,7 +74,7 @@ function BubblesBackground() {
 }
 
 export default function WelcomeScreen() {
-  const { setScreen, setMode } = usePhotobooth();
+  const { setScreen, setMode, recentPhotos } = usePhotobooth();
   const { settings } = useSettings();
   const { online } = useBackendHealth();
   const { playStart } = useSound({ enabled: settings.soundsEnabled });
@@ -204,6 +205,7 @@ export default function WelcomeScreen() {
           <p className="text-base text-muted-foreground/70 font-body animate-gentle-pulse">
             Touchez l'écran pour commencer
           </p>
+          <WelcomePolaroids photos={recentPhotos} />
         </div>
       </div>
 
