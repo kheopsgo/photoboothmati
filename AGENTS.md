@@ -1,4 +1,4 @@
 # Architecture rules
 
 - Keep the welcome-screen photo history in PhotoboothContext for the current session and preserve it on restart; this reuses completed captures without new backend endpoints or persistent photo storage.
-- Render the welcome photo stack in its own component; this isolates the slideshow timer from capture controls.
+- Render the welcome photo stack in its own component; this isolates the slideshow timer from capture controls.- Guest share links (QR) point to photos uploaded to the private Cloud "photos" bucket via the share-photo function with 30-day signed URLs; phones on any network can open them, unlike Raspberry-local URLs.
