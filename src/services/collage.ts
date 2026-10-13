@@ -3,12 +3,8 @@
  *
  * Le montage est dessiné sur une toile 1200x1800 (taille finale du backend) et
  * les 4 photos sont placées UNIQUEMENT dans la zone visible du cadre (le "trou"
- * transparent du PNG), qui est paysage (3:2).
- *
- * Les photos brutes de la caméra sont enregistrées "sur le côté" (contenu
- * paysage dans un fichier portrait) : chaque photo est d'abord tournée de 90°
- * antihoraire pour être à l'endroit, puis insérée en "contain" — entière
- * visible, jamais rognée.
+ * transparent du PNG). Sans cela, le bandeau texte du cadre recouvre les deux
+ * photos du bas.
  */
 
 export interface CollageHole {
@@ -32,8 +28,8 @@ export function getSavedFrameBgColor(): string {
   return "#ffffff";
 }
 
-/** Zone photo par défaut (mesurée sur le cadre "elegant" : photo paysage en haut, infos dessous) */
-const DEFAULT_HOLE: CollageHole = { x: 0.05, y: 0.065, w: 0.9, h: 0.4 };
+/** Zone photo par défaut (mesurée sur le cadre "elegant") */
+const DEFAULT_HOLE: CollageHole = { x: 0.05, y: 0.055, w: 0.9, h: 0.68 };
 
 export function getSavedFrameHole(): CollageHole {
   try {
@@ -51,19 +47,6 @@ export function getSavedFrameHole(): CollageHole {
     /* ignore */
   }
   return DEFAULT_HOLE;
-}
-
-/** Tourne une photo de 90° antihoraire pour remettre le contenu paysage à l'endroit. */
-export function rotatePhotoUpright(img: HTMLImageElement): HTMLCanvasElement {
-  const canvas = document.createElement("canvas");
-  canvas.width = img.naturalHeight;
-  canvas.height = img.naturalWidth;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas 2D non disponible");
-  ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.rotate(-Math.PI / 2);
-  ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
-  return canvas;
 }
 
 export async function buildCollage2x2(
@@ -84,7 +67,6 @@ export async function buildCollage2x2(
     });
 
   const images = await Promise.all(photoUrls.slice(0, 4).map(loadImage));
-  const uprightImages = images.map(rotatePhotoUpright);
 
   // Toile finale identique au backend (1200x1800)
   const canvasW = 1200;
@@ -110,11 +92,11 @@ export async function buildCollage2x2(
   ctx.fillRect(0, 0, canvasW, canvasH);
 
   // Photo entière visible, réduite pour tenir dans sa case (aucun rognage)
-  const drawContain = (source: HTMLImageElement | HTMLCanvasElement, dx: number, dy: number, dw: number, dh: number) => {
-    const scale = Math.min(dw / source.width, dh / source.height);
-    const w = source.width * scale;
-    const h = source.height * scale;
-    ctx.drawImage(source, dx + (dw - w) / 2, dy + (dh - h) / 2, w, h);
+  const drawContain = (img: HTMLImageElement, dx: number, dy: number, dw: number, dh: number) => {
+    const scale = Math.min(dw / img.width, dh / img.height);
+    const w = img.width * scale;
+    const h = img.height * scale;
+    ctx.drawImage(img, dx + (dw - w) / 2, dy + (dh - h) / 2, w, h);
   };
 
   const positions = [
@@ -124,7 +106,7 @@ export async function buildCollage2x2(
     [areaX + tileW + gap, areaY + tileH + gap],
   ];
 
-  uprightImages.forEach((img, i) => {
+  images.forEach((img, i) => {
     const [x, y] = positions[i];
     drawContain(img, x, y, tileW, tileH);
   });

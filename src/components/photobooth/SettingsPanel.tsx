@@ -138,12 +138,12 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
                 <div className="space-y-2">
                   <label className="font-body text-sm font-medium text-foreground">Aperçu du cadre</label>
                   <div className="rounded-xl bg-muted/40 border border-border p-4 flex justify-center">
-                    <div className="w-48 aspect-[2/3]">
+                    <div className="w-48">
                       <PhotoFrame variant="single">
                         <div
                           style={{
                             width: "100%",
-                            aspectRatio: "3 / 2",
+                            aspectRatio: "3 / 4",
                             background:
                               "repeating-conic-gradient(hsl(var(--muted)) 0% 25%, hsl(var(--background)) 0% 50%) 50% / 16px 16px",
                             borderRadius: "4px",
@@ -815,7 +815,7 @@ function SaveFrameButton() {
         <div
           ref={frameRef}
           className="frame-export-root"
-          style={{ width: "1200px", aspectRatio: "2 / 3" }}
+          style={{ width: "1200px" }}
         >
           <PhotoFrame variant="single">
             {/* Transparent placeholder matching the printed photo aspect ratio (3:4).
@@ -825,7 +825,7 @@ function SaveFrameButton() {
               data-frame-photo-hole
               style={{
                 width: "100%",
-                aspectRatio: "3 / 2",
+                aspectRatio: "3 / 4",
                 background: "transparent",
                 backgroundColor: "transparent",
               }}
