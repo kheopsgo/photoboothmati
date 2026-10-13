@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import SettingsPanel from "./SettingsPanel";
 import PinPrompt from "./PinPrompt";
 import { enterFullscreen } from "@/lib/fullscreen";
+import { eventFontClass } from "@/lib/eventFonts";
 import WelcomePolaroids from "./WelcomePolaroids";
 
 const LONG_PRESS_MS = 5000;
@@ -117,6 +118,8 @@ export default function WelcomeScreen() {
     }
   };
 
+  const font = (field: "title" | "subtitle" | "monogram" | "welcomeMessage") => eventFontClass(settings.eventConfig.fonts, field);
+
   const welcomeText =
     settings.welcomeMessage ||
     settings.eventConfig.welcomeMessage ||
@@ -177,7 +180,7 @@ export default function WelcomeScreen() {
               {settings.eventConfig.logoUrl ? (
                 <img src={settings.eventConfig.logoUrl} alt="Logo" className="h-24 w-auto object-contain pointer-events-none" />
               ) : (
-                <span className="font-script text-7xl text-primary text-glow-yellow pointer-events-none">
+                <span className={`${font("monogram")} text-7xl text-primary text-glow-yellow pointer-events-none`}>
                   {settings.eventConfig.monogram}
                 </span>
               )}
@@ -189,17 +192,17 @@ export default function WelcomeScreen() {
               Photobooth
             </h1>
             <div className="w-24 h-px bg-primary/60 mx-auto" />
-            <p className="font-display text-2xl text-muted-foreground italic flex items-center justify-center gap-2">
+            <p className={`${font("welcomeMessage")} text-2xl text-muted-foreground flex items-center justify-center gap-2`}>
               <Sparkles size={20} className="text-primary" />
               {welcomeText}
               <Sparkles size={20} className="text-primary" />
             </p>
             {(settings.eventConfig.title || settings.eventConfig.subtitle) && (
               <div className="pt-2">
-                <p className="font-display text-3xl text-primary text-glow-yellow">
+                <p className={`${font("title")} text-3xl text-primary text-glow-yellow`}>
                   {settings.eventConfig.title}
                 </p>
-                <p className="font-body text-lg text-muted-foreground">
+                <p className={`${font("subtitle")} text-lg text-muted-foreground`}>
                   {settings.eventConfig.subtitle}
                 </p>
               </div>

@@ -11,6 +11,7 @@ import VirtualKeyboard from "./VirtualKeyboard";
 import FinalImage from "./FinalImage";
 import QRCode from "qrcode";
 import { uploadPhotoOnline } from "@/services/sharePhoto";
+import { eventFontClass } from "@/lib/eventFonts";
 
 type Panel = "none" | "qr" | "email" | "printed" | "share";
 
@@ -231,7 +232,10 @@ export default function ResultScreen() {
       />
       {watermark && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur-md border border-primary/20">
-          <p className="font-body text-xs text-foreground/80 whitespace-nowrap">{watermark}</p>
+          <p className="text-xs text-foreground/80 text-center">
+            <span className={eventFontClass(settings.eventConfig.fonts, "title")}>{settings.eventConfig.title}</span>
+            {settings.eventConfig.subtitle && <span className={eventFontClass(settings.eventConfig.fonts, "subtitle")}>{` — ${settings.eventConfig.subtitle}`}</span>}
+          </p>
         </div>
       )}
     </div>

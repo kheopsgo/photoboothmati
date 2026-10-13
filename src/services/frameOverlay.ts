@@ -33,6 +33,8 @@ export async function captureElementAsTransparentPng(
   targetWidth = 1200,
   targetHeight = 1800
 ): Promise<FrameExport> {
+  // Wait for locally bundled faces so the saved PNG matches the selected fonts.
+  await document.fonts.ready;
   const rect = el.getBoundingClientRect();
   const pixelRatio = Math.max(targetWidth / rect.width, targetHeight / rect.height);
 
