@@ -38,7 +38,6 @@ export default function WelcomePolaroids({ photos }: { photos: string[] }) {
                   <FinalImage
                     src={photo}
                     alt={layer === 0 && photo === src ? "Dernier souvenir du photobooth" : ""}
-                    forceRotate
                     className="h-full w-full"
                   />
                 </div>
