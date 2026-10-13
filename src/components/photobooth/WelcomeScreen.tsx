@@ -134,7 +134,7 @@ export default function WelcomeScreen() {
         variant="ghost"
         size="icon"
         onClick={() => window.location.reload()}
-        className="absolute top-5 left-5 z-20 w-12 h-12 rounded-full bg-card/60 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground/60 hover:text-primary hover:border-primary/50 transition-all"
+        className="absolute top-5 left-5 z-20 w-12 h-12 rounded-full bg-card/60 hover:bg-card/80 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground/60 hover:text-primary hover:border-primary/50 transition-all"
         aria-label="Rafraîchir la page"
         title="Rafraîchir la page"
       >
@@ -144,7 +144,7 @@ export default function WelcomeScreen() {
         variant="ghost"
         size="icon"
         onClick={() => void enterFullscreen()}
-        className="absolute top-5 left-20 z-20 w-12 h-12 rounded-full bg-card/60 backdrop-blur-sm border border-border text-muted-foreground/60 hover:text-primary hover:border-primary/50 transition-all"
+        className="absolute top-5 left-20 z-20 w-12 h-12 rounded-full bg-card/60 hover:bg-card/80 backdrop-blur-sm border border-border text-muted-foreground/60 hover:text-primary hover:border-primary/50 transition-all"
         aria-label="Afficher en plein écran"
         title="Afficher en plein écran"
       >
