@@ -31,6 +31,8 @@ export interface AppSettings {
   showEventWatermark: boolean;
   /** Allow guests to print their photo */
   printingEnabled: boolean;
+  /** Keep the tablet screen awake while the app is open */
+  keepScreenOn: boolean;
 }
 
 interface SettingsContextType {
