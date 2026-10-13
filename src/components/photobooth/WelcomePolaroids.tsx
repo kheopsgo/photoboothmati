@@ -21,16 +21,28 @@ export default function WelcomePolaroids({ photos }: { photos: string[] }) {
     <div className="welcome-polaroids" role="img" aria-label="Souvenirs du photobooth">
       {[2, 1, 0].map((layer) => {
         const src = photos[(index + layer) % photos.length];
+        const adjacentPhotos = [...new Set([
+          photos[(index + layer + photos.length - 1) % photos.length],
+          src,
+          photos[(index + layer + 1) % photos.length],
+        ])];
         return (
           <div key={layer} className={`welcome-polaroid welcome-polaroid-${layer}`}>
             <div className="welcome-polaroid-photo">
-              <FinalImage
-                key={src}
-                src={src}
-                alt={layer === 0 ? "Dernier souvenir du photobooth" : ""}
-                forceRotate
-                className="h-full w-full"
-              />
+              {adjacentPhotos.map((photo) => (
+                <div
+                  key={photo}
+                  className={`welcome-polaroid-image${photo === src ? " is-current" : ""}`}
+                  aria-hidden={photo !== src}
+                >
+                  <FinalImage
+                    src={photo}
+                    alt={layer === 0 && photo === src ? "Dernier souvenir du photobooth" : ""}
+                    forceRotate
+                    className="h-full w-full"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         );
