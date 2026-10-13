@@ -369,15 +369,17 @@ export default function ResultScreen() {
           Email
         </Button>
 
-        <Button
-          variant="elegant"
-          size="lg"
-          onClick={handlePrint}
-          disabled={printStatus === "printing" || online === false}
-        >
-          <Printer />
-          {printStatus === "printing" ? "Impression..." : "Imprimer"}
-        </Button>
+        {settings.printingEnabled && (
+          <Button
+            variant="elegant"
+            size="lg"
+            onClick={handlePrint}
+            disabled={printStatus === "printing" || online === false}
+          >
+            <Printer />
+            {printStatus === "printing" ? "Impression..." : "Imprimer"}
+          </Button>
+        )}
 
         {printStatus === "error" && printMessage && (
           <p className="text-base text-center flex items-center justify-center gap-2 text-destructive">

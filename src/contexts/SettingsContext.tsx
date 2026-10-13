@@ -29,6 +29,8 @@ export interface AppSettings {
   welcomeMessage: string;
   /** Show event title as watermark on result screen */
   showEventWatermark: boolean;
+  /** Allow guests to print their photo */
+  printingEnabled: boolean;
 }
 
 interface SettingsContextType {
@@ -51,6 +53,7 @@ const defaultSettings: AppSettings = {
   hapticsEnabled: true,
   welcomeMessage: "",
   showEventWatermark: true,
+  printingEnabled: true,
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);

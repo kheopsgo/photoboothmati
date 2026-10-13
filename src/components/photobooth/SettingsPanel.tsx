@@ -101,6 +101,12 @@ export default function SettingsPanel({ onClose }: { onClose: () => void }) {
               checked={settings.showEventWatermark}
               onChange={(v) => updateSettings({ showEventWatermark: v })}
             />
+            <ToggleRow
+              label="Impression"
+              description="Proposer le bouton Imprimer aux invités"
+              checked={settings.printingEnabled}
+              onChange={(v) => updateSettings({ printingEnabled: v })}
+            />
           </Section>
 
           {/* === FRAME === */}
